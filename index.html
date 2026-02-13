@@ -1,0 +1,3629 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>The Seven Heavenly Virtues - 3D</title>
+    <style>
+        body { 
+            margin: 0; 
+            background: #000; 
+            overflow: hidden;
+            font-family: 'Courier New', monospace; 
+            color: #eee; 
+        }
+        #canvas-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+        #hud {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 5px;
+            border: 2px solid #f39c12;
+            z-index: 100;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        #hud strong { color: #f39c12; }
+        #crosshair {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 20px;
+            height: 20px;
+            pointer-events: none;
+            z-index: 50;
+        }
+        #crosshair::before, #crosshair::after {
+            content: '';
+            position: absolute;
+            background: #f39c12;
+        }
+        #crosshair::before {
+            width: 2px;
+            height: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        #crosshair::after {
+            height: 2px;
+            width: 100%;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        #message {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.9);
+            padding: 15px 30px;
+            border-radius: 10px;
+            border: 2px solid #2ecc71;
+            font-size: 16px;
+            display: none;
+            z-index: 100;
+            text-align: center;
+            max-width: 80%;
+        }
+        #controls {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 12px;
+            text-align: center;
+            z-index: 100;
+        }
+        #title-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+            padding: 20px;
+            text-align: center;
+        }
+        #title-screen h1 {
+            color: #f39c12;
+            font-size: 36px;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        #title-screen h2 {
+            color: #9b59b6;
+            font-size: 20px;
+            margin-bottom: 30px;
+        }
+        #verse-display {
+            max-width: 600px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+        #verse-text {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #ecf0f1;
+            margin-bottom: 10px;
+            font-style: italic;
+        }
+        #verse-ref {
+            color: #f39c12;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        #start-button {
+            background: #2ecc71;
+            color: #fff;
+            border: none;
+            padding: 15px 40px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            transition: all 0.2s;
+            box-shadow: 0 4px 0 #27ae60;
+        }
+        #start-button:hover {
+            background: #27ae60;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 #229954;
+        }
+        #start-button:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #229954;
+        }
+        #battle-ui {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 320px;
+            background: linear-gradient(135deg, rgba(0, 0, 40, 0.85) 0%, rgba(20, 20, 60, 0.85) 100%);
+            padding: 15px;
+            display: none;
+            z-index: 150;
+            border: 2px solid rgba(243, 156, 18, 0.8);
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            font-family: 'Courier New', monospace;
+        }
+        
+        #battle-status {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            width: 280px;
+            background: linear-gradient(135deg, rgba(0, 0, 40, 0.75) 0%, rgba(20, 20, 60, 0.75) 100%);
+            padding: 12px;
+            display: none;
+            z-index: 150;
+            border: 2px solid rgba(46, 204, 113, 0.6);
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .hero-status {
+            margin-bottom: 8px;
+            padding: 6px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 4px;
+            border-left: 3px solid #2ecc71;
+        }
+        
+        .hero-status.active {
+            border-left-color: #f39c12;
+            background: rgba(243, 156, 18, 0.2);
+        }
+        
+        .hero-name {
+            font-weight: bold;
+            color: #2ecc71;
+            font-size: 11px;
+            margin-bottom: 3px;
+        }
+        
+        .hero-stats {
+            display: flex;
+            justify-content: space-between;
+            font-size: 9px;
+            color: #ecf0f1;
+        }
+        
+        #enemy-status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 280px;
+            background: linear-gradient(135deg, rgba(40, 0, 0, 0.75) 0%, rgba(60, 20, 20, 0.75) 100%);
+            padding: 12px;
+            display: none;
+            z-index: 150;
+            border: 2px solid rgba(231, 76, 60, 0.6);
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .enemy-status {
+            margin-bottom: 8px;
+            padding: 6px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 4px;
+            border-left: 3px solid #e74c3c;
+        }
+        
+        .enemy-status.targeted {
+            border-left-color: #f39c12;
+            background: rgba(243, 156, 18, 0.2);
+            box-shadow: 0 0 10px rgba(243, 156, 18, 0.3);
+        }
+        
+        .enemy-name {
+            font-weight: bold;
+            color: #e74c3c;
+            font-size: 11px;
+            margin-bottom: 3px;
+        }
+        
+        .status-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 3px;
+        }
+        
+        .status-fill {
+            height: 100%;
+            transition: width 0.3s ease;
+            border-radius: 3px;
+        }
+        
+        .hp-bar .status-fill { background: linear-gradient(90deg, #e74c3c, #c0392b); }
+        .mp-bar .status-fill { background: linear-gradient(90deg, #3498db, #2980b9); }
+        
+        .battle-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        
+        .battle-btn {
+            background: linear-gradient(135deg, rgba(52, 73, 94, 0.9) 0%, rgba(44, 62, 80, 0.9) 100%);
+            color: #ecf0f1;
+            border: 1px solid rgba(149, 165, 166, 0.5);
+            padding: 8px 12px;
+            font-size: 11px;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            transition: all 0.2s;
+            text-align: left;
+            position: relative;
+        }
+        
+        .battle-btn:hover {
+            background: linear-gradient(135deg, rgba(44, 62, 80, 0.95) 0%, rgba(52, 73, 94, 0.95) 100%);
+            border-color: rgba(243, 156, 18, 0.8);
+            transform: translateX(3px);
+        }
+        
+        .battle-btn.selected {
+            background: linear-gradient(135deg, rgba(243, 156, 18, 0.9) 0%, rgba(230, 126, 34, 0.9) 100%);
+            border-color: #f39c12;
+            color: #fff;
+            box-shadow: 0 0 10px rgba(243, 156, 18, 0.5);
+        }
+        
+        .battle-btn::before {
+            content: '▸ ';
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        
+        .battle-btn.selected::before {
+            opacity: 1;
+        }
+        
+        #battle-log {
+            background: rgba(0, 0, 0, 0.6);
+            padding: 8px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            min-height: 40px;
+            max-height: 60px;
+            overflow-y: auto;
+            font-size: 10px;
+            border: 1px solid rgba(149, 165, 166, 0.3);
+        }
+        
+        .log-entry {
+            margin: 3px 0;
+            color: #ecf0f1;
+            line-height: 1.3;
+        }
+        
+        .log-entry:last-child {
+            color: #f39c12;
+        }
+        #quote-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 300;
+            padding: 20px;
+        }
+        #quote-box {
+            background: linear-gradient(135deg, #2c3e50 0%, #1a252f 100%);
+            border: 3px solid #f39c12;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            text-align: center;
+        }
+        #quote-continue {
+            background: #f39c12;
+            color: #1a252f;
+            border: none;
+            padding: 12px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            margin-top: 20px;
+        }
+        #loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #f39c12;
+            font-size: 24px;
+            z-index: 250;
+        }
+    </style>
+</head>
+<body>
+    <div id="loading">Loading 3D World...</div>
+    
+    <div id="title-screen">
+        <h1>THE SEVEN HEAVENLY VIRTUES</h1>
+        <h2>Battle Against Sin & Death - 3D Edition</h2>
+        <div id="verse-display">
+            <div id="verse-text"></div>
+            <div id="verse-ref"></div>
+        </div>
+        <button id="start-button">Enter the Dungeon</button>
+    </div>
+
+    <div id="canvas-container"></div>
+    
+    <div id="crosshair"></div>
+    
+    <div id="hud">
+        <div><strong>Level:</strong> <span id="level">1</span></div>
+        <div><strong>Sins Defeated:</strong> <span id="sins">0</span>/7</div>
+        <div><strong>Virtues:</strong> <span id="virtues">0</span>/7</div>
+        <div><strong>Holy Water:</strong> <span id="water">3</span></div>
+        <div><strong>Rosaries:</strong> <span id="rosary">2</span></div>
+        <div><strong>Gold:</strong> <span id="gold">0</span></div>
+    </div>
+
+    <div id="message"></div>
+    
+    <div id="controls">
+        <strong>WASD:</strong> Move | <strong>Click:</strong> Rotate camera | <strong>Walk into enemies to battle</strong>
+    </div>
+
+    <div id="battle-status"></div>
+    <div id="enemy-status"></div>
+    
+    <div id="battle-ui">
+        <div id="battle-log"></div>
+        <div class="battle-actions" id="battle-actions"></div>
+    </div>
+
+    <div id="quote-overlay">
+        <div id="quote-box">
+            <div id="quote-text"></div>
+            <div id="quote-author"></div>
+            <button id="quote-continue">Continue Quest</button>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // Game Constants
+        const MOVE_SPEED = 5;
+        const ROTATION_SPEED = 0.002;
+        const MAP_SIZE = 40;
+        const CELL_SIZE = 4;
+        
+        // Bible verses for title screen
+        const titleScreenVerses = [
+            { text: "Death has been swallowed up in victory. Where, O death, is your victory? Where, O death, is your sting?", reference: "1 Corinthians 15:54-55" },
+            { text: "For the wages of sin is death, but the gift of God is eternal life in Christ Jesus our Lord.", reference: "Romans 6:23" },
+            { text: "He will wipe every tear from their eyes. There will be no more death or mourning or crying or pain.", reference: "Revelation 21:4" },
+            { text: "The last enemy to be destroyed is death. For he has put everything under his feet.", reference: "1 Corinthians 15:26-27" }
+        ];
+
+        // Vice definitions
+        const DEADLY_SINS = ['Pride', 'Greed', 'Lust', 'Envy', 'Gluttony', 'Wrath', 'Sloth'];
+        const VICES = [
+            { 
+                name: "Pride", 
+                minion: "Arrogance", 
+                color: 0x9b59b6, 
+                catechism: "Pride is excessive love of one's own excellence. It is contrary to the virtue of humility and was the sin of Lucifer. The Church teaches that pride is the beginning of all sin.", 
+                verse: "Pride goes before destruction, a haughty spirit before a fall.", 
+                reference: "Proverbs 16:18" 
+            },
+            { 
+                name: "Greed", 
+                minion: "Avarice", 
+                color: 0xf39c12, 
+                catechism: "Greed is the immoderate desire for earthly goods and the power they bring. The Catechism warns against making money an idol and teaches us to trust in God's providence.", 
+                verse: "The love of money is a root of all kinds of evil. Some people, eager for money, have wandered from the faith and pierced themselves with many griefs.", 
+                reference: "1 Timothy 6:10" 
+            },
+            { 
+                name: "Lust", 
+                minion: "Desire", 
+                color: 0xe91e63, 
+                catechism: "Lust is disordered desire for sexual pleasure isolated from its unitive and procreative purposes. The Church calls us to chastity and purity of heart.", 
+                verse: "Flee from sexual immorality. All other sins a person commits are outside the body, but whoever sins sexually, sins against their own body.", 
+                reference: "1 Corinthians 6:18" 
+            },
+            { 
+                name: "Envy", 
+                minion: "Jealousy", 
+                color: 0x27ae60, 
+                catechism: "Envy is sadness at another's good fortune and the immoderate desire to acquire goods for oneself. It is contrary to the tenth commandment and leads to malice.", 
+                verse: "A heart at peace gives life to the body, but envy rots the bones.", 
+                reference: "Proverbs 14:30" 
+            },
+            { 
+                name: "Gluttony", 
+                minion: "Excess", 
+                color: 0xe67e22, 
+                catechism: "Gluttony is the immoderate desire for the pleasure of eating and drinking. The Church teaches moderation and self-control as fruits of the Holy Spirit.", 
+                verse: "Do not join those who drink too much wine or gorge themselves on meat, for drunkards and gluttons become poor, and drowsiness clothes them in rags.", 
+                reference: "Proverbs 23:20-21" 
+            },
+            { 
+                name: "Wrath", 
+                minion: "Rage", 
+                color: 0xc0392b, 
+                catechism: "Anger becomes the sin of wrath when it is disproportionate to the offense and when it seeks revenge rather than justice. We are called to forgive as Christ forgave us.", 
+                verse: "Get rid of all bitterness, rage and anger, brawling and slander, along with every form of malice.", 
+                reference: "Ephesians 4:31" 
+            },
+            { 
+                name: "Sloth", 
+                minion: "Apathy", 
+                color: 0x95a5a6, 
+                catechism: "Sloth is spiritual laziness and neglect of divine grace. It shows itself in reluctance toward prayer, the sacraments, and works of charity.", 
+                verse: "The sluggard's craving will be the death of him, because his hands refuse to work.", 
+                reference: "Proverbs 21:25" 
+            }
+        ];
+
+        const DEVIL_BOSS = {
+            name: "The Devil",
+            minion: "Demon",
+            color: 0x8B0000,
+            catechism: "The Devil and demons are fallen angels who rejected God. Through Christ's victory on the cross, Satan's power is broken. We must resist the devil through prayer, the sacraments, and faithful obedience to God.",
+            verse: "The God of peace will soon crush Satan under your feet. The grace of our Lord Jesus be with you.",
+            reference: "Romans 16:20"
+        };
+
+        const VIRTUE_ITEMS = {
+            "Pride": { name: "Cloak of Humility", effect: "DEF +5", defBoost: 5 },
+            "Lust": { name: "Chastity Belt Armor", effect: "HP +50", hpBoost: 50 },
+            "Wrath": { name: "Shield of Patience", effect: "DEF +10", defBoost: 10 },
+            "Greed": { name: "Sword of Charity", effect: "ATK +8", atkBoost: 8 },
+            "Envy": { name: "Boots of Kindness", effect: "SPD +2", spdBoost: 2 },
+            "Gluttony": { name: "Ring of Temperance", effect: "HP +30", hpBoost: 30 },
+            "Sloth": { name: "Gauntlets of Diligence", effect: "ATK +5", atkBoost: 5 }
+        };
+
+        // Game state
+        let scene, camera, renderer, raycaster, mouse;
+        let dungeon = [];
+        let enemies = [];
+        let pickups = [];
+        let gameState = 'title';
+        let dungeonLevel = 1;
+        let defeatedSins = new Set();
+        
+        const inventory = {
+            holyWater: 3,
+            rosaries: 2,
+            gold: 0,
+            atkBoost: 0,
+            defBoost: 0,
+            hpBoost: 0,
+            virtueItems: []
+        };
+
+        const heroes = [
+            { 
+                name: "St. Vincent", 
+                hp: 100, 
+                maxHp: 100, 
+                mp: 30, 
+                maxMp: 30, 
+                atk: 15, 
+                def: 8,
+                specialAttack: "Rosary Throw",
+                specialCost: 15,
+                specialDamage: 40
+            },
+            { 
+                name: "St. Michael", 
+                hp: 120, 
+                maxHp: 120, 
+                mp: 25, 
+                maxMp: 25, 
+                atk: 18, 
+                def: 6,
+                specialAttack: "Heavenly Host",
+                specialCost: 20,
+                specialDamage: 50
+            },
+            { 
+                name: "St. Joan", 
+                hp: 110, 
+                maxHp: 110, 
+                mp: 35, 
+                maxMp: 35, 
+                atk: 14, 
+                def: 10,
+                specialAttack: "Divine Charge",
+                specialCost: 15,
+                specialDamage: 45
+            }
+        ];
+
+        let battle = {
+            active: false,
+            enemies: [],
+            currentHeroIndex: 0,
+            targetIndex: 0,
+            log: [],
+            phase: 'menu'
+        };
+
+        // Controls
+        const keys = {};
+        let mouseX = 0, mouseY = 0;
+        let isPointerLocked = false;
+        let targetRotationY = 0; // Target camera rotation for click-to-move
+
+        // Three.js setup
+        function init3D() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x87CEEB); // Bright sky blue
+            scene.fog = new THREE.Fog(0x87CEEB, 30, 80);
+
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 2, 0);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+            // Lighting - bright and well-lit
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+            scene.add(ambientLight);
+
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.6);
+            directionalLight.position.set(10, 20, 10);
+            directionalLight.castShadow = true;
+            directionalLight.shadow.camera.left = -50;
+            directionalLight.shadow.camera.right = 50;
+            directionalLight.shadow.camera.top = 50;
+            directionalLight.shadow.camera.bottom = -50;
+            scene.add(directionalLight);
+
+            const pointLight = new THREE.PointLight(0xffffff, 0.5, 30);
+            pointLight.position.copy(camera.position);
+            pointLight.castShadow = true;
+            scene.add(pointLight);
+            camera.userData.light = pointLight;
+
+            raycaster = new THREE.Raycaster();
+            mouse = new THREE.Vector2();
+
+            // Event listeners
+            window.addEventListener('resize', onWindowResize);
+            document.addEventListener('keydown', onKeyDown);
+            document.addEventListener('keyup', onKeyUp);
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('click', onClick);
+            
+            // No pointer lock for click-to-move camera
+
+            // Title screen
+            displayVerse(0);
+            document.getElementById('start-button').addEventListener('click', startGame);
+            document.getElementById('loading').style.display = 'none';
+        }
+        
+        function setupTouchControls() {
+            const joystickBase = document.getElementById('joystick-base');
+            const joystickStick = document.getElementById('joystick-stick');
+            const lookBase = document.getElementById('look-base');
+            const lookStick = document.getElementById('look-stick');
+            
+            // Movement joystick
+            joystickBase.addEventListener('touchstart', (e) => {
+                if (gameState !== 'explore') return;
+                e.preventDefault();
+                joystickActive = true;
+                const touch = e.touches[0];
+                const rect = joystickBase.getBoundingClientRect();
+                joystickStartX = rect.left + rect.width / 2;
+                joystickStartY = rect.top + rect.height / 2;
+            });
+            
+            joystickBase.addEventListener('touchmove', (e) => {
+                if (!joystickActive) return;
+                e.preventDefault();
+                const touch = e.touches[0];
+                const deltaX = touch.clientX - joystickStartX;
+                const deltaY = touch.clientY - joystickStartY;
+                const distance = Math.min(35, Math.sqrt(deltaX * deltaX + deltaY * deltaY));
+                const angle = Math.atan2(deltaY, deltaX);
+                
+                joystickCurrentX = distance * Math.cos(angle) / 35;
+                joystickCurrentY = distance * Math.sin(angle) / 35;
+                
+                joystickStick.style.transform = `translate(calc(-50% + ${distance * Math.cos(angle)}px), calc(-50% + ${distance * Math.sin(angle)}px))`;
+            });
+            
+            joystickBase.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                joystickActive = false;
+                joystickCurrentX = 0;
+                joystickCurrentY = 0;
+                joystickStick.style.transform = 'translate(-50%, -50%)';
+            });
+            
+            // Camera D-pad (discrete up/down/left/right for camera)
+            lookBase.addEventListener('touchstart', (e) => {
+                if (gameState !== 'explore') return;
+                e.preventDefault();
+                lookActive = true;
+                updateLookDirection(e.touches[0]);
+            });
+            
+            lookBase.addEventListener('touchmove', (e) => {
+                if (!lookActive) return;
+                e.preventDefault();
+                updateLookDirection(e.touches[0]);
+            });
+            
+            lookBase.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                lookActive = false;
+                lookDeltaX = 0;
+                lookDeltaY = 0;
+                lookStick.style.transform = 'translate(-50%, -50%)';
+            });
+            
+            function updateLookDirection(touch) {
+                const rect = lookBase.getBoundingClientRect();
+                const centerX = rect.left + rect.width / 2;
+                const centerY = rect.top + rect.height / 2;
+                const deltaX = touch.clientX - centerX;
+                const deltaY = touch.clientY - centerY;
+                const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+                
+                if (distance > 15) { // Dead zone
+                    // Snap to 4 directions (D-pad style)
+                    let snapX = 0, snapY = 0;
+                    if (Math.abs(deltaX) > Math.abs(deltaY)) {
+                        // Left or Right
+                        if (deltaX > 0) {
+                            snapX = 35; // Right
+                            lookDeltaX = 1;
+                            lookDeltaY = 0;
+                        } else {
+                            snapX = -35; // Left
+                            lookDeltaX = -1;
+                            lookDeltaY = 0;
+                        }
+                    } else {
+                        // Up or Down
+                        if (deltaY > 0) {
+                            snapY = 35; // Down
+                            lookDeltaX = 0;
+                            lookDeltaY = 1;
+                        } else {
+                            snapY = -35; // Up
+                            lookDeltaX = 0;
+                            lookDeltaY = -1;
+                        }
+                    }
+                    
+                    lookStick.style.transform = `translate(calc(-50% + ${snapX}px), calc(-50% + ${snapY}px))`;
+                } else {
+                    lookDeltaX = 0;
+                    lookDeltaY = 0;
+                    lookStick.style.transform = 'translate(-50%, -50%)';
+                }
+            }
+        }
+
+        function displayVerse(index) {
+            const verse = titleScreenVerses[index % titleScreenVerses.length];
+            document.getElementById('verse-text').textContent = verse.text;
+            document.getElementById('verse-ref').textContent = `— ${verse.reference}`;
+        }
+
+        function startGame() {
+            document.getElementById('title-screen').style.display = 'none';
+            gameState = 'explore';
+            generateDungeon();
+            targetRotationY = camera.rotation.y;
+        }
+
+        function createPlayerModel() {
+            const group = new THREE.Group();
+            
+            // Body (dark blue tunic)
+            const bodyGeometry = new THREE.BoxGeometry(0.6, 0.7, 0.4);
+            const bodyMaterial = new THREE.MeshStandardMaterial({ color: 0x2c3e50 });
+            const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+            body.position.y = 0.5;
+            group.add(body);
+            
+            // Head (skin tone)
+            const headGeometry = new THREE.BoxGeometry(0.4, 0.4, 0.4);
+            const headMaterial = new THREE.MeshStandardMaterial({ color: 0xf0c291 });
+            const head = new THREE.Mesh(headGeometry, headMaterial);
+            head.position.y = 1.0;
+            group.add(head);
+            
+            // Hair (brown)
+            const hairGeometry = new THREE.BoxGeometry(0.4, 0.1, 0.4);
+            const hairMaterial = new THREE.MeshStandardMaterial({ color: 0x3e2723 });
+            const hair = new THREE.Mesh(hairGeometry, hairMaterial);
+            hair.position.y = 1.25;
+            group.add(hair);
+            
+            // Eyes
+            const eyeGeometry = new THREE.BoxGeometry(0.08, 0.08, 0.05);
+            const eyeMaterial = new THREE.MeshStandardMaterial({ color: 0x5d4037 });
+            const leftEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+            leftEye.position.set(-0.1, 1.0, 0.2);
+            const rightEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+            rightEye.position.set(0.1, 1.0, 0.2);
+            group.add(leftEye);
+            group.add(rightEye);
+            
+            // Legs (brown)
+            const legGeometry = new THREE.BoxGeometry(0.2, 0.4, 0.2);
+            const legMaterial = new THREE.MeshStandardMaterial({ color: 0x8d6e63 });
+            const leftLeg = new THREE.Mesh(legGeometry, legMaterial);
+            leftLeg.position.set(-0.15, 0.1, 0);
+            const rightLeg = new THREE.Mesh(legGeometry, legMaterial);
+            rightLeg.position.set(0.15, 0.1, 0);
+            group.add(leftLeg);
+            group.add(rightLeg);
+            
+            return group;
+        }
+
+        function createStMichaelModel() {
+            const group = new THREE.Group();
+            
+            // Wings (white)
+            const wingGeometry = new THREE.BoxGeometry(0.15, 0.4, 0.1);
+            const wingMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff });
+            const leftWing = new THREE.Mesh(wingGeometry, wingMaterial);
+            leftWing.position.set(-0.4, 0.6, 0);
+            const rightWing = new THREE.Mesh(wingGeometry, wingMaterial);
+            rightWing.position.set(0.4, 0.6, 0);
+            group.add(leftWing);
+            group.add(rightWing);
+            
+            // Body (blue robe)
+            const bodyGeometry = new THREE.BoxGeometry(0.6, 0.7, 0.4);
+            const bodyMaterial = new THREE.MeshStandardMaterial({ color: 0x3498db });
+            const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+            body.position.y = 0.5;
+            group.add(body);
+            
+            // Head
+            const headGeometry = new THREE.BoxGeometry(0.4, 0.4, 0.4);
+            const headMaterial = new THREE.MeshStandardMaterial({ color: 0xf0c291 });
+            const head = new THREE.Mesh(headGeometry, headMaterial);
+            head.position.y = 1.0;
+            group.add(head);
+            
+            // Hair (brown)
+            const hairGeometry = new THREE.BoxGeometry(0.4, 0.1, 0.4);
+            const hairMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
+            const hair = new THREE.Mesh(hairGeometry, hairMaterial);
+            hair.position.y = 1.25;
+            group.add(hair);
+            
+            // Eyes
+            const eyeGeometry = new THREE.BoxGeometry(0.08, 0.08, 0.05);
+            const eyeMaterial = new THREE.MeshStandardMaterial({ color: 0x000000 });
+            const leftEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+            leftEye.position.set(-0.1, 1.0, 0.2);
+            const rightEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+            rightEye.position.set(0.1, 1.0, 0.2);
+            group.add(leftEye);
+            group.add(rightEye);
+            
+            // Halo (gold ring)
+            const haloGeometry = new THREE.TorusGeometry(0.3, 0.03, 8, 16);
+            const haloMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0xf39c12,
+                emissive: 0xf39c12,
+                emissiveIntensity: 0.5
+            });
+            const halo = new THREE.Mesh(haloGeometry, haloMaterial);
+            halo.position.y = 1.4;
+            halo.rotation.x = Math.PI / 2;
+            group.add(halo);
+            
+            // Sword (silver)
+            const swordGeometry = new THREE.BoxGeometry(0.1, 0.6, 0.1);
+            const swordMaterial = new THREE.MeshStandardMaterial({ color: 0x95a5a6 });
+            const sword = new THREE.Mesh(swordGeometry, swordMaterial);
+            sword.position.set(0.4, 0.5, 0);
+            group.add(sword);
+            
+            // Shield (red)
+            const shieldGeometry = new THREE.BoxGeometry(0.3, 0.4, 0.1);
+            const shieldMaterial = new THREE.MeshStandardMaterial({ color: 0xe74c3c });
+            const shield = new THREE.Mesh(shieldGeometry, shieldMaterial);
+            shield.position.set(-0.5, 0.5, 0);
+            group.add(shield);
+            
+            // Shield cross (gold)
+            const crossGeometry = new THREE.BoxGeometry(0.15, 0.05, 0.05);
+            const crossMaterial = new THREE.MeshStandardMaterial({ color: 0xf39c12 });
+            const crossH = new THREE.Mesh(crossGeometry, crossMaterial);
+            crossH.position.set(-0.5, 0.5, 0.1);
+            const crossV = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.15, 0.05), crossMaterial);
+            crossV.position.set(-0.5, 0.5, 0.1);
+            group.add(crossH);
+            group.add(crossV);
+            
+            // Legs (dark blue)
+            const legGeometry = new THREE.BoxGeometry(0.2, 0.4, 0.2);
+            const legMaterial = new THREE.MeshStandardMaterial({ color: 0x2c3e50 });
+            const leftLeg = new THREE.Mesh(legGeometry, legMaterial);
+            leftLeg.position.set(-0.15, 0.1, 0);
+            const rightLeg = new THREE.Mesh(legGeometry, legMaterial);
+            rightLeg.position.set(0.15, 0.1, 0);
+            group.add(leftLeg);
+            group.add(rightLeg);
+            
+            return group;
+        }
+
+        function createStJoanModel() {
+            const group = new THREE.Group();
+            
+            // Body (silver armor)
+            const bodyGeometry = new THREE.BoxGeometry(0.6, 0.7, 0.4);
+            const bodyMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0x95a5a6,
+                metalness: 0.6,
+                roughness: 0.3
+            });
+            const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+            body.position.y = 0.5;
+            group.add(body);
+            
+            // Armor detail (lighter silver)
+            const armorDetailGeometry = new THREE.BoxGeometry(0.15, 0.3, 0.41);
+            const armorDetailMaterial = new THREE.MeshStandardMaterial({ color: 0xbdc3c7 });
+            const armorDetail = new THREE.Mesh(armorDetailGeometry, armorDetailMaterial);
+            armorDetail.position.set(-0.2, 0.55, 0);
+            group.add(armorDetail);
+            
+            // Head
+            const headGeometry = new THREE.BoxGeometry(0.4, 0.4, 0.4);
+            const headMaterial = new THREE.MeshStandardMaterial({ color: 0xf0c291 });
+            const head = new THREE.Mesh(headGeometry, headMaterial);
+            head.position.y = 1.0;
+            group.add(head);
+            
+            // Hair (brown)
+            const hairGeometry = new THREE.BoxGeometry(0.4, 0.2, 0.4);
+            const hairMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
+            const hair = new THREE.Mesh(hairGeometry, hairMaterial);
+            hair.position.y = 1.2;
+            group.add(hair);
+            
+            // Eyes
+            const eyeGeometry = new THREE.BoxGeometry(0.08, 0.08, 0.05);
+            const eyeMaterial = new THREE.MeshStandardMaterial({ color: 0x000000 });
+            const leftEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+            leftEye.position.set(-0.1, 1.0, 0.2);
+            const rightEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+            rightEye.position.set(0.1, 1.0, 0.2);
+            group.add(leftEye);
+            group.add(rightEye);
+            
+            // Banner/Flag pole (brown)
+            const poleGeometry = new THREE.CylinderGeometry(0.05, 0.05, 1.0, 8);
+            const poleMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
+            const pole = new THREE.Mesh(poleGeometry, poleMaterial);
+            pole.position.set(0.4, 0.7, 0);
+            group.add(pole);
+            
+            // Banner flag (red)
+            const flagGeometry = new THREE.BoxGeometry(0.2, 0.2, 0.05);
+            const flagMaterial = new THREE.MeshStandardMaterial({ color: 0xe74c3c });
+            const flag = new THREE.Mesh(flagGeometry, flagMaterial);
+            flag.position.set(0.5, 1.1, 0);
+            group.add(flag);
+            
+            // Legs (gray armor)
+            const legGeometry = new THREE.BoxGeometry(0.2, 0.4, 0.2);
+            const legMaterial = new THREE.MeshStandardMaterial({ color: 0x7f8c8d });
+            const leftLeg = new THREE.Mesh(legGeometry, legMaterial);
+            leftLeg.position.set(-0.15, 0.1, 0);
+            const rightLeg = new THREE.Mesh(legGeometry, legMaterial);
+            rightLeg.position.set(0.15, 0.1, 0);
+            group.add(leftLeg);
+            group.add(rightLeg);
+            
+            return group;
+        }
+
+        function createStVincentModel() {
+            const group = new THREE.Group();
+            
+            // Body (black robe)
+            const bodyGeometry = new THREE.BoxGeometry(0.7, 0.7, 0.4);
+            const bodyMaterial = new THREE.MeshStandardMaterial({ color: 0x000000 });
+            const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+            body.position.y = 0.5;
+            group.add(body);
+            
+            // White inner robe
+            const innerRobeGeometry = new THREE.BoxGeometry(0.6, 0.6, 0.41);
+            const innerRobeMaterial = new THREE.MeshStandardMaterial({ color: 0xf5f5f5 });
+            const innerRobe = new THREE.Mesh(innerRobeGeometry, innerRobeMaterial);
+            innerRobe.position.y = 0.55;
+            group.add(innerRobe);
+            
+            // Head
+            const headGeometry = new THREE.BoxGeometry(0.4, 0.4, 0.4);
+            const headMaterial = new THREE.MeshStandardMaterial({ color: 0xf0c291 });
+            const head = new THREE.Mesh(headGeometry, headMaterial);
+            head.position.y = 1.0;
+            group.add(head);
+            
+            // Hair (dark brown)
+            const hairGeometry = new THREE.BoxGeometry(0.4, 0.1, 0.4);
+            const hairMaterial = new THREE.MeshStandardMaterial({ color: 0x5D4037 });
+            const hair = new THREE.Mesh(hairGeometry, hairMaterial);
+            hair.position.y = 1.25;
+            group.add(hair);
+            
+            // Side hair pieces
+            const sideHairGeometry = new THREE.BoxGeometry(0.1, 0.2, 0.4);
+            const leftHair = new THREE.Mesh(sideHairGeometry, hairMaterial);
+            leftHair.position.set(-0.2, 1.1, 0);
+            const rightHair = new THREE.Mesh(sideHairGeometry, hairMaterial);
+            rightHair.position.set(0.2, 1.1, 0);
+            group.add(leftHair);
+            group.add(rightHair);
+            
+            // Eyes
+            const eyeGeometry = new THREE.BoxGeometry(0.08, 0.08, 0.05);
+            const eyeMaterial = new THREE.MeshStandardMaterial({ color: 0x000000 });
+            const leftEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+            leftEye.position.set(-0.1, 1.0, 0.2);
+            const rightEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+            rightEye.position.set(0.1, 1.0, 0.2);
+            group.add(leftEye);
+            group.add(rightEye);
+            
+            // Staff (brown wooden staff)
+            const staffGeometry = new THREE.CylinderGeometry(0.05, 0.05, 1.2, 8);
+            const staffMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
+            const staff = new THREE.Mesh(staffGeometry, staffMaterial);
+            staff.position.set(-0.5, 0.7, 0);
+            group.add(staff);
+            
+            // Staff top (wider)
+            const staffTopGeometry = new THREE.BoxGeometry(0.2, 0.1, 0.05);
+            const staffTop = new THREE.Mesh(staffTopGeometry, staffMaterial);
+            staffTop.position.set(-0.5, 1.3, 0);
+            group.add(staffTop);
+            
+            // Legs (brown)
+            const legGeometry = new THREE.BoxGeometry(0.2, 0.4, 0.2);
+            const legMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
+            const leftLeg = new THREE.Mesh(legGeometry, legMaterial);
+            leftLeg.position.set(-0.15, 0.1, 0);
+            const rightLeg = new THREE.Mesh(legGeometry, legMaterial);
+            rightLeg.position.set(0.15, 0.1, 0);
+            group.add(leftLeg);
+            group.add(rightLeg);
+            
+            return group;
+        }
+
+        function createViceModel(vice) {
+            const group = new THREE.Group();
+            const color = vice.color;
+            
+            // Body
+            const bodyGeometry = new THREE.BoxGeometry(0.8, 1.2, 0.6);
+            const bodyMaterial = new THREE.MeshStandardMaterial({ 
+                color: color,
+                emissive: color,
+                emissiveIntensity: 0.3
+            });
+            const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+            body.position.y = 0.8;
+            group.add(body);
+            
+            // Head
+            const headGeometry = new THREE.BoxGeometry(0.6, 0.6, 0.6);
+            const headMaterial = new THREE.MeshStandardMaterial({ 
+                color: vice.name === "The Devil" ? 0xCD0000 : 0x8b6f47
+            });
+            const head = new THREE.Mesh(headGeometry, headMaterial);
+            head.position.y = 1.6;
+            group.add(head);
+            
+            // Eyes (glowing)
+            const eyeGeometry = new THREE.BoxGeometry(0.1, 0.1, 0.05);
+            const eyeMaterial = new THREE.MeshStandardMaterial({ 
+                color: vice.name === "The Devil" ? 0xffff00 : 0xf39c12,
+                emissive: 0xffff00,
+                emissiveIntensity: 0.8
+            });
+            const leftEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+            leftEye.position.set(-0.15, 1.6, 0.3);
+            const rightEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+            rightEye.position.set(0.15, 1.6, 0.3);
+            group.add(leftEye);
+            group.add(rightEye);
+            
+            // Special features for specific sins
+            if (vice.name === "Pride") {
+                // Crown (gold)
+                const crownGeometry = new THREE.BoxGeometry(0.7, 0.2, 0.6);
+                const crownMaterial = new THREE.MeshStandardMaterial({ 
+                    color: 0xf39c12,
+                    emissive: 0xf39c12,
+                    emissiveIntensity: 0.3
+                });
+                const crown = new THREE.Mesh(crownGeometry, crownMaterial);
+                crown.position.y = 2.0;
+                group.add(crown);
+                
+                // Crown spikes
+                for (let i = -1; i <= 1; i++) {
+                    const spikeGeometry = new THREE.BoxGeometry(0.1, 0.2, 0.1);
+                    const spike = new THREE.Mesh(spikeGeometry, crownMaterial);
+                    spike.position.set(i * 0.25, 2.2, 0);
+                    group.add(spike);
+                }
+            } else if (vice.name === "Greed") {
+                // Money bag
+                const bagGeometry = new THREE.BoxGeometry(0.3, 0.4, 0.3);
+                const bagMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
+                const bag = new THREE.Mesh(bagGeometry, bagMaterial);
+                bag.position.set(-0.6, 0.8, 0);
+                group.add(bag);
+                
+                // Gold coins
+                const coinGeometry = new THREE.CylinderGeometry(0.08, 0.08, 0.05, 16);
+                const coinMaterial = new THREE.MeshStandardMaterial({ color: 0xf39c12 });
+                const coin1 = new THREE.Mesh(coinGeometry, coinMaterial);
+                coin1.position.set(-0.6, 1.0, 0.1);
+                const coin2 = new THREE.Mesh(coinGeometry, coinMaterial);
+                coin2.position.set(-0.5, 1.1, 0.15);
+                group.add(coin1);
+                group.add(coin2);
+            } else if (vice.name === "Lust") {
+                // Heart shape
+                const heartGeometry = new THREE.BoxGeometry(0.3, 0.15, 0.1);
+                const heartMaterial = new THREE.MeshStandardMaterial({ color: 0xff1744 });
+                const heart1 = new THREE.Mesh(heartGeometry, heartMaterial);
+                heart1.position.set(-0.55, 0.9, 0.15);
+                const heart2 = new THREE.Mesh(heartGeometry, heartMaterial);
+                heart2.position.set(-0.45, 0.9, 0.15);
+                const heartBottom = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.15, 0.1), heartMaterial);
+                heartBottom.position.set(-0.5, 0.8, 0.15);
+                group.add(heart1);
+                group.add(heart2);
+                group.add(heartBottom);
+            } else if (vice.name === "The Devil") {
+                // Horns
+                const hornGeometry = new THREE.BoxGeometry(0.15, 0.3, 0.15);
+                const hornMaterial = new THREE.MeshStandardMaterial({ color: 0x4a0000 });
+                const leftHorn = new THREE.Mesh(hornGeometry, hornMaterial);
+                leftHorn.position.set(-0.25, 2.0, 0);
+                const rightHorn = new THREE.Mesh(hornGeometry, hornMaterial);
+                rightHorn.position.set(0.25, 2.0, 0);
+                group.add(leftHorn);
+                group.add(rightHorn);
+                
+                // Tail
+                const tailGeometry = new THREE.CylinderGeometry(0.08, 0.05, 0.8, 8);
+                const tail = new THREE.Mesh(tailGeometry, new THREE.MeshStandardMaterial({ color: 0x8B0000 }));
+                tail.position.set(0.4, 0.6, -0.3);
+                tail.rotation.x = Math.PI / 3;
+                group.add(tail);
+            }
+            
+            // Legs
+            const legGeometry = new THREE.BoxGeometry(0.25, 0.5, 0.25);
+            const legMaterial = new THREE.MeshStandardMaterial({ color: 0x000000 });
+            const leftLeg = new THREE.Mesh(legGeometry, legMaterial);
+            leftLeg.position.set(-0.2, 0.15, 0);
+            const rightLeg = new THREE.Mesh(legGeometry, legMaterial);
+            rightLeg.position.set(0.2, 0.15, 0);
+            group.add(leftLeg);
+            group.add(rightLeg);
+            
+            return group;
+        }
+
+        function generateDungeon(spawnDevilBoss = false) {
+            // Clear existing dungeon
+            while(scene.children.length > 0) { 
+                const obj = scene.children[0];
+                if (obj.geometry) obj.geometry.dispose();
+                if (obj.material) obj.material.dispose();
+                scene.remove(obj);
+            }
+
+            // Re-add bright lights
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+            scene.add(ambientLight);
+            
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.6);
+            directionalLight.position.set(10, 20, 10);
+            directionalLight.castShadow = true;
+            directionalLight.shadow.camera.left = -50;
+            directionalLight.shadow.camera.right = 50;
+            directionalLight.shadow.camera.top = 50;
+            directionalLight.shadow.camera.bottom = -50;
+            scene.add(directionalLight);
+            
+            const pointLight = new THREE.PointLight(0xffffff, 0.5, 30);
+            pointLight.position.copy(camera.position);
+            pointLight.castShadow = true;
+            scene.add(pointLight);
+            camera.userData.light = pointLight;
+
+            // Initialize dungeon grid
+            dungeon = Array(MAP_SIZE).fill().map(() => Array(MAP_SIZE).fill(1));
+            
+            // Generate rooms
+            const rooms = [];
+            const numRooms = 8 + Math.floor(Math.random() * 4);
+            
+            for (let i = 0; i < numRooms; i++) {
+                const w = 4 + Math.floor(Math.random() * 4);
+                const h = 4 + Math.floor(Math.random() * 4);
+                const x = 2 + Math.floor(Math.random() * (MAP_SIZE - w - 4));
+                const y = 2 + Math.floor(Math.random() * (MAP_SIZE - h - 4));
+                
+                let valid = true;
+                for (let r of rooms) {
+                    if (x < r.x + r.w + 2 && x + w + 2 > r.x && 
+                        y < r.y + r.h + 2 && y + h + 2 > r.y) {
+                        valid = false;
+                        break;
+                    }
+                }
+                
+                if (valid) {
+                    rooms.push({ x, y, w, h });
+                    for (let ry = y; ry < y + h; ry++) {
+                        for (let rx = x; rx < x + w; rx++) {
+                            dungeon[ry][rx] = 0;
+                        }
+                    }
+                }
+            }
+
+            // Connect rooms with corridors
+            for (let i = 0; i < rooms.length - 1; i++) {
+                const r1 = rooms[i];
+                const r2 = rooms[i + 1];
+                const cx1 = Math.floor(r1.x + r1.w / 2);
+                const cy1 = Math.floor(r1.y + r1.h / 2);
+                const cx2 = Math.floor(r2.x + r2.w / 2);
+                const cy2 = Math.floor(r2.y + r2.h / 2);
+
+                for (let x = Math.min(cx1, cx2); x <= Math.max(cx1, cx2); x++) {
+                    dungeon[cy1][x] = 0;
+                }
+                for (let y = Math.min(cy1, cy2); y <= Math.max(cy1, cy2); y++) {
+                    dungeon[y][cx2] = 0;
+                }
+            }
+
+            // Build 3D dungeon with bright colors
+            const wallGeometry = new THREE.BoxGeometry(CELL_SIZE, 4, CELL_SIZE);
+            const floorGeometry = new THREE.BoxGeometry(CELL_SIZE, 0.2, CELL_SIZE);
+            const ceilingGeometry = new THREE.BoxGeometry(CELL_SIZE, 0.2, CELL_SIZE);
+            
+            const wallMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0x8B7355, // Sandy brown
+                roughness: 0.7,
+                metalness: 0.1
+            });
+            const floorMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0xD2B48C, // Tan
+                roughness: 0.8
+            });
+            const ceilingMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0xF5DEB3, // Wheat
+                roughness: 0.7
+            });
+
+            for (let y = 0; y < MAP_SIZE; y++) {
+                for (let x = 0; x < MAP_SIZE; x++) {
+                    const posX = (x - MAP_SIZE / 2) * CELL_SIZE;
+                    const posZ = (y - MAP_SIZE / 2) * CELL_SIZE;
+
+                    if (dungeon[y][x] === 1) {
+                        // Wall
+                        const wall = new THREE.Mesh(wallGeometry, wallMaterial);
+                        wall.position.set(posX, 2, posZ);
+                        wall.castShadow = true;
+                        wall.receiveShadow = true;
+                        scene.add(wall);
+                    } else {
+                        // Floor
+                        const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+                        floor.position.set(posX, 0, posZ);
+                        floor.receiveShadow = true;
+                        scene.add(floor);
+                        
+                        // Ceiling
+                        const ceiling = new THREE.Mesh(ceilingGeometry, ceilingMaterial);
+                        ceiling.position.set(posX, 4, posZ);
+                        ceiling.receiveShadow = true;
+                        scene.add(ceiling);
+                    }
+                }
+            }
+
+            // Position player in first room
+            const startRoom = rooms[0];
+            camera.position.set(
+                (startRoom.x + startRoom.w / 2 - MAP_SIZE / 2) * CELL_SIZE,
+                2,
+                (startRoom.y + startRoom.h / 2 - MAP_SIZE / 2) * CELL_SIZE
+            );
+
+            // Spawn enemies and pickups
+            enemies = [];
+            pickups = [];
+
+            let enemyCount = 0;
+            const minEnemies = spawnDevilBoss ? 1 : 2;
+
+            for (let i = 1; i < rooms.length; i++) {
+                const room = rooms[i];
+                
+                // Spawn enemy
+                if (Math.random() < 0.6 || enemyCount < minEnemies) {
+                    let vice;
+                    
+                    if (spawnDevilBoss && enemyCount === 0) {
+                        vice = DEVIL_BOSS;
+                    } else {
+                        const availableVices = VICES.filter(v => 
+                            !DEADLY_SINS.includes(v.name) || !defeatedSins.has(v.name)
+                        );
+                        if (availableVices.length > 0) {
+                            vice = availableVices[Math.floor(Math.random() * availableVices.length)];
+                        }
+                    }
+                    
+                    if (vice) {
+                        const ex = (room.x + 1 + Math.random() * (room.w - 2) - MAP_SIZE / 2) * CELL_SIZE;
+                        const ez = (room.y + 1 + Math.random() * (room.h - 2) - MAP_SIZE / 2) * CELL_SIZE;
+                        
+                        // Create 3D character model
+                        const enemyMesh = createViceModel(vice);
+                        enemyMesh.position.set(ex, 0, ez);
+                        enemyMesh.castShadow = true;
+                        scene.add(enemyMesh);
+                        
+                        // Add name label above enemy
+                        const canvas = document.createElement('canvas');
+                        const context = canvas.getContext('2d');
+                        canvas.width = 256;
+                        canvas.height = 64;
+                        context.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                        context.fillRect(0, 0, 256, 64);
+                        context.font = 'bold 32px Arial';
+                        context.fillStyle = '#e74c3c';
+                        context.textAlign = 'center';
+                        context.fillText(vice.name.toUpperCase(), 128, 42);
+                        
+                        const texture = new THREE.CanvasTexture(canvas);
+                        const spriteMaterial = new THREE.SpriteMaterial({ map: texture });
+                        const sprite = new THREE.Sprite(spriteMaterial);
+                        sprite.position.set(0, 2.5, 0);
+                        sprite.scale.set(2, 0.5, 1);
+                        enemyMesh.add(sprite);
+                        
+                        enemies.push({ 
+                            mesh: enemyMesh, 
+                            vice: vice,
+                            position: { x: ex, z: ez }
+                        });
+                        enemyCount++;
+                    }
+                }
+                
+                // Spawn pickups
+                const numPickups = 1 + Math.floor(Math.random() * 3);
+                for (let j = 0; j < numPickups; j++) {
+                    if (Math.random() < 0.7) {
+                        const px = (room.x + 1 + Math.random() * (room.w - 2) - MAP_SIZE / 2) * CELL_SIZE;
+                        const pz = (room.y + 1 + Math.random() * (room.h - 2) - MAP_SIZE / 2) * CELL_SIZE;
+                        
+                        const typeRand = Math.random();
+                        let type, pickupMesh;
+                        if (typeRand < 0.4) {
+                            type = 'holyWater';
+                            // Holy water bottle
+                            const bottleGeometry = new THREE.CylinderGeometry(0.15, 0.2, 0.4, 8);
+                            const bottleMaterial = new THREE.MeshStandardMaterial({ 
+                                color: 0x3498db,
+                                transparent: true,
+                                opacity: 0.7,
+                                emissive: 0x3498db,
+                                emissiveIntensity: 0.3
+                            });
+                            pickupMesh = new THREE.Mesh(bottleGeometry, bottleMaterial);
+                        } else if (typeRand < 0.7) {
+                            type = 'rosary';
+                            // 3D Rosary beads
+                            const rosaryGroup = new THREE.Group();
+                            
+                            // Create circular chain of beads
+                            const numBeads = 12;
+                            const radius = 0.25;
+                            const beadGeometry = new THREE.SphereGeometry(0.04, 8, 8);
+                            const beadMaterial = new THREE.MeshStandardMaterial({ 
+                                color: 0x8b4513,
+                                metalness: 0.3,
+                                roughness: 0.6
+                            });
+                            
+                            for (let i = 0; i < numBeads; i++) {
+                                const angle = (i / numBeads) * Math.PI * 2;
+                                const bead = new THREE.Mesh(beadGeometry, beadMaterial);
+                                bead.position.x = Math.cos(angle) * radius;
+                                bead.position.z = Math.sin(angle) * radius;
+                                rosaryGroup.add(bead);
+                            }
+                            
+                            // Cross at bottom
+                            const crossVertical = new THREE.Mesh(
+                                new THREE.BoxGeometry(0.03, 0.3, 0.03),
+                                new THREE.MeshStandardMaterial({ color: 0x8b4513 })
+                            );
+                            crossVertical.position.y = -0.4;
+                            rosaryGroup.add(crossVertical);
+                            
+                            const crossHorizontal = new THREE.Mesh(
+                                new THREE.BoxGeometry(0.15, 0.03, 0.03),
+                                new THREE.MeshStandardMaterial({ color: 0x8b4513 })
+                            );
+                            crossHorizontal.position.y = -0.3;
+                            rosaryGroup.add(crossHorizontal);
+                            
+                            // Center bead (larger)
+                            const centerBead = new THREE.Mesh(
+                                new THREE.SphereGeometry(0.06, 8, 8),
+                                new THREE.MeshStandardMaterial({ 
+                                    color: 0xf39c12,
+                                    metalness: 0.5,
+                                    roughness: 0.4
+                                })
+                            );
+                            rosaryGroup.add(centerBead);
+                            
+                            pickupMesh = rosaryGroup;
+                        } else {
+                            type = 'gold';
+                            // Gold coin stack
+                            const coinGroup = new THREE.Group();
+                            for (let i = 0; i < 3; i++) {
+                                const coinGeometry = new THREE.CylinderGeometry(0.15, 0.15, 0.05, 16);
+                                const coinMaterial = new THREE.MeshStandardMaterial({ 
+                                    color: 0xf39c12,
+                                    metalness: 0.8,
+                                    roughness: 0.2,
+                                    emissive: 0xf39c12,
+                                    emissiveIntensity: 0.2
+                                });
+                                const coin = new THREE.Mesh(coinGeometry, coinMaterial);
+                                coin.position.y = i * 0.06;
+                                coin.rotation.x = Math.PI / 2;
+                                coinGroup.add(coin);
+                            }
+                            pickupMesh = coinGroup;
+                        }
+                        
+                        pickupMesh.position.set(px, 1, pz);
+                        scene.add(pickupMesh);
+                        
+                        pickups.push({ 
+                            mesh: pickupMesh, 
+                            type: type,
+                            position: { x: px, z: pz }
+                        });
+                    }
+                }
+            }
+
+            updateHUD();
+        }
+
+        function updateHUD() {
+            document.getElementById('level').textContent = dungeonLevel;
+            document.getElementById('sins').textContent = defeatedSins.size;
+            document.getElementById('virtues').textContent = inventory.virtueItems.length;
+            document.getElementById('water').textContent = inventory.holyWater;
+            document.getElementById('rosary').textContent = inventory.rosaries;
+            document.getElementById('gold').textContent = inventory.gold;
+        }
+
+        function showMessage(text, duration = 3000) {
+            const msgEl = document.getElementById('message');
+            msgEl.textContent = text;
+            msgEl.style.display = 'block';
+            setTimeout(() => {
+                msgEl.style.display = 'none';
+            }, duration);
+        }
+
+        function startBattle(enemy) {
+            gameState = 'battle';
+            battle.active = true;
+            
+            const isFinalBoss = enemy.vice.name === "The Devil";
+            
+            if (isFinalBoss && inventory.virtueItems.length === 7) {
+                showOneRingVictory();
+                return;
+            }
+            
+            // Setup heroes
+            heroes.forEach(hero => {
+                hero.hp = hero.maxHp + inventory.hpBoost;
+                hero.mp = hero.maxMp;
+                hero.atk = (hero.name === "St. Vincent" ? 15 : hero.name === "St. Michael" ? 18 : 14) + inventory.atkBoost;
+                hero.def = (hero.name === "St. Vincent" ? 8 : hero.name === "St. Michael" ? 6 : 10) + inventory.defBoost;
+            });
+            
+            // Setup enemies
+            let viceHp, minionHp, viceAtk, minionAtk;
+            if (isFinalBoss) {
+                viceHp = 200;
+                minionHp = 100;
+                viceAtk = 30;
+                minionAtk = 20;
+            } else {
+                viceHp = 50 + dungeonLevel * 10;
+                minionHp = 30 + dungeonLevel * 8;
+                viceAtk = 15 + dungeonLevel * 2;
+                minionAtk = 10 + dungeonLevel * 1;
+            }
+            
+            battle.enemies = [
+                { name: enemy.vice.name, hp: viceHp, maxHp: viceHp, atk: viceAtk, def: 4, vice: enemy.vice },
+                { name: enemy.vice.minion, hp: minionHp, maxHp: minionHp, atk: minionAtk, def: 2, vice: enemy.vice }
+            ];
+            
+            battle.currentHeroIndex = 0;
+            battle.targetIndex = 0;
+            battle.phase = 'menu';
+            battle.log = [`Facing ${enemy.vice.name}!`];
+            
+            // Create 3D battle scene
+            createBattleScene(enemy.vice);
+            
+            updateBattleUI();
+            document.getElementById('battle-ui').style.display = 'block';
+            document.getElementById('battle-status').style.display = 'block';
+            document.getElementById('enemy-status').style.display = 'block';
+            document.exitPointerLock();
+        }
+
+        let battleScene = null;
+        let battleCamera = null;
+        let battleHeroModels = [];
+        let battleEnemyModels = [];
+
+        function createBattleScene(vice) {
+            // Clear any existing battle scene
+            if (battleScene) {
+                while(battleScene.children.length > 0) { 
+                    const obj = battleScene.children[0];
+                    if (obj.geometry) obj.geometry.dispose();
+                    if (obj.material) obj.material.dispose();
+                    battleScene.remove(obj);
+                }
+            }
+            
+            battleScene = new THREE.Scene();
+            
+            // Battle background color (grass/desert/dungeon based on level)
+            const bgColors = [0x87CEEB, 0xFFE4B5, 0x4a4a6a];
+            const bgIndex = Math.min(Math.floor((dungeonLevel - 1) / 3), 2);
+            battleScene.background = new THREE.Color(bgColors[bgIndex]);
+            
+            // Ground plane
+            const groundColors = [0x5D8C3E, 0xE6C89E, 0x3a3a4e];
+            const groundGeometry = new THREE.PlaneGeometry(20, 20);
+            const groundMaterial = new THREE.MeshStandardMaterial({ color: groundColors[bgIndex] });
+            const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+            ground.rotation.x = -Math.PI / 2;
+            ground.receiveShadow = true;
+            battleScene.add(ground);
+            
+            // Add some environment elements (rocks/trees)
+            for (let i = 0; i < 5; i++) {
+                const envGeo = new THREE.CylinderGeometry(0.3, 0.4, 1.5, 6);
+                const envMat = new THREE.MeshStandardMaterial({ 
+                    color: bgIndex === 0 ? 0x2d5016 : bgIndex === 1 ? 0x8B7355 : 0x4a4a5a
+                });
+                const env = new THREE.Mesh(envGeo, envMat);
+                env.position.set(
+                    -8 + Math.random() * 16,
+                    0.75,
+                    -8 + Math.random() * 16
+                );
+                env.receiveShadow = true;
+                env.castShadow = true;
+                battleScene.add(env);
+            }
+            
+            // Lighting for battle
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+            battleScene.add(ambientLight);
+            
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(5, 10, 5);
+            directionalLight.castShadow = true;
+            battleScene.add(directionalLight);
+            
+            // Add rim light for dramatic effect (FF7 style)
+            const rimLight = new THREE.DirectionalLight(0x6699ff, 0.3);
+            rimLight.position.set(-5, 5, -5);
+            battleScene.add(rimLight);
+            
+            // Position heroes on the left side
+            battleHeroModels = [];
+            const heroModels = [
+                createStVincentModel(),
+                createStMichaelModel(),
+                createStJoanModel()
+            ];
+            
+            for (let i = 0; i < heroModels.length; i++) {
+                const heroModel = heroModels[i];
+                heroModel.position.set(-5, 0, -2 + i * 2);
+                heroModel.rotation.y = Math.PI / 6; // Face right slightly
+                heroModel.castShadow = true;
+                battleScene.add(heroModel);
+                battleHeroModels.push(heroModel);
+            }
+            
+            // Position enemies on the right side
+            battleEnemyModels = [];
+            for (let i = 0; i < 2; i++) {
+                const enemyModel = createViceModel(vice);
+                enemyModel.position.set(5, 0, -1 + i * 2);
+                enemyModel.rotation.y = -Math.PI / 6; // Face left slightly
+                enemyModel.castShadow = true;
+                
+                // Scale down minion slightly
+                if (i === 1) {
+                    enemyModel.scale.set(0.7, 0.7, 0.7);
+                }
+                
+                battleScene.add(enemyModel);
+                battleEnemyModels.push(enemyModel);
+            }
+            
+            // Battle camera setup with dynamic positioning
+            battleCamera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+            battleCamera.position.set(0, 4, 10);
+            battleCamera.lookAt(0, 1, 0);
+            
+            // Store original camera position for animations
+            battleCamera.userData.originalPosition = battleCamera.position.clone();
+            battleCamera.userData.targetPosition = battleCamera.position.clone();
+        }
+
+        // Animate battle camera (called during battles)
+        function updateBattleCamera() {
+            if (!battleCamera) return;
+            
+            // Smooth camera movement
+            if (battleCamera.userData.targetPosition) {
+                battleCamera.position.lerp(battleCamera.userData.targetPosition, 0.1);
+            }
+            
+            // Subtle camera sway
+            const time = Date.now() * 0.0005;
+            const swayAmount = 0.1;
+            battleCamera.position.x += Math.sin(time) * swayAmount * 0.05;
+            battleCamera.position.y += Math.cos(time * 0.7) * swayAmount * 0.05;
+            
+            battleCamera.lookAt(0, 1, 0);
+        }
+
+        // Focus camera on hero during their turn
+        function focusCameraOnHero(index) {
+            if (!battleCamera || !battleHeroModels[index]) return;
+            const hero = battleHeroModels[index];
+            battleCamera.userData.targetPosition = new THREE.Vector3(
+                hero.position.x + 2,
+                3,
+                hero.position.z + 6
+            );
+        }
+
+        // Focus camera on enemy during attack
+        function focusCameraOnEnemy(index) {
+            if (!battleCamera || !battleEnemyModels[index]) return;
+            const enemy = battleEnemyModels[index];
+            battleCamera.userData.targetPosition = new THREE.Vector3(
+                enemy.position.x - 2,
+                3,
+                enemy.position.z + 6
+            );
+        }
+
+        // Reset camera to default battle view
+        function resetBattleCamera() {
+            if (!battleCamera) return;
+            battleCamera.userData.targetPosition = new THREE.Vector3(0, 4, 10);
+        }
+
+        function disposeBattleScene() {
+            if (battleScene) {
+                while(battleScene.children.length > 0) { 
+                    const obj = battleScene.children[0];
+                    if (obj.geometry) obj.geometry.dispose();
+                    if (obj.material) {
+                        if (Array.isArray(obj.material)) {
+                            obj.material.forEach(m => m.dispose());
+                        } else {
+                            obj.material.dispose();
+                        }
+                    }
+                    battleScene.remove(obj);
+                }
+                battleScene = null;
+            }
+            battleHeroModels = [];
+            battleEnemyModels = [];
+        }
+
+        function updateBattleUI() {
+            // Highlight active hero
+            battleHeroModels.forEach((model, i) => {
+                if (i === battle.currentHeroIndex && battle.phase !== 'enemyTurn') {
+                    model.position.y = Math.sin(Date.now() * 0.003) * 0.1; // Gentle bounce
+                } else {
+                    model.position.y = 0;
+                }
+            });
+            
+            // Highlight targeted enemy
+            battleEnemyModels.forEach((model, i) => {
+                if (i === battle.targetIndex && battle.phase === 'target') {
+                    model.position.y = Math.sin(Date.now() * 0.005) * 0.1;
+                } else {
+                    model.position.y = 0;
+                }
+            });
+            
+            // Update hero status display (top left)
+            const heroStatusEl = document.getElementById('battle-status');
+            heroStatusEl.innerHTML = '';
+            heroStatusEl.style.display = 'block';
+            
+            heroes.forEach((hero, i) => {
+                const statusDiv = document.createElement('div');
+                statusDiv.className = 'hero-status' + (i === battle.currentHeroIndex && battle.phase !== 'enemyTurn' ? ' active' : '');
+                const hpPercent = Math.max(0, (hero.hp / (hero.maxHp + inventory.hpBoost)) * 100);
+                const mpPercent = Math.max(0, (hero.mp / hero.maxMp) * 100);
+                statusDiv.innerHTML = `
+                    <div class="hero-name">${hero.name}</div>
+                    <div class="hero-stats">
+                        <span>HP: ${Math.max(0, hero.hp)}/${hero.maxHp + inventory.hpBoost}</span>
+                        <span>MP: ${hero.mp}/${hero.maxMp}</span>
+                    </div>
+                    <div class="status-bar hp-bar">
+                        <div class="status-fill" style="width: ${hpPercent}%;"></div>
+                    </div>
+                    <div class="status-bar mp-bar">
+                        <div class="status-fill" style="width: ${mpPercent}%;"></div>
+                    </div>
+                `;
+                heroStatusEl.appendChild(statusDiv);
+            });
+            
+            // Update enemy status display (top right)
+            const enemyStatusEl = document.getElementById('enemy-status');
+            enemyStatusEl.innerHTML = '';
+            enemyStatusEl.style.display = 'block';
+            
+            battle.enemies.forEach((enemy, i) => {
+                const statusDiv = document.createElement('div');
+                statusDiv.className = 'enemy-status' + (i === battle.targetIndex && battle.phase === 'target' ? ' targeted' : '');
+                if (enemy.hp > 0) {
+                    const hpPercent = Math.max(0, (enemy.hp / enemy.maxHp) * 100);
+                    statusDiv.innerHTML = `
+                        <div class="enemy-name">${enemy.name}</div>
+                        <div class="hero-stats">
+                            <span>HP: ${enemy.hp}/${enemy.maxHp}</span>
+                        </div>
+                        <div class="status-bar hp-bar">
+                            <div class="status-fill" style="width: ${hpPercent}%;"></div>
+                        </div>
+                    `;
+                } else {
+                    statusDiv.innerHTML = `
+                        <div class="enemy-name" style="color: #7f8c8d;">DEFEATED</div>
+                    `;
+                }
+                enemyStatusEl.appendChild(statusDiv);
+            });
+            
+            // Update actions menu (bottom right)
+            const actionsEl = document.getElementById('battle-actions');
+            if (battle.phase === 'menu') {
+                const hero = heroes[battle.currentHeroIndex];
+                actionsEl.innerHTML = `
+                    <button class="battle-btn selected" onclick="selectBattleAction('attack')">Attack</button>
+                    <button class="battle-btn" onclick="selectBattleAction('special')">${hero.specialAttack} (${hero.specialCost} MP)</button>
+                    <button class="battle-btn" onclick="selectBattleAction('prayer')">Call Saints (10 MP)</button>
+                    <button class="battle-btn" onclick="selectBattleAction('item')">Item</button>
+                    <button class="battle-btn" onclick="selectBattleAction('flee')">Flee</button>
+                `;
+            } else if (battle.phase === 'target') {
+                actionsEl.innerHTML = `
+                    <button class="battle-btn" onclick="changeTarget(-1)">◀ Previous Target</button>
+                    <button class="battle-btn selected" onclick="confirmTarget()">Confirm</button>
+                    <button class="battle-btn" onclick="changeTarget(1)">Next Target ▶</button>
+                    <button class="battle-btn" onclick="cancelTarget()">Back</button>
+                `;
+            } else if (battle.phase === 'item') {
+                actionsEl.innerHTML = `
+                    <button class="battle-btn" onclick="useItem('holyWater')">Holy Water (${inventory.holyWater})</button>
+                    <button class="battle-btn" onclick="useItem('rosary')">Rosary (${inventory.rosaries})</button>
+                    <button class="battle-btn selected" onclick="battle.phase='menu'; updateBattleUI();">Back</button>
+                `;
+            }
+            
+            // Update log
+            const logEl = document.getElementById('battle-log');
+            logEl.innerHTML = battle.log.slice(-3).map(msg => 
+                `<div class="log-entry">${msg}</div>`
+            ).join('');
+            logEl.scrollTop = logEl.scrollHeight;
+        }
+
+        function selectBattleAction(action) {
+            if (action === 'attack' || action === 'special') {
+                battle.currentAction = action;
+                battle.phase = 'target';
+                battle.targetIndex = battle.enemies.findIndex(e => e.hp > 0);
+                focusCameraOnEnemy(battle.targetIndex);
+                updateBattleUI();
+            } else if (action === 'prayer') {
+                // Prayer targets all enemies (Call upon the Saints)
+                battle.currentAction = 'prayer';
+                battle.phase = 'executing';
+                executePrayerAttack();
+            } else if (action === 'item') {
+                battle.phase = 'item';
+                updateBattleUI();
+            } else if (action === 'flee') {
+                if (Math.random() < 0.6) {
+                    battle.log.push('Fled successfully!');
+                    endBattle(false, true);
+                } else {
+                    battle.log.push("Couldn't escape!");
+                    nextTurn();
+                }
+            }
+        }
+
+        function executePrayerAttack() {
+            const hero = heroes[battle.currentHeroIndex];
+            
+            if (hero.mp >= 10) {
+                const damage = 20 + Math.floor(Math.random() * 10);
+                let enemiesHit = 0;
+                
+                battle.enemies.forEach((enemy, i) => {
+                    if (enemy.hp > 0) {
+                        enemy.hp -= damage;
+                        enemiesHit++;
+                        
+                        // Shake enemy
+                        if (battleEnemyModels[i]) {
+                            const enemyModel = battleEnemyModels[i];
+                            let shakeCount = 0;
+                            const shakeInterval = setInterval(() => {
+                                enemyModel.position.x += (Math.random() - 0.5) * 0.3;
+                                shakeCount++;
+                                if (shakeCount > 5) {
+                                    clearInterval(shakeInterval);
+                                    enemyModel.position.x = 5;
+                                }
+                            }, 50);
+                        }
+                        
+                        // Fade out if defeated
+                        if (enemy.hp <= 0 && battleEnemyModels[i]) {
+                            const enemyModel = battleEnemyModels[i];
+                            let opacity = 1;
+                            const fadeInterval = setInterval(() => {
+                                opacity -= 0.1;
+                                enemyModel.traverse((child) => {
+                                    if (child.material) {
+                                        child.material.opacity = opacity;
+                                        child.material.transparent = true;
+                                    }
+                                });
+                                if (opacity <= 0) {
+                                    clearInterval(fadeInterval);
+                                }
+                            }, 50);
+                        }
+                    }
+                });
+                
+                hero.mp -= 10;
+                battle.log.push(`${hero.name} calls upon the Saints! ${damage} holy damage to all foes!`);
+                
+                // All heroes glow
+                battleHeroModels.forEach(heroModel => {
+                    heroModel.traverse((child) => {
+                        if (child.material) {
+                            const originalEmissive = child.material.emissive ? child.material.emissive.clone() : new THREE.Color(0x000000);
+                            child.material.emissive = new THREE.Color(0xffffff);
+                            child.material.emissiveIntensity = 0.8;
+                            setTimeout(() => {
+                                child.material.emissive = originalEmissive;
+                                child.material.emissiveIntensity = 0;
+                            }, 1000);
+                        }
+                    });
+                });
+                
+            } else {
+                battle.log.push(`${hero.name} lacks MP!`);
+            }
+            
+            setTimeout(() => {
+                nextTurn();
+            }, 1200);
+        }
+
+        function changeTarget(delta) {
+            let newIndex = battle.targetIndex + delta;
+            while (newIndex >= 0 && newIndex < battle.enemies.length && battle.enemies[newIndex].hp <= 0) {
+                newIndex += delta;
+            }
+            if (newIndex >= 0 && newIndex < battle.enemies.length) {
+                battle.targetIndex = newIndex;
+                focusCameraOnEnemy(battle.targetIndex);
+                updateBattleUI();
+            }
+        }
+
+        function confirmTarget() {
+            const hero = heroes[battle.currentHeroIndex];
+            const target = battle.enemies[battle.targetIndex];
+            
+            if (battle.currentAction === 'attack') {
+                const damage = Math.max(1, hero.atk - target.def + Math.floor(Math.random() * 5));
+                target.hp -= damage;
+                battle.log.push(`${hero.name} deals ${damage} damage to ${target.name}!`);
+                
+                // Attack animation - hero moves forward
+                if (battleHeroModels[battle.currentHeroIndex]) {
+                    const heroModel = battleHeroModels[battle.currentHeroIndex];
+                    const originalZ = heroModel.position.z;
+                    
+                    // Quick dash forward
+                    let dashProgress = 0;
+                    const dashInterval = setInterval(() => {
+                        dashProgress += 0.2;
+                        heroModel.position.z = originalZ + Math.sin(dashProgress * Math.PI) * 3;
+                        
+                        if (dashProgress >= 1) {
+                            clearInterval(dashInterval);
+                            heroModel.position.z = originalZ;
+                        }
+                    }, 30);
+                }
+                
+                // Damage animation - enemy shakes and flashes red
+                if (battleEnemyModels[battle.targetIndex] && target.hp > 0) {
+                    const enemyModel = battleEnemyModels[battle.targetIndex];
+                    let shakeCount = 0;
+                    const originalX = enemyModel.position.x;
+                    
+                    const damageInterval = setInterval(() => {
+                        enemyModel.position.x = originalX + (Math.random() - 0.5) * 0.4;
+                        
+                        // Flash red
+                        enemyModel.traverse((child) => {
+                            if (child.material) {
+                                child.material.emissive = new THREE.Color(0xff0000);
+                                child.material.emissiveIntensity = 0.5;
+                            }
+                        });
+                        
+                        shakeCount++;
+                        if (shakeCount > 6) {
+                            clearInterval(damageInterval);
+                            enemyModel.position.x = originalX;
+                            
+                            // Reset color
+                            enemyModel.traverse((child) => {
+                                if (child.material) {
+                                    child.material.emissive = new THREE.Color(0x000000);
+                                    child.material.emissiveIntensity = 0;
+                                }
+                            });
+                        }
+                    }, 50);
+                }
+                
+                // Enemy defeated - fade out
+                if (target.hp <= 0 && battleEnemyModels[battle.targetIndex]) {
+                    setTimeout(() => {
+                        const enemyModel = battleEnemyModels[battle.targetIndex];
+                        let opacity = 1;
+                        const fadeInterval = setInterval(() => {
+                            opacity -= 0.1;
+                            enemyModel.traverse((child) => {
+                                if (child.material) {
+                                    child.material.opacity = opacity;
+                                    child.material.transparent = true;
+                                }
+                            });
+                            if (opacity <= 0) {
+                                clearInterval(fadeInterval);
+                            }
+                        }, 50);
+                    }, 400);
+                }
+                
+            } else if (battle.currentAction === 'special') {
+                const specialCost = hero.specialCost;
+                const specialDamage = hero.specialDamage;
+                
+                if (hero.mp >= specialCost) {
+                    target.hp -= specialDamage;
+                    hero.mp -= specialCost;
+                    battle.log.push(`${hero.name} uses ${hero.specialAttack}! ${specialDamage} damage!`);
+                    
+                    // SPECIAL ATTACK ANIMATIONS
+                    if (hero.name === "St. Michael") {
+                        // Heavenly Host - Angels descend from heaven
+                        if (battleHeroModels[battle.currentHeroIndex]) {
+                            const heroModel = battleHeroModels[battle.currentHeroIndex];
+                            
+                            // Hero glows with divine light
+                            heroModel.traverse((child) => {
+                                if (child.material) {
+                                    child.material.emissive = new THREE.Color(0xffd700);
+                                    child.material.emissiveIntensity = 1.0;
+                                }
+                            });
+                            
+                            // Create descending angel lights
+                            for (let i = 0; i < 5; i++) {
+                                setTimeout(() => {
+                                    const angelLight = new THREE.Mesh(
+                                        new THREE.SphereGeometry(0.3, 8, 8),
+                                        new THREE.MeshBasicMaterial({ 
+                                            color: 0xffffff,
+                                            transparent: true,
+                                            opacity: 1
+                                        })
+                                    );
+                                    angelLight.position.set(
+                                        battleEnemyModels[battle.targetIndex].position.x + (Math.random() - 0.5) * 2,
+                                        10,
+                                        battleEnemyModels[battle.targetIndex].position.z + (Math.random() - 0.5) * 2
+                                    );
+                                    battleScene.add(angelLight);
+                                    
+                                    // Descend
+                                    let descent = 0;
+                                    const descendInterval = setInterval(() => {
+                                        descent += 0.5;
+                                        angelLight.position.y = 10 - descent;
+                                        
+                                        if (angelLight.position.y <= 0) {
+                                            clearInterval(descendInterval);
+                                            battleScene.remove(angelLight);
+                                        }
+                                    }, 30);
+                                }, i * 100);
+                            }
+                            
+                            setTimeout(() => {
+                                heroModel.traverse((child) => {
+                                    if (child.material) {
+                                        child.material.emissive = new THREE.Color(0x000000);
+                                        child.material.emissiveIntensity = 0;
+                                    }
+                                });
+                            }, 1500);
+                        }
+                        
+                    } else if (hero.name === "St. Vincent") {
+                        // Rosary Throw
+                        if (battleHeroModels[battle.currentHeroIndex]) {
+                            const heroModel = battleHeroModels[battle.currentHeroIndex];
+                            
+                            // Create rosary projectile
+                            const rosary = new THREE.Group();
+                            const beadGeometry = new THREE.SphereGeometry(0.08, 8, 8);
+                            const beadMaterial = new THREE.MeshStandardMaterial({ color: 0x8b4513 });
+                            for (let i = 0; i < 5; i++) {
+                                const bead = new THREE.Mesh(beadGeometry, beadMaterial);
+                                bead.position.x = i * 0.15;
+                                rosary.add(bead);
+                            }
+                            
+                            rosary.position.copy(heroModel.position);
+                            rosary.position.y = 1.5;
+                            battleScene.add(rosary);
+                            
+                            // Throw animation
+                            const targetPos = battleEnemyModels[battle.targetIndex].position;
+                            let throwProgress = 0;
+                            const throwInterval = setInterval(() => {
+                                throwProgress += 0.05;
+                                
+                                rosary.position.x = heroModel.position.x + (targetPos.x - heroModel.position.x) * throwProgress;
+                                rosary.position.z = heroModel.position.z + (targetPos.z - heroModel.position.z) * throwProgress;
+                                rosary.position.y = 1.5 + Math.sin(throwProgress * Math.PI) * 2;
+                                rosary.rotation.z += 0.3;
+                                
+                                if (throwProgress >= 1) {
+                                    clearInterval(throwInterval);
+                                    battleScene.remove(rosary);
+                                }
+                            }, 30);
+                        }
+                        
+                    } else if (hero.name === "St. Joan") {
+                        // Divine Charge - Prayer then sword lunge
+                        if (battleHeroModels[battle.currentHeroIndex]) {
+                            const heroModel = battleHeroModels[battle.currentHeroIndex];
+                            const originalZ = heroModel.position.z;
+                            
+                            // Prayer pose - glow
+                            heroModel.traverse((child) => {
+                                if (child.material) {
+                                    child.material.emissive = new THREE.Color(0xffd700);
+                                    child.material.emissiveIntensity = 0.8;
+                                }
+                            });
+                            
+                            // After prayer, charge forward
+                            setTimeout(() => {
+                                let chargeProgress = 0;
+                                const chargeInterval = setInterval(() => {
+                                    chargeProgress += 0.1;
+                                    heroModel.position.z = originalZ + Math.sin(chargeProgress * Math.PI) * 5;
+                                    
+                                    if (chargeProgress >= 1) {
+                                        clearInterval(chargeInterval);
+                                        heroModel.position.z = originalZ;
+                                        
+                                        // Stop glowing
+                                        heroModel.traverse((child) => {
+                                            if (child.material) {
+                                                child.material.emissive = new THREE.Color(0x000000);
+                                                child.material.emissiveIntensity = 0;
+                                            }
+                                        });
+                                    }
+                                }, 30);
+                            }, 800);
+                        }
+                    }
+                    
+                    // Enemy damage animation
+                    if (battleEnemyModels[battle.targetIndex] && target.hp > 0) {
+                        setTimeout(() => {
+                            const enemyModel = battleEnemyModels[battle.targetIndex];
+                            let shakeCount = 0;
+                            const originalX = enemyModel.position.x;
+                            
+                            const damageInterval = setInterval(() => {
+                                enemyModel.position.x = originalX + (Math.random() - 0.5) * 0.5;
+                                shakeCount++;
+                                if (shakeCount > 8) {
+                                    clearInterval(damageInterval);
+                                    enemyModel.position.x = originalX;
+                                }
+                            }, 50);
+                        }, 600);
+                    }
+                    
+                    if (target.hp <= 0 && battleEnemyModels[battle.targetIndex]) {
+                        setTimeout(() => {
+                            const enemyModel = battleEnemyModels[battle.targetIndex];
+                            let opacity = 1;
+                            const fadeInterval = setInterval(() => {
+                                opacity -= 0.1;
+                                enemyModel.traverse((child) => {
+                                    if (child.material) {
+                                        child.material.opacity = opacity;
+                                        child.material.transparent = true;
+                                    }
+                                });
+                                if (opacity <= 0) {
+                                    clearInterval(fadeInterval);
+                                }
+                            }, 50);
+                        }, 800);
+                    }
+                } else {
+                    battle.log.push(`${hero.name} lacks MP!`);
+                }
+            }
+            
+            setTimeout(() => {
+                nextTurn();
+            }, battle.currentAction === 'special' ? 2000 : 800);
+        }
+
+        function cancelTarget() {
+            battle.phase = 'menu';
+            updateBattleUI();
+        }
+
+        function useItem(itemType) {
+            const hero = heroes[battle.currentHeroIndex];
+            
+            if (itemType === 'holyWater' && inventory.holyWater > 0) {
+                hero.hp = Math.min(hero.maxHp + inventory.hpBoost, hero.hp + 50);
+                inventory.holyWater--;
+                battle.log.push(`${hero.name} drinks Holy Water! +50 HP`);
+                updateHUD();
+                nextTurn();
+            } else if (itemType === 'rosary' && inventory.rosaries > 0) {
+                const damage = 30 + dungeonLevel * 5;
+                battle.enemies.forEach(enemy => {
+                    if (enemy.hp > 0) enemy.hp -= damage;
+                });
+                inventory.rosaries--;
+                battle.log.push(`${hero.name} prays! Divine light strikes all foes!`);
+                updateHUD();
+                nextTurn();
+            } else {
+                battle.log.push('No items!');
+                updateBattleUI();
+            }
+        }
+
+        function nextTurn() {
+            if (checkBattleEnd()) return;
+            
+            battle.currentHeroIndex++;
+            if (battle.currentHeroIndex >= heroes.length) {
+                executeEnemyTurn();
+            } else {
+                battle.phase = 'menu';
+                battle.targetIndex = battle.enemies.findIndex(e => e.hp > 0);
+                battle.log.push(`${heroes[battle.currentHeroIndex].name}'s turn!`);
+                resetBattleCamera();
+                focusCameraOnHero(battle.currentHeroIndex);
+                updateBattleUI();
+            }
+        }
+
+        function executeEnemyTurn() {
+            let aliveEnemies = battle.enemies.filter(e => e.hp > 0);
+            
+            aliveEnemies.forEach(enemy => {
+                const aliveHeroes = heroes.filter(h => h.hp > 0);
+                if (aliveHeroes.length > 0) {
+                    const target = aliveHeroes[Math.floor(Math.random() * aliveHeroes.length)];
+                    const damage = Math.max(1, enemy.atk - target.def + Math.floor(Math.random() * 5));
+                    target.hp -= damage;
+                    battle.log.push(`${enemy.name} attacks ${target.name} for ${damage} damage!`);
+                }
+            });
+            
+            if (checkBattleEnd()) return;
+            
+            battle.currentHeroIndex = 0;
+            battle.phase = 'menu';
+            battle.log.push(`${heroes[0].name}'s turn!`);
+            updateBattleUI();
+        }
+
+        function checkBattleEnd() {
+            if (heroes.every(h => h.hp <= 0)) {
+                battle.log.push('All heroes defeated!');
+                updateBattleUI();
+                setTimeout(() => endBattle(false), 2000);
+                return true;
+            } else if (battle.enemies.every(e => e.hp <= 0)) {
+                battle.log.push(`Victory over ${battle.enemies[0].vice.name}!`);
+                updateBattleUI();
+                setTimeout(() => endBattle(true), 2000);
+                return true;
+            }
+            return false;
+        }
+
+        function endBattle(won, fled = false) {
+            document.getElementById('battle-ui').style.display = 'none';
+            document.getElementById('battle-status').style.display = 'none';
+            document.getElementById('enemy-status').style.display = 'none';
+            battle.active = false;
+            disposeBattleScene();
+            
+            if (fled) {
+                gameState = 'explore';
+                return;
+            }
+            
+            if (won) {
+                const viceName = battle.enemies[0].vice.name;
+                const enemyToRemove = enemies.find(e => e.vice.name === viceName);
+                if (enemyToRemove) {
+                    scene.remove(enemyToRemove.mesh);
+                    enemies = enemies.filter(e => e !== enemyToRemove);
+                }
+                
+                // Award virtue item
+                if (DEADLY_SINS.includes(viceName) && !inventory.virtueItems.includes(viceName)) {
+                    const virtueItem = VIRTUE_ITEMS[viceName];
+                    inventory.virtueItems.push(viceName);
+                    
+                    if (virtueItem.atkBoost) inventory.atkBoost += virtueItem.atkBoost;
+                    if (virtueItem.defBoost) inventory.defBoost += virtueItem.defBoost;
+                    if (virtueItem.hpBoost) {
+                        inventory.hpBoost += virtueItem.hpBoost;
+                        heroes.forEach(h => h.maxHp += virtueItem.hpBoost);
+                    }
+                }
+                
+                if (viceName === "The Devil") {
+                    showViceTeaching(battle.enemies[0].vice, () => {
+                        showGameVictory();
+                    });
+                    return;
+                }
+                
+                if (DEADLY_SINS.includes(viceName)) {
+                    defeatedSins.add(viceName);
+                    
+                    if (defeatedSins.size >= 7) {
+                        const virtueItem = VIRTUE_ITEMS[viceName];
+                        showVirtueItemReceived(virtueItem, () => {
+                            showViceTeaching(battle.enemies[0].vice, () => {
+                                showMessage('All Sins defeated! The Devil awaits...', 4000);
+                                dungeonLevel++;
+                                generateDungeon(true);
+                                gameState = 'explore';
+                            });
+                        });
+                        return;
+                    }
+                }
+                
+                dungeonLevel++;
+                
+                if (DEADLY_SINS.includes(viceName)) {
+                    const virtueItem = VIRTUE_ITEMS[viceName];
+                    showVirtueItemReceived(virtueItem, () => {
+                        showViceTeaching(battle.enemies[0].vice, () => {
+                            showMessage(`Victory! Level ${dungeonLevel}`, 3000);
+                            generateDungeon();
+                            gameState = 'explore';
+                        });
+                    });
+                } else {
+                    showViceTeaching(battle.enemies[0].vice, () => {
+                        showMessage(`Victory! Level ${dungeonLevel}`, 3000);
+                        generateDungeon();
+                        gameState = 'explore';
+                    });
+                }
+            } else {
+                dungeonLevel = 1;
+                defeatedSins.clear();
+                showMessage('Defeated! Starting over...', 3000);
+                inventory.holyWater = 3;
+                inventory.rosaries = 2;
+                inventory.gold = 0;
+                inventory.atkBoost = 0;
+                inventory.defBoost = 0;
+                inventory.hpBoost = 0;
+                inventory.virtueItems = [];
+                generateDungeon();
+                gameState = 'explore';
+            }
+        }
+
+        function showVirtueItemReceived(item, callback) {
+            document.getElementById('quote-text').innerHTML = `
+                <div style="color: #2ecc71; font-size: 20px; font-weight: bold; margin-bottom: 15px;">
+                    ✨ VIRTUE ITEM RECEIVED! ✨
+                </div>
+                <div style="color: #f39c12; font-size: 18px; margin-bottom: 12px;">
+                    ${item.name}
+                </div>
+                <div style="color: #ecf0f1; font-size: 14px; margin-bottom: 15px;">
+                    ${item.effect}
+                </div>
+                <div style="color: #95a5a6; font-size: 12px; line-height: 1.4;">
+                    This sacred item strengthens your heroes!
+                </div>
+            `;
+            document.getElementById('quote-author').textContent = '';
+            document.getElementById('quote-overlay').style.display = 'flex';
+            
+            const btn = document.getElementById('quote-continue');
+            btn.textContent = 'Continue';
+            const handler = () => {
+                document.getElementById('quote-overlay').style.display = 'none';
+                btn.removeEventListener('click', handler);
+                callback();
+            };
+            btn.addEventListener('click', handler);
+        }
+
+        function showViceTeaching(vice, callback) {
+            document.getElementById('quote-text').innerHTML = `
+                <div style="color: #e74c3c; font-size: 20px; font-weight: bold; margin-bottom: 12px;">
+                    ${vice.name} Defeated!
+                </div>
+                <div style="color: #ecf0f1; font-size: 13px; line-height: 1.5; text-align: left; margin-bottom: 15px;">
+                    ${vice.catechism}
+                </div>
+                <div style="color: #3498db; font-size: 12px; font-style: italic; line-height: 1.4; text-align: left; margin-bottom: 8px;">
+                    "${vice.verse}"
+                </div>
+                <div style="color: #f39c12; font-size: 11px; font-weight: bold;">
+                    — ${vice.reference}
+                </div>
+            `;
+            document.getElementById('quote-author').textContent = '';
+            document.getElementById('quote-overlay').style.display = 'flex';
+            
+            const btn = document.getElementById('quote-continue');
+            btn.textContent = 'Continue';
+            const handler = () => {
+                document.getElementById('quote-overlay').style.display = 'none';
+                btn.removeEventListener('click', handler);
+                callback();
+            };
+            btn.addEventListener('click', handler);
+        }
+
+        function showGameVictory() {
+            // Create Garden of Eden scene
+            createGardenOfEden();
+        }
+
+        let gardenScene = null;
+        let gardenCamera = null;
+        let jesusModel = null;
+        let gardenWalkProgress = 0;
+
+        function createGardenOfEden() {
+            gameState = 'garden';
+            
+            // Hide battle UI
+            document.getElementById('battle-ui').style.display = 'none';
+            document.getElementById('battle-status').style.display = 'none';
+            document.getElementById('enemy-status').style.display = 'none';
+            
+            // Create garden scene
+            gardenScene = new THREE.Scene();
+            gardenScene.background = new THREE.Color(0x87CEEB); // Sky blue
+            gardenScene.fog = new THREE.Fog(0x87CEEB, 30, 100);
+            
+            // Ground - lush green grass with varied terrain
+            const groundGeometry = new THREE.PlaneGeometry(150, 150);
+            const groundMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0x2d5016,
+                roughness: 0.9
+            });
+            const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+            ground.rotation.x = -Math.PI / 2;
+            ground.receiveShadow = true;
+            gardenScene.add(ground);
+            
+            // Main path
+            const pathGeometry = new THREE.PlaneGeometry(5, 150);
+            const pathMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0xD2B48C,
+                roughness: 0.85
+            });
+            const path = new THREE.Mesh(pathGeometry, pathMaterial);
+            path.rotation.x = -Math.PI / 2;
+            path.position.y = 0.05;
+            gardenScene.add(path);
+            
+            // ENTRANCE - Beatitudes Plaque
+            createBeatitudesPlaque();
+            
+            // STATION 1 - Ten Commandments (distance: 15)
+            createTenCommandments(0, 0, -15);
+            
+            // STATION 2 - Staff of Aaron (distance: 30)
+            createStaffOfAaron(0, 0, -30);
+            
+            // STATION 3 - Ark of the Covenant (distance: 45)
+            createArkOfCovenant(0, 0, -45);
+            
+            // STATION 4 - Moses (distance: 60)
+            createMosesStatue(-4, 0, -60);
+            
+            // STATION 5 - Mother Mary (distance: 75)
+            createMotherMaryStatue(4, 0, -75);
+            
+            // STATION 6 - Bible Passage Stands (various locations)
+            createBiblePassageStand(-5, 0, -20, "The Lord's Prayer", "Our Father who art in heaven, hallowed be thy name. Thy kingdom come. Thy will be done on earth as it is in heaven. Give us this day our daily bread, and forgive us our trespasses, as we forgive those who trespass against us, and lead us not into temptation, but deliver us from evil.", "Matthew 6:9-13");
+            createBiblePassageStand(5, 0, -35, "The Greatest Commandment", "You shall love the Lord your God with all your heart, with all your soul, and with all your mind. This is the greatest and first commandment. And the second is like it: You shall love your neighbor as yourself.", "Matthew 22:37-39");
+            createBiblePassageStand(-5, 0, -50, "Psalm 23", "The Lord is my shepherd, I shall not want. He makes me lie down in green pastures; he leads me beside still waters; he restores my soul. He leads me in right paths for his name's sake. Even though I walk through the darkest valley, I fear no evil; for you are with me; your rod and your staff they comfort me.", "Psalm 23:1-4");
+            createBiblePassageStand(5, 0, -65, "Love Chapter", "Love is patient; love is kind; love is not envious or boastful or arrogant or rude. It does not insist on its own way; it is not irritable or resentful; it does not rejoice in wrongdoing, but rejoices in the truth. It bears all things, believes all things, hopes all things, endures all things. Love never ends.", "1 Corinthians 13:4-8");
+            createBiblePassageStand(-5, 0, -80, "Faith and Works", "What good is it, my brothers and sisters, if you say you have faith but do not have works? Can faith save you? If a brother or sister is naked and lacks daily food, and one of you says to them, 'Go in peace; keep warm and eat your fill,' and yet you do not supply their bodily needs, what is the good of that? So faith by itself, if it has no works, is dead.", "James 2:14-17");
+            
+            // DIVERSE TREE TYPES
+            // Oak trees
+            for (let i = 0; i < 12; i++) {
+                createOakTree(-8 + (i % 2) * 16, 0, -10 - i * 7);
+            }
+            
+            // Palm trees
+            for (let i = 0; i < 8; i++) {
+                createPalmTree(-12 + (i % 2) * 24, 0, -15 - i * 10);
+            }
+            
+            // Cypress trees
+            for (let i = 0; i < 10; i++) {
+                createCypressTree(10 + (i % 2) * -20, 0, -12 - i * 8);
+            }
+            
+            // Fruit trees (apple, olive)
+            for (let i = 0; i < 15; i++) {
+                const x = -15 + (i % 3) * 15;
+                const z = -5 - i * 6;
+                if (i % 2 === 0) {
+                    createFruitTree(x, 0, z, 0xFF0000); // Red apples
+                } else {
+                    createFruitTree(x, 0, z, 0x808000); // Olive
+                }
+            }
+            
+            // DIVERSE FLOWERS - hundreds of them
+            const flowerTypes = [
+                { color: 0xFF69B4, name: 'Rose' },
+                { color: 0xFFFF00, name: 'Sunflower' },
+                { color: 0xFF0000, name: 'Poppy' },
+                { color: 0xFF00FF, name: 'Orchid' },
+                { color: 0xFFA500, name: 'Marigold' },
+                { color: 0x9370DB, name: 'Lavender' },
+                { color: 0xFFFFFF, name: 'Lily' },
+                { color: 0x0000FF, name: 'Bluebell' },
+                { color: 0xFF1493, name: 'Carnation' }
+            ];
+            
+            for (let i = 0; i < 200; i++) {
+                const flowerType = flowerTypes[Math.floor(Math.random() * flowerTypes.length)];
+                createFlower(
+                    -25 + Math.random() * 50,
+                    0.15,
+                    -5 + Math.random() * -90,
+                    flowerType.color
+                );
+            }
+            
+            // BUSHES AND SHRUBS
+            for (let i = 0; i < 40; i++) {
+                createBush(-20 + Math.random() * 40, 0, -5 - Math.random() * 90);
+            }
+            
+            // FLOWERING VINES
+            for (let i = 0; i < 10; i++) {
+                createVine(-15 + (i % 2) * 30, 0, -10 - i * 8);
+            }
+            
+            // GARDEN ROCKS
+            for (let i = 0; i < 30; i++) {
+                createRock(-20 + Math.random() * 40, 0, -5 - Math.random() * 90);
+            }
+            
+            // Lighting - Beautiful golden sunlight
+            const ambientLight = new THREE.AmbientLight(0xffffee, 0.7);
+            gardenScene.add(ambientLight);
+            
+            const sunLight = new THREE.DirectionalLight(0xffd700, 1.2);
+            sunLight.position.set(15, 30, 10);
+            sunLight.castShadow = true;
+            sunLight.shadow.camera.left = -80;
+            sunLight.shadow.camera.right = 80;
+            sunLight.shadow.camera.top = 80;
+            sunLight.shadow.camera.bottom = -80;
+            gardenScene.add(sunLight);
+            
+            // Warm fill light
+            const fillLight = new THREE.DirectionalLight(0xffe4b5, 0.5);
+            fillLight.position.set(-10, 20, -10);
+            gardenScene.add(fillLight);
+            
+            // Create Jesus model at the end of the path
+            jesusModel = createJesusModel();
+            jesusModel.position.set(0, 0, -95);
+            jesusModel.rotation.y = Math.PI;
+            gardenScene.add(jesusModel);
+            
+            // Create player model
+            const playerModel = createPlayerModel();
+            playerModel.position.set(0, 0, 5);
+            playerModel.rotation.y = Math.PI;
+            gardenScene.add(playerModel);
+            
+            // Camera setup
+            gardenCamera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+            gardenCamera.position.set(0, 2.5, 10);
+            gardenCamera.lookAt(0, 1, 5);
+            
+            // Show victory message
+            showVictoryMessage();
+        }
+
+        function createBeatitudesPlaque() {
+            // Stone plaque stand
+            const standGeometry = new THREE.BoxGeometry(3, 3, 0.3);
+            const standMaterial = new THREE.MeshStandardMaterial({ color: 0x8B7355 });
+            const stand = new THREE.Mesh(standGeometry, standMaterial);
+            stand.position.set(0, 1.5, 2);
+            stand.userData.type = 'beatitudes';
+            stand.userData.clickable = true;
+            gardenScene.add(stand);
+            
+            // Golden frame
+            const frameGeometry = new THREE.BoxGeometry(3.2, 3.2, 0.2);
+            const frameMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0xffd700,
+                metalness: 0.8,
+                roughness: 0.2
+            });
+            const frame = new THREE.Mesh(frameGeometry, frameMaterial);
+            frame.position.set(0, 1.5, 2.15);
+            gardenScene.add(frame);
+        }
+
+        function createTenCommandments(x, y, z) {
+            // Two stone tablets
+            const tabletGeometry = new THREE.BoxGeometry(1.2, 2, 0.3);
+            const tabletMaterial = new THREE.MeshStandardMaterial({ color: 0x808080 });
+            
+            const leftTablet = new THREE.Mesh(tabletGeometry, tabletMaterial);
+            leftTablet.position.set(x - 0.7, y + 1, z);
+            leftTablet.rotation.y = Math.PI / 8;
+            leftTablet.userData.type = 'commandments';
+            leftTablet.userData.clickable = true;
+            gardenScene.add(leftTablet);
+            
+            const rightTablet = new THREE.Mesh(tabletGeometry, tabletMaterial);
+            rightTablet.position.set(x + 0.7, y + 1, z);
+            rightTablet.rotation.y = -Math.PI / 8;
+            rightTablet.userData.type = 'commandments';
+            rightTablet.userData.clickable = true;
+            gardenScene.add(rightTablet);
+            
+            // Stone pedestal
+            const pedestalGeometry = new THREE.CylinderGeometry(1.5, 1.8, 0.5, 8);
+            const pedestalMaterial = new THREE.MeshStandardMaterial({ color: 0x696969 });
+            const pedestal = new THREE.Mesh(pedestalGeometry, pedestalMaterial);
+            pedestal.position.set(x, y + 0.25, z);
+            gardenScene.add(pedestal);
+        }
+
+        function createStaffOfAaron(x, y, z) {
+            // Staff
+            const staffGeometry = new THREE.CylinderGeometry(0.08, 0.08, 3, 8);
+            const staffMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
+            const staff = new THREE.Mesh(staffGeometry, staffMaterial);
+            staff.position.set(x, y + 1.5, z);
+            staff.rotation.z = Math.PI / 6;
+            staff.userData.type = 'staff';
+            staff.userData.clickable = true;
+            gardenScene.add(staff);
+            
+            // Blossoming almond branches
+            for (let i = 0; i < 5; i++) {
+                const blossomGeometry = new THREE.SphereGeometry(0.15, 8, 8);
+                const blossomMaterial = new THREE.MeshStandardMaterial({ 
+                    color: 0xFFB6C1,
+                    emissive: 0xFFB6C1,
+                    emissiveIntensity: 0.3
+                });
+                const blossom = new THREE.Mesh(blossomGeometry, blossomMaterial);
+                blossom.position.set(
+                    x + Math.sin(staff.rotation.z) * (1 + i * 0.3),
+                    y + 2 + i * 0.3,
+                    z + Math.cos(staff.rotation.z) * (1 + i * 0.3)
+                );
+                gardenScene.add(blossom);
+            }
+            
+            // Display stand
+            const standGeometry = new THREE.CylinderGeometry(0.5, 0.6, 0.8, 8);
+            const standMaterial = new THREE.MeshStandardMaterial({ color: 0xD4AF37 });
+            const stand = new THREE.Mesh(standGeometry, standMaterial);
+            stand.position.set(x, y + 0.4, z);
+            gardenScene.add(stand);
+        }
+
+        function createArkOfCovenant(x, y, z) {
+            // Main ark box (golden)
+            const arkGeometry = new THREE.BoxGeometry(2, 1.2, 1.2);
+            const arkMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0xFFD700,
+                metalness: 0.9,
+                roughness: 0.1,
+                emissive: 0xFFD700,
+                emissiveIntensity: 0.2
+            });
+            const ark = new THREE.Mesh(arkGeometry, arkMaterial);
+            ark.position.set(x, y + 1.5, z);
+            ark.userData.type = 'ark';
+            ark.userData.clickable = true;
+            gardenScene.add(ark);
+            
+            // Mercy seat (lid)
+            const lidGeometry = new THREE.BoxGeometry(2.2, 0.2, 1.3);
+            const lid = new THREE.Mesh(lidGeometry, arkMaterial);
+            lid.position.set(x, y + 2.2, z);
+            gardenScene.add(lid);
+            
+            // Cherubim (angels on top)
+            const cherubGeometry = new THREE.BoxGeometry(0.4, 0.8, 0.3);
+            const leftCherub = new THREE.Mesh(cherubGeometry, arkMaterial);
+            leftCherub.position.set(x - 0.6, y + 2.7, z);
+            gardenScene.add(leftCherub);
+            
+            const rightCherub = new THREE.Mesh(cherubGeometry, arkMaterial);
+            rightCherub.position.set(x + 0.6, y + 2.7, z);
+            gardenScene.add(rightCherub);
+            
+            // Wings
+            const wingGeometry = new THREE.BoxGeometry(0.6, 0.1, 0.5);
+            const leftWing = new THREE.Mesh(wingGeometry, arkMaterial);
+            leftWing.position.set(x - 0.3, y + 2.9, z);
+            leftWing.rotation.z = -Math.PI / 4;
+            gardenScene.add(leftWing);
+            
+            const rightWing = new THREE.Mesh(wingGeometry, arkMaterial);
+            rightWing.position.set(x + 0.3, y + 2.9, z);
+            rightWing.rotation.z = Math.PI / 4;
+            gardenScene.add(rightWing);
+            
+            // Pedestal
+            const pedestalGeometry = new THREE.CylinderGeometry(1.5, 1.8, 1, 8);
+            const pedestalMaterial = new THREE.MeshStandardMaterial({ color: 0x8B7355 });
+            const pedestal = new THREE.Mesh(pedestalGeometry, pedestalMaterial);
+            pedestal.position.set(x, y + 0.5, z);
+            gardenScene.add(pedestal);
+        }
+
+        function createMosesStatue(x, y, z) {
+            const group = new THREE.Group();
+            
+            // Robes
+            const robeGeometry = new THREE.BoxGeometry(1, 1.8, 0.8);
+            const robeMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
+            const robe = new THREE.Mesh(robeGeometry, robeMaterial);
+            robe.position.y = 1;
+            group.add(robe);
+            
+            // Head
+            const headGeometry = new THREE.BoxGeometry(0.6, 0.6, 0.6);
+            const headMaterial = new THREE.MeshStandardMaterial({ color: 0xf0c291 });
+            const head = new THREE.Mesh(headGeometry, headMaterial);
+            head.position.y = 2.1;
+            group.add(head);
+            
+            // Long beard
+            const beardGeometry = new THREE.BoxGeometry(0.6, 0.8, 0.4);
+            const beardMaterial = new THREE.MeshStandardMaterial({ color: 0xD3D3D3 });
+            const beard = new THREE.Mesh(beardGeometry, beardMaterial);
+            beard.position.y = 1.5;
+            beard.position.z = 0.3;
+            group.add(beard);
+            
+            // Staff in hand
+            const staffGeometry = new THREE.CylinderGeometry(0.05, 0.05, 2.5, 8);
+            const staffMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
+            const staff = new THREE.Mesh(staffGeometry, staffMaterial);
+            staff.position.set(0.6, 1.5, 0);
+            group.add(staff);
+            
+            group.position.set(x, y, z);
+            group.userData.type = 'moses';
+            group.userData.clickable = true;
+            gardenScene.add(group);
+        }
+
+        function createMotherMaryStatue(x, y, z) {
+            const group = new THREE.Group();
+            
+            // Blue robes
+            const robeGeometry = new THREE.BoxGeometry(1, 1.8, 0.8);
+            const robeMaterial = new THREE.MeshStandardMaterial({ color: 0x4169E1 });
+            const robe = new THREE.Mesh(robeGeometry, robeMaterial);
+            robe.position.y = 1;
+            group.add(robe);
+            
+            // White veil
+            const veilGeometry = new THREE.BoxGeometry(0.7, 0.4, 0.7);
+            const veilMaterial = new THREE.MeshStandardMaterial({ color: 0xFFFFFF });
+            const veil = new THREE.Mesh(veilGeometry, veilMaterial);
+            veil.position.y = 2.3;
+            group.add(veil);
+            
+            // Head
+            const headGeometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
+            const headMaterial = new THREE.MeshStandardMaterial({ color: 0xf0c291 });
+            const head = new THREE.Mesh(headGeometry, headMaterial);
+            head.position.y = 2.0;
+            group.add(head);
+            
+            // Praying hands
+            const handGeometry = new THREE.BoxGeometry(0.3, 0.4, 0.2);
+            const handMaterial = new THREE.MeshStandardMaterial({ color: 0xf0c291 });
+            const hands = new THREE.Mesh(handGeometry, handMaterial);
+            hands.position.set(0, 1.2, 0.5);
+            group.add(hands);
+            
+            // Halo
+            const haloGeometry = new THREE.TorusGeometry(0.4, 0.04, 8, 16);
+            const haloMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0xffd700,
+                emissive: 0xffd700,
+                emissiveIntensity: 0.6
+            });
+            const halo = new THREE.Mesh(haloGeometry, haloMaterial);
+            halo.position.y = 2.5;
+            halo.rotation.x = Math.PI / 2;
+            group.add(halo);
+            
+            group.position.set(x, y, z);
+            group.userData.type = 'mary';
+            group.userData.clickable = true;
+            gardenScene.add(group);
+        }
+
+        function createBiblePassageStand(x, y, z, title, text, reference) {
+            // Wooden stand
+            const standGeometry = new THREE.BoxGeometry(2, 1.5, 0.2);
+            const standMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
+            const stand = new THREE.Mesh(standGeometry, standMaterial);
+            stand.position.set(x, y + 1.2, z);
+            stand.rotation.y = x < 0 ? Math.PI / 4 : -Math.PI / 4;
+            stand.userData.type = 'passage';
+            stand.userData.clickable = true;
+            stand.userData.title = title;
+            stand.userData.text = text;
+            stand.userData.reference = reference;
+            gardenScene.add(stand);
+            
+            // Post
+            const postGeometry = new THREE.CylinderGeometry(0.1, 0.1, 1.5, 8);
+            const post = new THREE.Mesh(postGeometry, standMaterial);
+            post.position.set(x, y + 0.75, z);
+            gardenScene.add(post);
+        }
+
+        // TREE CREATION FUNCTIONS
+        function createOakTree(x, y, z) {
+            // Thick trunk
+            const trunkGeometry = new THREE.CylinderGeometry(0.4, 0.5, 4, 8);
+            const trunkMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
+            const trunk = new THREE.Mesh(trunkGeometry, trunkMaterial);
+            trunk.position.set(x, y + 2, z);
+            trunk.castShadow = true;
+            gardenScene.add(trunk);
+            
+            // Large rounded canopy
+            const canopyGeometry = new THREE.SphereGeometry(2.5, 8, 8);
+            const canopyMaterial = new THREE.MeshStandardMaterial({ color: 0x228B22 });
+            const canopy = new THREE.Mesh(canopyGeometry, canopyMaterial);
+            canopy.position.set(x, y + 5.5, z);
+            canopy.castShadow = true;
+            gardenScene.add(canopy);
+        }
+
+        function createPalmTree(x, y, z) {
+            // Tall slender trunk
+            const trunkGeometry = new THREE.CylinderGeometry(0.2, 0.25, 6, 8);
+            const trunkMaterial = new THREE.MeshStandardMaterial({ color: 0xD2691E });
+            const trunk = new THREE.Mesh(trunkGeometry, trunkMaterial);
+            trunk.position.set(x, y + 3, z);
+            trunk.castShadow = true;
+            gardenScene.add(trunk);
+            
+            // Palm fronds
+            const frondGeometry = new THREE.BoxGeometry(0.3, 2, 0.1);
+            const frondMaterial = new THREE.MeshStandardMaterial({ color: 0x228B22 });
+            
+            for (let i = 0; i < 8; i++) {
+                const frond = new THREE.Mesh(frondGeometry, frondMaterial);
+                const angle = (i / 8) * Math.PI * 2;
+                frond.position.set(
+                    x + Math.cos(angle) * 0.5,
+                    y + 6.5,
+                    z + Math.sin(angle) * 0.5
+                );
+                frond.rotation.y = angle;
+                frond.rotation.z = Math.PI / 4;
+                gardenScene.add(frond);
+            }
+        }
+
+        function createCypressTree(x, y, z) {
+            // Tall thin trunk
+            const trunkGeometry = new THREE.CylinderGeometry(0.2, 0.3, 5, 8);
+            const trunkMaterial = new THREE.MeshStandardMaterial({ color: 0x654321 });
+            const trunk = new THREE.Mesh(trunkGeometry, trunkMaterial);
+            trunk.position.set(x, y + 2.5, z);
+            trunk.castShadow = true;
+            gardenScene.add(trunk);
+            
+            // Cone-shaped foliage
+            const foliageGeometry = new THREE.ConeGeometry(1, 4, 8);
+            const foliageMaterial = new THREE.MeshStandardMaterial({ color: 0x355E3B });
+            const foliage = new THREE.Mesh(foliageGeometry, foliageMaterial);
+            foliage.position.set(x, y + 5.5, z);
+            foliage.castShadow = true;
+            gardenScene.add(foliage);
+        }
+
+        function createFruitTree(x, y, z, fruitColor) {
+            // Medium trunk
+            const trunkGeometry = new THREE.CylinderGeometry(0.3, 0.35, 3, 8);
+            const trunkMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
+            const trunk = new THREE.Mesh(trunkGeometry, trunkMaterial);
+            trunk.position.set(x, y + 1.5, z);
+            trunk.castShadow = true;
+            gardenScene.add(trunk);
+            
+            // Leafy canopy
+            const canopyGeometry = new THREE.SphereGeometry(1.5, 8, 8);
+            const canopyMaterial = new THREE.MeshStandardMaterial({ color: 0x90EE90 });
+            const canopy = new THREE.Mesh(canopyGeometry, canopyMaterial);
+            canopy.position.set(x, y + 3.5, z);
+            canopy.castShadow = true;
+            gardenScene.add(canopy);
+            
+            // Fruit
+            for (let i = 0; i < 6; i++) {
+                const fruitGeometry = new THREE.SphereGeometry(0.12, 8, 8);
+                const fruitMaterial = new THREE.MeshStandardMaterial({ color: fruitColor });
+                const fruit = new THREE.Mesh(fruitGeometry, fruitMaterial);
+                fruit.position.set(
+                    x + (Math.random() - 0.5) * 2,
+                    y + 3 + Math.random(),
+                    z + (Math.random() - 0.5) * 2
+                );
+                gardenScene.add(fruit);
+            }
+        }
+
+        function createFlower(x, y, z, color) {
+            // Stem
+            const stemGeometry = new THREE.CylinderGeometry(0.02, 0.02, 0.3, 8);
+            const stemMaterial = new THREE.MeshStandardMaterial({ color: 0x228B22 });
+            const stem = new THREE.Mesh(stemGeometry, stemMaterial);
+            stem.position.set(x, y - 0.1, z);
+            gardenScene.add(stem);
+            
+            // Flower head
+            const flowerGeometry = new THREE.SphereGeometry(0.08, 8, 8);
+            const flowerMaterial = new THREE.MeshStandardMaterial({ 
+                color: color,
+                emissive: color,
+                emissiveIntensity: 0.2
+            });
+            const flower = new THREE.Mesh(flowerGeometry, flowerMaterial);
+            flower.position.set(x, y, z);
+            gardenScene.add(flower);
+            
+            // Petals
+            for (let i = 0; i < 5; i++) {
+                const petalGeometry = new THREE.SphereGeometry(0.06, 6, 6);
+                const petal = new THREE.Mesh(petalGeometry, flowerMaterial);
+                const angle = (i / 5) * Math.PI * 2;
+                petal.position.set(
+                    x + Math.cos(angle) * 0.08,
+                    y,
+                    z + Math.sin(angle) * 0.08
+                );
+                gardenScene.add(petal);
+            }
+        }
+
+        function createBush(x, y, z) {
+            const bushGeometry = new THREE.SphereGeometry(0.6, 8, 6);
+            const bushMaterial = new THREE.MeshStandardMaterial({ color: 0x2F4F2F });
+            const bush = new THREE.Mesh(bushGeometry, bushMaterial);
+            bush.position.set(x, y + 0.4, z);
+            bush.scale.set(1, 0.7, 1);
+            bush.castShadow = true;
+            gardenScene.add(bush);
+        }
+
+        function createVine(x, y, z) {
+            // Climbing support
+            const supportGeometry = new THREE.CylinderGeometry(0.05, 0.05, 3, 8);
+            const supportMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
+            const support = new THREE.Mesh(supportGeometry, supportMaterial);
+            support.position.set(x, y + 1.5, z);
+            gardenScene.add(support);
+            
+            // Vine leaves
+            for (let i = 0; i < 10; i++) {
+                const leafGeometry = new THREE.SphereGeometry(0.15, 6, 6);
+                const leafMaterial = new THREE.MeshStandardMaterial({ color: 0x228B22 });
+                const leaf = new THREE.Mesh(leafGeometry, leafMaterial);
+                leaf.position.set(
+                    x + Math.sin(i * 0.5) * 0.3,
+                    y + 0.3 + i * 0.3,
+                    z + Math.cos(i * 0.5) * 0.3
+                );
+                gardenScene.add(leaf);
+            }
+            
+            // Purple flowering vine
+            for (let i = 0; i < 5; i++) {
+                const flowerGeometry = new THREE.SphereGeometry(0.08, 6, 6);
+                const flowerMaterial = new THREE.MeshStandardMaterial({ 
+                    color: 0x9370DB,
+                    emissive: 0x9370DB,
+                    emissiveIntensity: 0.3
+                });
+                const flower = new THREE.Mesh(flowerGeometry, flowerMaterial);
+                flower.position.set(
+                    x + Math.sin(i * 0.7) * 0.3,
+                    y + 0.5 + i * 0.5,
+                    z + Math.cos(i * 0.7) * 0.3
+                );
+                gardenScene.add(flower);
+            }
+        }
+
+        function createRock(x, y, z) {
+            const rockGeometry = new THREE.DodecahedronGeometry(0.3 + Math.random() * 0.3, 0);
+            const rockMaterial = new THREE.MeshStandardMaterial({ color: 0x808080 });
+            const rock = new THREE.Mesh(rockGeometry, rockMaterial);
+            rock.position.set(x, y + 0.2, z);
+            rock.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+            rock.castShadow = true;
+            gardenScene.add(rock);
+        }
+
+        function createJesusModel() {
+            const group = new THREE.Group();
+            
+            // Body (white robe)
+            const bodyGeometry = new THREE.BoxGeometry(0.7, 0.9, 0.4);
+            const bodyMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0xffffff,
+                emissive: 0xffffff,
+                emissiveIntensity: 0.2
+            });
+            const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+            body.position.y = 0.6;
+            group.add(body);
+            
+            // Head
+            const headGeometry = new THREE.BoxGeometry(0.4, 0.4, 0.4);
+            const headMaterial = new THREE.MeshStandardMaterial({ color: 0xf0c291 });
+            const head = new THREE.Mesh(headGeometry, headMaterial);
+            head.position.y = 1.2;
+            group.add(head);
+            
+            // Hair and beard (brown)
+            const hairGeometry = new THREE.BoxGeometry(0.45, 0.3, 0.45);
+            const hairMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
+            const hair = new THREE.Mesh(hairGeometry, hairMaterial);
+            hair.position.y = 1.35;
+            group.add(hair);
+            
+            // Halo (golden ring)
+            const haloGeometry = new THREE.TorusGeometry(0.35, 0.04, 8, 16);
+            const haloMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0xffd700,
+                emissive: 0xffd700,
+                emissiveIntensity: 0.8
+            });
+            const halo = new THREE.Mesh(haloGeometry, haloMaterial);
+            halo.position.y = 1.6;
+            halo.rotation.x = Math.PI / 2;
+            group.add(halo);
+            
+            // Arms extended in welcome
+            const armGeometry = new THREE.BoxGeometry(0.15, 0.6, 0.15);
+            const armMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff });
+            const leftArm = new THREE.Mesh(armGeometry, armMaterial);
+            leftArm.position.set(-0.5, 0.7, 0);
+            leftArm.rotation.z = Math.PI / 4;
+            group.add(leftArm);
+            
+            const rightArm = new THREE.Mesh(armGeometry, armMaterial);
+            rightArm.position.set(0.5, 0.7, 0);
+            rightArm.rotation.z = -Math.PI / 4;
+            group.add(rightArm);
+            
+            // Legs
+            const legGeometry = new THREE.BoxGeometry(0.2, 0.5, 0.2);
+            const legMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff });
+            const leftLeg = new THREE.Mesh(legGeometry, legMaterial);
+            leftLeg.position.set(-0.15, 0.15, 0);
+            const rightLeg = new THREE.Mesh(legGeometry, legMaterial);
+            rightLeg.position.set(0.15, 0.15, 0);
+            group.add(leftLeg);
+            group.add(rightLeg);
+            
+            return group;
+        }
+
+        function showVictoryMessage() {
+            document.getElementById('quote-text').innerHTML = `
+                <div style="color: #f1c40f; font-size: 24px; font-weight: bold; margin-bottom: 15px;">
+                    🏆 VICTORY! 🏆
+                </div>
+                <div style="color: #2ecc71; font-size: 16px; margin-bottom: 15px;">
+                    The Devil has been vanquished!<br>
+                    Light triumphs over darkness!
+                </div>
+                <div style="color: #ecf0f1; font-size: 14px; margin-bottom: 15px;">
+                    Jesus welcomes you to walk with Him through the Garden of Eden
+                </div>
+                <div style="color: #ecf0f1; font-size: 13px; font-style: italic; line-height: 1.5; margin-bottom: 10px;">
+                    "For I am convinced that neither death nor life, neither angels nor demons, 
+                    nor anything else in all creation, will be able to separate us from the love 
+                    of God that is in Christ Jesus our Lord."
+                </div>
+                <div style="color: #f39c12; font-size: 12px; font-weight: bold;">
+                    — Romans 8:38-39
+                </div>
+            `;
+            document.getElementById('quote-author').textContent = '';
+            document.getElementById('quote-continue').textContent = 'Walk with Jesus';
+            document.getElementById('quote-overlay').style.display = 'flex';
+            
+            const btn = document.getElementById('quote-continue');
+            const handler = () => {
+                document.getElementById('quote-overlay').style.display = 'none';
+                btn.removeEventListener('click', handler);
+                startGardenWalk();
+            };
+            btn.addEventListener('click', handler);
+        }
+
+        function startGardenWalk() {
+            gardenWalkProgress = 0;
+            enableGardenInteraction();
+            // Garden walk will be animated in the update loop
+        }
+
+        function updateGardenWalk(dt) {
+            if (gameState !== 'garden' || !gardenScene) return;
+            
+            // Gentle walk forward
+            gardenWalkProgress += dt * 0.5;
+            
+            // Move Jesus slowly forward
+            if (jesusModel) {
+                jesusModel.position.z -= dt * 0.8;
+                jesusModel.rotation.x = Math.sin(gardenWalkProgress * 3) * 0.05;
+            }
+            
+            // Find and move player model
+            gardenScene.children.forEach(child => {
+                if (child !== jesusModel && child.position && child.position.y === 0 && child.position.z > 4) {
+                    child.position.z -= dt * 0.8;
+                    child.rotation.x = Math.sin(gardenWalkProgress * 3 + 1) * 0.05;
+                }
+            });
+            
+            // Move camera with them
+            gardenCamera.position.z -= dt * 0.8;
+            gardenCamera.lookAt(0, 1, jesusModel.position.z - 7);
+            
+            // After walking for 30 seconds, show final message
+            if (gardenWalkProgress > 30) {
+                showFinalMessage();
+            }
+        }
+
+        // Click handler for garden objects
+        function onGardenClick(event) {
+            if (gameState !== 'garden') return;
+            
+            const rect = renderer.domElement.getBoundingClientRect();
+            const x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+            const y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+            
+            raycaster.setFromCamera(new THREE.Vector2(x, y), gardenCamera);
+            const intersects = raycaster.intersectObjects(gardenScene.children, true);
+            
+            for (let intersect of intersects) {
+                let obj = intersect.object;
+                
+                // Check userData on object or its parent
+                while (obj) {
+                    if (obj.userData && obj.userData.clickable) {
+                        showGardenDialog(obj.userData.type, obj.userData);
+                        return;
+                    }
+                    obj = obj.parent;
+                }
+            }
+        }
+
+        function showGardenDialog(type, data) {
+            let content = '';
+            
+            if (type === 'beatitudes') {
+                content = `
+                    <div style="color: #f1c40f; font-size: 22px; font-weight: bold; margin-bottom: 15px;">
+                        THE BEATITUDES
+                    </div>
+                    <div style="color: #ecf0f1; font-size: 13px; line-height: 1.7; text-align: left; margin-bottom: 15px;">
+                        Blessed are the poor in spirit, for theirs is the kingdom of heaven.<br>
+                        Blessed are those who mourn, for they will be comforted.<br>
+                        Blessed are the meek, for they will inherit the earth.<br>
+                        Blessed are those who hunger and thirst for righteousness, for they will be filled.<br>
+                        Blessed are the merciful, for they will be shown mercy.<br>
+                        Blessed are the pure in heart, for they will see God.<br>
+                        Blessed are the peacemakers, for they will be called children of God.<br>
+                        Blessed are those who are persecuted because of righteousness, for theirs is the kingdom of heaven.
+                    </div>
+                    <div style="color: #f39c12; font-size: 12px; font-weight: bold;">
+                        — Matthew 5:3-10
+                    </div>
+                `;
+            } else if (type === 'commandments') {
+                content = `
+                    <div style="color: #f1c40f; font-size: 22px; font-weight: bold; margin-bottom: 15px;">
+                        THE TEN COMMANDMENTS
+                    </div>
+                    <div style="color: #ecf0f1; font-size: 13px; line-height: 1.7; text-align: left; margin-bottom: 15px;">
+                        1. I am the LORD your God; you shall have no other gods before me.<br>
+                        2. You shall not take the name of the LORD your God in vain.<br>
+                        3. Remember the Sabbath day, to keep it holy.<br>
+                        4. Honor your father and your mother.<br>
+                        5. You shall not murder.<br>
+                        6. You shall not commit adultery.<br>
+                        7. You shall not steal.<br>
+                        8. You shall not bear false witness against your neighbor.<br>
+                        9. You shall not covet your neighbor's wife.<br>
+                        10. You shall not covet your neighbor's goods.
+                    </div>
+                    <div style="color: #f39c12; font-size: 12px; font-weight: bold;">
+                        — Exodus 20:1-17
+                    </div>
+                `;
+            } else if (type === 'staff') {
+                content = `
+                    <div style="color: #f1c40f; font-size: 22px; font-weight: bold; margin-bottom: 15px;">
+                        THE STAFF OF AARON
+                    </div>
+                    <div style="color: #ecf0f1; font-size: 13px; line-height: 1.7; text-align: left; margin-bottom: 15px;">
+                        "The next day Moses entered the tent and saw that Aaron's staff, which represented the tribe of Levi, had not only sprouted but had budded, blossomed and produced almonds. Then Moses brought out all the staffs from the LORD's presence to all the Israelites. They looked at them, and each of the leaders took his own staff."
+                    </div>
+                    <div style="color: #95a5a6; font-size: 12px; line-height: 1.5; margin-bottom: 10px;">
+                        Aaron's staff that budded was a sign of God's chosen priesthood, demonstrating His divine selection of Aaron and his descendants for priestly service.
+                    </div>
+                    <div style="color: #f39c12; font-size: 12px; font-weight: bold;">
+                        — Numbers 17:8-9
+                    </div>
+                `;
+            } else if (type === 'ark') {
+                content = `
+                    <div style="color: #f1c40f; font-size: 22px; font-weight: bold; margin-bottom: 15px;">
+                        THE ARK OF THE COVENANT
+                    </div>
+                    <div style="color: #ecf0f1; font-size: 13px; line-height: 1.7; text-align: left; margin-bottom: 15px;">
+                        "Have them make an ark of acacia wood—two and a half cubits long, a cubit and a half wide, and a cubit and a half high. Overlay it with pure gold, both inside and out, and make a gold molding around it. There, above the cover between the two cherubim that are over the ark of the covenant law, I will meet with you and give you all my commands for the Israelites."
+                    </div>
+                    <div style="color: #95a5a6; font-size: 12px; line-height: 1.5; margin-bottom: 10px;">
+                        The Ark contained the stone tablets of the Ten Commandments, Aaron's staff, and a jar of manna. It represented God's presence among His people.
+                    </div>
+                    <div style="color: #f39c12; font-size: 12px; font-weight: bold;">
+                        — Exodus 25:10-11, 22
+                    </div>
+                `;
+            } else if (type === 'moses') {
+                content = `
+                    <div style="color: #f1c40f; font-size: 22px; font-weight: bold; margin-bottom: 15px;">
+                        MOSES SPEAKS
+                    </div>
+                    <div style="color: #ecf0f1; font-size: 14px; line-height: 1.7; text-align: left; margin-bottom: 15px;">
+                        "The LORD your God will raise up for you a prophet like me from among you, from your fellow Israelites. You must listen to him. This is what you asked of the LORD your God at Horeb on the day of the assembly when you said, 'Let us not hear the voice of the LORD our God nor see this great fire anymore, or we will die.'"
+                    </div>
+                    <div style="color: #95a5a6; font-size: 12px; line-height: 1.5; margin-bottom: 10px;">
+                        Moses, the great lawgiver and prophet, led the Israelites out of Egypt and received the Law from God on Mount Sinai. His prophecy pointed to the coming Messiah, Jesus Christ.
+                    </div>
+                    <div style="color: #f39c12; font-size: 12px; font-weight: bold;">
+                        — Deuteronomy 18:15-16
+                    </div>
+                `;
+            } else if (type === 'mary') {
+                content = `
+                    <div style="color: #f1c40f; font-size: 22px; font-weight: bold; margin-bottom: 15px;">
+                        MOTHER MARY SPEAKS
+                    </div>
+                    <div style="color: #4169E1; font-size: 16px; font-weight: bold; line-height: 1.7; text-align: center; margin-bottom: 15px;">
+                        "Do whatever He tells you."
+                    </div>
+                    <div style="color: #ecf0f1; font-size: 13px; line-height: 1.7; text-align: left; margin-bottom: 15px;">
+                        On the third day a wedding took place at Cana in Galilee. Jesus' mother was there, and Jesus and his disciples had also been invited to the wedding. When the wine was gone, Jesus' mother said to him, "They have no more wine." His mother said to the servants, "Do whatever he tells you."
+                    </div>
+                    <div style="color: #95a5a6; font-size: 12px; line-height: 1.5; margin-bottom: 10px;">
+                        Mary's words at the Wedding of Cana remain her message to all believers: listen to Jesus and obey Him. She always points us to her Son.
+                    </div>
+                    <div style="color: #f39c12; font-size: 12px; font-weight: bold;">
+                        — John 2:1-5
+                    </div>
+                `;
+            } else if (type === 'passage') {
+                content = `
+                    <div style="color: #f1c40f; font-size: 20px; font-weight: bold; margin-bottom: 15px;">
+                        ${data.title}
+                    </div>
+                    <div style="color: #ecf0f1; font-size: 13px; line-height: 1.7; text-align: left; margin-bottom: 15px;">
+                        ${data.text}
+                    </div>
+                    <div style="color: #f39c12; font-size: 12px; font-weight: bold;">
+                        — ${data.reference}
+                    </div>
+                `;
+            }
+            
+            document.getElementById('quote-text').innerHTML = content;
+            document.getElementById('quote-author').textContent = '';
+            document.getElementById('quote-continue').textContent = 'Continue Walking';
+            document.getElementById('quote-overlay').style.display = 'flex';
+            
+            const btn = document.getElementById('quote-continue');
+            const handler = () => {
+                document.getElementById('quote-overlay').style.display = 'none';
+                btn.removeEventListener('click', handler);
+            };
+            btn.addEventListener('click', handler);
+        }
+
+        // Add garden click handler when entering garden
+        function enableGardenInteraction() {
+            document.addEventListener('click', onGardenClick);
+        }
+
+        function disableGardenInteraction() {
+            document.removeEventListener('click', onGardenClick);
+        }
+
+        function showFinalMessage() {
+            gameState = 'final';
+            disableGardenInteraction();
+            
+            document.getElementById('quote-text').innerHTML = `
+                <div style="color: #2ecc71; font-size: 20px; font-weight: bold; margin-bottom: 15px;">
+                    ✨ Peace be with you ✨
+                </div>
+                <div style="color: #ecf0f1; font-size: 14px; line-height: 1.6; margin-bottom: 15px;">
+                    You have walked with Jesus through the Garden of Eden.<br>
+                    The victory over sin and death is complete.<br>
+                    May you always walk in His light.
+                </div>
+                <div style="color: #ecf0f1; font-size: 13px; font-style: italic; line-height: 1.5; margin-bottom: 10px;">
+                    "I have told you these things, so that in me you may have peace. 
+                    In this world you will have trouble. But take heart! I have overcome the world."
+                </div>
+                <div style="color: #f39c12; font-size: 12px; font-weight: bold;">
+                    — John 16:33
+                </div>
+            `;
+            document.getElementById('quote-author').textContent = '';
+            document.getElementById('quote-continue').textContent = 'New Game';
+            document.getElementById('quote-overlay').style.display = 'flex';
+            
+            const btn = document.getElementById('quote-continue');
+            const handler = () => {
+                document.getElementById('quote-overlay').style.display = 'none';
+                btn.removeEventListener('click', handler);
+                
+                // Reset game
+                dungeonLevel = 1;
+                defeatedSins.clear();
+                inventory.holyWater = 3;
+                inventory.rosaries = 2;
+                inventory.gold = 0;
+                inventory.atkBoost = 0;
+                inventory.defBoost = 0;
+                inventory.hpBoost = 0;
+                inventory.virtueItems = [];
+                
+                // Clean up garden scene
+                if (gardenScene) {
+                    while(gardenScene.children.length > 0) { 
+                        const obj = gardenScene.children[0];
+                        if (obj.geometry) obj.geometry.dispose();
+                        if (obj.material) obj.material.dispose();
+                        gardenScene.remove(obj);
+                    }
+                    gardenScene = null;
+                }
+                
+                generateDungeon();
+                gameState = 'explore';
+            };
+            btn.addEventListener('click', handler);
+        }
+
+        function showOneRingVictory() {
+            document.getElementById('quote-text').innerHTML = `
+                <div style="color: #f1c40f; font-size: 22px; font-weight: bold; margin-bottom: 15px;">
+                    ⚡ THE ONE RING TO RULE THEM ALL! ⚡
+                </div>
+                <div style="color: #2ecc71; font-size: 16px; margin-bottom: 15px;">
+                    Jesus Christ wields all seven virtues!<br>
+                    Divine power destroys all evil instantly!
+                </div>
+                <div style="color: #e74c3c; font-size: 14px; margin-bottom: 15px;">
+                    The Devil and all demons are vanquished!
+                </div>
+            `;
+            document.getElementById('quote-author').textContent = '';
+            document.getElementById('quote-overlay').style.display = 'flex';
+            
+            const btn = document.getElementById('quote-continue');
+            btn.textContent = 'New Game';
+            const handler = () => {
+                document.getElementById('quote-overlay').style.display = 'none';
+                btn.removeEventListener('click', handler);
+                dungeonLevel = 1;
+                defeatedSins.clear();
+                inventory.holyWater = 3;
+                inventory.rosaries = 2;
+                inventory.gold = 0;
+                inventory.atkBoost = 0;
+                inventory.defBoost = 0;
+                inventory.hpBoost = 0;
+                inventory.virtueItems = [];
+                generateDungeon();
+                gameState = 'explore';
+            };
+            btn.addEventListener('click', handler);
+        }
+
+        // Event handlers
+        function onKeyDown(e) {
+            keys[e.key.toLowerCase()] = true;
+        }
+
+        function onKeyUp(e) {
+            keys[e.key.toLowerCase()] = false;
+        }
+
+        function onMouseMove(e) {
+            if (isPointerLocked && gameState === 'explore') {
+                mouseX = e.movementX || 0;
+                mouseY = e.movementY || 0;
+            }
+        }
+
+        function onClick(e) {
+            if (gameState === 'explore') {
+                // Click-to-rotate camera
+                const rect = renderer.domElement.getBoundingClientRect();
+                const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+                const y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+                
+                // Calculate target rotation based on click position
+                // Left side = rotate left, right side = rotate right
+                const rotationAmount = x * Math.PI / 4; // Max 45 degrees per click
+                targetRotationY = camera.rotation.y - rotationAmount;
+            }
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function checkWallCollision(x, z, radius = 0.5) {
+            // Convert world position to grid position
+            const gridX = Math.floor((x + MAP_SIZE * CELL_SIZE / 2) / CELL_SIZE);
+            const gridZ = Math.floor((z + MAP_SIZE * CELL_SIZE / 2) / CELL_SIZE);
+            
+            // Check surrounding cells for walls
+            for (let dz = -1; dz <= 1; dz++) {
+                for (let dx = -1; dx <= 1; dx++) {
+                    const checkX = gridX + dx;
+                    const checkZ = gridZ + dz;
+                    
+                    if (checkX < 0 || checkX >= MAP_SIZE || checkZ < 0 || checkZ >= MAP_SIZE) {
+                        return true; // Out of bounds
+                    }
+                    
+                    if (dungeon[checkZ][checkX] === 1) {
+                        // Wall exists - check if player is too close
+                        const wallWorldX = (checkX - MAP_SIZE / 2) * CELL_SIZE;
+                        const wallWorldZ = (checkZ - MAP_SIZE / 2) * CELL_SIZE;
+                        
+                        // Calculate distance from player to wall center
+                        const dx = x - wallWorldX;
+                        const dz = z - wallWorldZ;
+                        const distance = Math.sqrt(dx * dx + dz * dz);
+                        
+                        // Check if within collision radius (wall is CELL_SIZE/2 + player radius)
+                        if (distance < CELL_SIZE / 2 + radius) {
+                            return true;
+                        }
+                    }
+                }
+            }
+            
+            return false;
+        }
+
+        // Game loop
+        function update(dt) {
+            if (gameState === 'explore') {
+                // Movement - keyboard and touch
+                const moveSpeed = MOVE_SPEED * dt;
+                const forward = new THREE.Vector3();
+                const right = new THREE.Vector3();
+                
+                camera.getWorldDirection(forward);
+                forward.y = 0;
+                forward.normalize();
+                
+                right.crossVectors(camera.up, forward).normalize();
+                
+                // Calculate desired position
+                let desiredX = camera.position.x;
+                let desiredZ = camera.position.z;
+                
+                // Keyboard movement
+                if (keys['w']) {
+                    desiredX += forward.x * moveSpeed;
+                    desiredZ += forward.z * moveSpeed;
+                }
+                if (keys['s']) {
+                    desiredX -= forward.x * moveSpeed;
+                    desiredZ -= forward.z * moveSpeed;
+                }
+                if (keys['a']) {
+                    desiredX += right.x * moveSpeed;
+                    desiredZ += right.z * moveSpeed;
+                }
+                if (keys['d']) {
+                    desiredX -= right.x * moveSpeed;
+                    desiredZ -= right.z * moveSpeed;
+                }
+                
+                // Apply movement only if no wall collision
+                if (!checkWallCollision(desiredX, camera.position.z)) {
+                    camera.position.x = desiredX;
+                }
+                if (!checkWallCollision(camera.position.x, desiredZ)) {
+                    camera.position.z = desiredZ;
+                }
+                
+                // Smooth camera rotation towards target
+                const rotationDiff = targetRotationY - camera.rotation.y;
+                if (Math.abs(rotationDiff) > 0.01) {
+                    camera.rotation.y += rotationDiff * 0.1; // Smooth interpolation
+                }
+                
+                // Update light position
+                if (camera.userData.light) {
+                    camera.userData.light.position.copy(camera.position);
+                }
+                
+                // Check for enemy proximity (RPG-style encounter)
+                for (let enemy of enemies) {
+                    const distance = camera.position.distanceTo(enemy.mesh.position);
+                    if (distance < 3) {
+                        startBattle(enemy);
+                        break;
+                    }
+                }
+                for (let i = pickups.length - 1; i >= 0; i--) {
+                    const pickup = pickups[i];
+                    const distance = camera.position.distanceTo(pickup.mesh.position);
+                    
+                    if (distance < 2) {
+                        scene.remove(pickup.mesh);
+                        pickups.splice(i, 1);
+                        
+                        if (pickup.type === 'holyWater') {
+                            inventory.holyWater++;
+                            const hpIncrease = 10;
+                            inventory.hpBoost += hpIncrease;
+                            heroes.forEach(h => h.maxHp += hpIncrease);
+                            showMessage(`Holy Water! +${hpIncrease} Max HP!`);
+                        } else if (pickup.type === 'rosary') {
+                            inventory.rosaries++;
+                            const atkIncrease = 2;
+                            inventory.atkBoost += atkIncrease;
+                            showMessage(`Rosary! +${atkIncrease} ATK!`);
+                        } else if (pickup.type === 'gold') {
+                            const goldAmount = 10 + Math.floor(Math.random() * 20);
+                            inventory.gold += goldAmount;
+                            showMessage(`Found ${goldAmount} Gold!`);
+                        }
+                        
+                        updateHUD();
+                    }
+                }
+                
+                // Rotate pickups
+                pickups.forEach(p => {
+                    p.mesh.rotation.y += dt * 2;
+                    p.mesh.position.y = 1 + Math.sin(Date.now() * 0.002) * 0.2;
+                });
+                
+                // Rotate enemies
+                enemies.forEach(e => {
+                    e.mesh.rotation.y += dt * 0.5;
+                });
+            }
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            const dt = 0.016; // ~60fps
+            update(dt);
+            
+            if (gameState === 'battle' && battleScene && battleCamera) {
+                updateBattleCamera();
+                renderer.render(battleScene, battleCamera);
+            } else if (gameState === 'garden' && gardenScene && gardenCamera) {
+                updateGardenWalk(dt);
+                renderer.render(gardenScene, gardenCamera);
+            } else if (gameState === 'final' && gardenScene && gardenCamera) {
+                renderer.render(gardenScene, gardenCamera);
+            } else {
+                renderer.render(scene, camera);
+            }
+        }
+
+        // Initialize
+        init3D();
+        animate();
+    </script>
+</body>
+</html>
