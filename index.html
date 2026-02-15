@@ -95,37 +95,35 @@
             z-index: 100;
         }
         
-        /* FF-Style Stat Bars - FFX Inspired */
+        /* FF-Style Stat Bars - Ultra Minimal */
         .stat-bar-container {
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 4px;
         }
         
         .stat-label {
-            font-size: clamp(9px, 1.4vw, 10px);
+            font-size: clamp(8px, 1.2vw, 9px);
             color: #bdc3c7;
-            min-width: 22px;
+            min-width: 18px;
             font-weight: bold;
-            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.9);
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 1);
         }
         
         .stat-bar {
             flex: 1;
-            height: clamp(12px, 2.2vh, 16px);
-            background: rgba(0, 0, 0, 0.5);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 3px;
+            height: clamp(8px, 1.5vh, 10px);
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
             overflow: hidden;
             position: relative;
-            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.6), 0 1px 0 rgba(255, 255, 255, 0.1);
         }
         
         .stat-bar-fill {
             height: 100%;
             transition: width 0.4s ease;
             position: relative;
-            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), 0 1px 2px rgba(0, 0, 0, 0.4);
         }
         
         .stat-bar-fill::after {
@@ -135,8 +133,7 @@
             left: 0;
             right: 0;
             height: 50%;
-            background: linear-gradient(to bottom, rgba(255, 255, 255, 0.4), transparent);
-            border-radius: 2px 2px 0 0;
+            background: linear-gradient(to bottom, rgba(255, 255, 255, 0.3), transparent);
         }
         
         .hp-bar .stat-bar-fill {
@@ -148,85 +145,81 @@
         }
         
         .stat-value {
-            font-size: clamp(9px, 1.4vw, 10px);
+            font-size: clamp(8px, 1.2vw, 9px);
             color: #ecf0f1;
             font-weight: bold;
-            min-width: 60px;
+            min-width: 50px;
             text-align: right;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9);
+            text-shadow: 2px 2px 3px rgba(0, 0, 0, 1);
         }
         
         .enemy-hp-bar {
-            display: none; /* Hidden - no enemy health shown */
+            display: none;
         }
         
         .enemy-hp-fill {
-            display: none; /* Hidden - no enemy health shown */
+            display: none;
         }
         
-        /* Battle Log & Actions - FFX Style */
+        /* Battle Log & Actions - Ultra Minimal */
         #battle-log {
-            display: none; /* Hidden like in FFX */
+            display: none;
         }
         
         #battle-actions {
             display: flex;
             flex-direction: column;
-            gap: 2px;
-            padding: clamp(8px, 1.5vw, 12px);
-            background: rgba(0, 0, 0, 0.15);
+            gap: 1px;
+            padding: clamp(4px, 1vw, 6px);
+            background: rgba(0, 0, 0, 0.05);
         }
         
         .battle-btn {
-            background: linear-gradient(135deg, rgba(52, 73, 94, 0.6) 0%, rgba(44, 62, 80, 0.6) 100%);
+            background: linear-gradient(135deg, rgba(52, 73, 94, 0.3) 0%, rgba(44, 62, 80, 0.3) 100%);
             color: #ecf0f1;
-            border: 1px solid rgba(149, 165, 166, 0.4);
-            border-left: 3px solid rgba(52, 152, 219, 0.5);
-            padding: clamp(6px, 1.5vw, 10px) clamp(10px, 2vw, 15px);
-            font-size: clamp(10px, 1.5vw, 12px);
+            border: 1px solid rgba(149, 165, 166, 0.2);
+            border-left: 2px solid rgba(52, 152, 219, 0.3);
+            padding: clamp(4px, 1vw, 6px) clamp(6px, 1.5vw, 10px);
+            font-size: clamp(9px, 1.3vw, 11px);
             font-weight: bold;
-            border-radius: 3px;
+            border-radius: 2px;
             cursor: pointer;
             font-family: 'Courier New', monospace;
             transition: all 0.2s;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 1);
             position: relative;
             text-align: left;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.3px;
         }
         
         .battle-btn:hover {
-            background: linear-gradient(135deg, rgba(52, 152, 219, 0.7) 0%, rgba(41, 128, 185, 0.7) 100%);
-            border-left-color: rgba(52, 152, 219, 0.9);
-            transform: translateX(3px);
-            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            background: linear-gradient(135deg, rgba(52, 152, 219, 0.4) 0%, rgba(41, 128, 185, 0.4) 100%);
+            border-left-color: rgba(52, 152, 219, 0.6);
+            transform: translateX(2px);
         }
         
         .battle-btn:active {
-            transform: translateX(2px);
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            transform: translateX(1px);
         }
         
         .battle-btn.selected {
-            background: linear-gradient(135deg, rgba(243, 156, 18, 0.7) 0%, rgba(211, 84, 0, 0.7) 100%);
-            border-left-color: rgba(243, 156, 18, 1);
-            border-left-width: 4px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 0 12px rgba(243, 156, 18, 0.5);
-            transform: translateX(5px);
+            background: linear-gradient(135deg, rgba(243, 156, 18, 0.4) 0%, rgba(211, 84, 0, 0.4) 100%);
+            border-left-color: rgba(243, 156, 18, 0.8);
+            border-left-width: 3px;
+            transform: translateX(3px);
         }
         
         .battle-btn.selected::before {
             content: '▸ ';
             position: absolute;
-            left: -15px;
+            left: -12px;
             color: #f39c12;
             animation: pulse 0.8s ease-in-out infinite;
         }
         
         @keyframes pulse {
             0%, 100% { opacity: 1; transform: translateX(0); }
-            50% { opacity: 0.7; transform: translateX(-3px); }
+            50% { opacity: 0.7; transform: translateX(-2px); }
         }
         
         /* Mobile Touch Controls */
@@ -392,45 +385,44 @@
             position: fixed;
             bottom: 10px;
             left: 10px;
-            width: min(240px, 30vw);
-            max-height: 35vh;
-            background: linear-gradient(135deg, rgba(20, 20, 60, 0.25) 0%, rgba(10, 10, 40, 0.25) 100%);
-            backdrop-filter: blur(4px);
+            width: min(180px, 22vw);
+            max-height: 20vh;
+            background: linear-gradient(135deg, rgba(20, 20, 60, 0.05) 0%, rgba(10, 10, 40, 0.05) 100%);
+            backdrop-filter: blur(2px);
             padding: 0;
             display: none;
             z-index: 150;
-            border: 2px solid rgba(243, 156, 18, 0.6);
-            border-radius: 8px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(243, 156, 18, 0.3);
+            border-radius: 6px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
             font-family: 'Courier New', monospace;
-            font-size: clamp(10px, 1.5vw, 12px);
+            font-size: clamp(9px, 1.3vw, 11px);
             box-sizing: border-box;
         }
         
         @media (max-width: 768px) {
             #battle-ui {
                 width: calc(100% - 20px);
-                max-height: 30vh;
+                max-height: 20vh;
             }
         }
         
         #battle-status {
             position: fixed;
-            top: 50%;
+            top: 10px;
             right: 10px;
-            transform: translateY(-50%);
-            width: min(200px, 25vw);
-            max-height: 70vh;
-            background: linear-gradient(135deg, rgba(20, 20, 60, 0.25) 0%, rgba(10, 10, 40, 0.25) 100%);
-            backdrop-filter: blur(4px);
+            width: min(160px, 20vw);
+            max-height: 50vh;
+            background: linear-gradient(135deg, rgba(20, 20, 60, 0.05) 0%, rgba(10, 10, 40, 0.05) 100%);
+            backdrop-filter: blur(2px);
             padding: 0;
             display: none;
             z-index: 150;
-            border: 2px solid rgba(46, 204, 113, 0.6);
-            border-radius: 8px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(46, 204, 113, 0.3);
+            border-radius: 6px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
             font-family: 'Courier New', monospace;
-            font-size: clamp(9px, 1.4vw, 11px);
+            font-size: clamp(8px, 1.2vw, 10px);
             box-sizing: border-box;
             overflow-y: auto;
         }
@@ -441,17 +433,16 @@
                 top: 10px;
                 right: 10px;
                 left: 10px;
-                transform: none;
-                max-height: 25vh;
+                max-height: 20vh;
             }
         }
         
         .hero-status {
             display: flex;
             flex-direction: column;
-            padding: clamp(6px, 1.2vw, 10px);
-            background: rgba(0, 0, 0, 0.2);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            padding: clamp(4px, 0.8vw, 6px);
+            background: rgba(0, 0, 0, 0.05);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
         
         .hero-status:last-child {
@@ -459,18 +450,17 @@
         }
         
         .hero-status.active {
-            background: rgba(243, 156, 18, 0.2);
-            border-left: 3px solid #f39c12;
-            box-shadow: inset 0 0 12px rgba(243, 156, 18, 0.3);
+            background: rgba(243, 156, 18, 0.1);
+            border-left: 2px solid #f39c12;
         }
         
         .hero-name {
             font-weight: bold;
             color: #ecf0f1;
-            font-size: clamp(11px, 1.8vw, 13px);
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9);
-            margin-bottom: 4px;
-            letter-spacing: 1px;
+            font-size: clamp(10px, 1.5vw, 11px);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 1);
+            margin-bottom: 3px;
+            letter-spacing: 0.5px;
         }
         
         .hero-status.active .hero-name {
@@ -480,7 +470,7 @@
         .hero-stats {
             display: flex;
             flex-direction: column;
-            gap: 3px;
+            gap: 2px;
         }
         
         #enemy-status {
@@ -652,6 +642,133 @@
             padding: 20px;
         }
     </style>
+    <script>
+        // Simple MIDI-style music system using Web Audio API
+        let audioContext = null;
+        let masterGainNode = null;
+        let currentNotes = [];
+        let musicPlaying = false;
+        
+        function initAudio() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                masterGainNode = audioContext.createGain();
+                masterGainNode.gain.value = 0.15; // Low volume
+                masterGainNode.connect(audioContext.destination);
+            }
+        }
+        
+        function playNote(frequency, duration, startTime) {
+            if (!audioContext) return;
+            
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(masterGainNode);
+            
+            oscillator.type = 'sine'; // Soft, hymn-like tone
+            oscillator.frequency.value = frequency;
+            
+            // ADSR envelope for organ-like sound
+            const now = audioContext.currentTime + startTime;
+            gainNode.gain.setValueAtTime(0, now);
+            gainNode.gain.linearRampToValueAtTime(0.3, now + 0.05);
+            gainNode.gain.exponentialRampToValueAtTime(0.2, now + duration - 0.1);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, now + duration);
+            
+            oscillator.start(now);
+            oscillator.stop(now + duration);
+            
+            currentNotes.push({ oscillator, gainNode });
+        }
+        
+        // Original sacred hymn melody (not copyrighted)
+        // Notes: C, D, E, F, G, A, B in various octaves
+        const NOTE_FREQUENCIES = {
+            C4: 261.63, D4: 293.66, E4: 329.63, F4: 349.23, G4: 392.00, A4: 440.00, B4: 493.88,
+            C5: 523.25, D5: 587.33, E5: 659.25, F5: 698.46, G5: 783.99, A5: 880.00, B5: 987.77
+        };
+        
+        // Original sacred hymn composition
+        const SACRED_HYMN = [
+            // Measure 1-2: Opening phrase
+            { note: 'C4', time: 0.0, duration: 0.8 },
+            { note: 'E4', time: 0.8, duration: 0.8 },
+            { note: 'G4', time: 1.6, duration: 1.2 },
+            { note: 'F4', time: 2.8, duration: 0.4 },
+            
+            // Measure 3-4: Rising
+            { note: 'E4', time: 3.2, duration: 0.8 },
+            { note: 'F4', time: 4.0, duration: 0.8 },
+            { note: 'G4', time: 4.8, duration: 1.6 },
+            
+            // Measure 5-6: Peak
+            { note: 'C5', time: 6.4, duration: 0.8 },
+            { note: 'B4', time: 7.2, duration: 0.4 },
+            { note: 'A4', time: 7.6, duration: 0.4 },
+            { note: 'G4', time: 8.0, duration: 1.2 },
+            
+            // Measure 7-8: Descent
+            { note: 'F4', time: 9.2, duration: 0.8 },
+            { note: 'E4', time: 10.0, duration: 0.8 },
+            { note: 'D4', time: 10.8, duration: 1.2 },
+            
+            // Measure 9-10: Resolution
+            { note: 'C4', time: 12.0, duration: 2.0 },
+            
+            // Measure 11-12: Second phrase
+            { note: 'G4', time: 14.0, duration: 0.8 },
+            { note: 'A4', time: 14.8, duration: 0.8 },
+            { note: 'B4', time: 15.6, duration: 0.8 },
+            { note: 'C5', time: 16.4, duration: 1.2 },
+            
+            // Measure 13-14: Development
+            { note: 'D5', time: 17.6, duration: 0.4 },
+            { note: 'C5', time: 18.0, duration: 0.4 },
+            { note: 'B4', time: 18.4, duration: 0.4 },
+            { note: 'A4', time: 18.8, duration: 0.4 },
+            { note: 'G4', time: 19.2, duration: 1.6 },
+            
+            // Measure 15-16: Final phrase
+            { note: 'E4', time: 20.8, duration: 0.8 },
+            { note: 'F4', time: 21.6, duration: 0.8 },
+            { note: 'G4', time: 22.4, duration: 0.8 },
+            { note: 'C5', time: 23.2, duration: 2.4 }
+        ];
+        
+        function playHymn() {
+            if (!musicPlaying) return;
+            
+            initAudio();
+            currentNotes = [];
+            
+            SACRED_HYMN.forEach(({ note, time, duration }) => {
+                playNote(NOTE_FREQUENCIES[note], duration, time);
+            });
+            
+            // Loop the hymn
+            setTimeout(() => {
+                if (musicPlaying) playHymn();
+            }, 26000); // Total duration + small pause
+        }
+        
+        function startMusic() {
+            musicPlaying = true;
+            initAudio();
+            playHymn();
+        }
+        
+        function stopMusic() {
+            musicPlaying = false;
+            currentNotes.forEach(({ oscillator }) => {
+                try {
+                    oscillator.stop();
+                } catch (e) {}
+            });
+            currentNotes = [];
+        }
+    </script>
 </head>
 <body>
     <div id="loading">Loading 3D World...</div>
@@ -868,6 +985,75 @@
                 specialDamage: 45
             }
         ];
+        
+        // New Game+ Divine Party
+        let newGamePlus = false;
+        const divineHeroes = [
+            {
+                name: "Jesus Christ",
+                hp: 999,
+                maxHp: 999,
+                mp: 999,
+                maxMp: 999,
+                atk: 9999, // Greater than any enemy HP
+                def: 999,
+                specialAttack: "Divine Wrath",
+                specialCost: 0,
+                specialDamage: 9999
+            },
+            {
+                name: "Padre Pio",
+                hp: 500,
+                maxHp: 500,
+                mp: 200,
+                maxMp: 200,
+                atk: 100,
+                def: 80,
+                specialAttack: "Stigmata",
+                specialCost: 50,
+                specialDamage: 500
+            },
+            {
+                name: "St. Vincent Ferrer",
+                hp: 600,
+                maxHp: 600,
+                mp: 250,
+                maxMp: 250,
+                atk: 150,
+                def: 100,
+                specialAttack: "Judgment",
+                specialCost: 75,
+                specialDamage: 9999, // Instant kill
+                hasWings: true
+            },
+            {
+                name: "Mother Mary",
+                hp: 800,
+                maxHp: 800,
+                mp: 300,
+                maxMp: 300,
+                atk: 120,
+                def: 150,
+                specialAttack: "Hail Mary",
+                specialCost: 50,
+                specialDamage: 9999, // Instant kill
+                isMary: true
+            }
+        ];
+        
+        // Get current hero party based on mode
+        function getCurrentHeroes() {
+            return newGamePlus ? divineHeroes : heroes;
+        }
+        
+        // Switch to divine party (replaces heroes array content)
+        function enableDivineParty() {
+            // Copy divine heroes into heroes array
+            heroes.length = 0;
+            divineHeroes.forEach(hero => {
+                heroes.push({...hero}); // Clone the hero
+            });
+        }
 
         let battle = {
             active: false,
@@ -898,6 +1084,11 @@
 
             camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
             camera.position.set(0, 2, 0);
+            
+            // Third-person view for New Game+ mode
+            if (newGamePlus) {
+                camera.position.set(0, 3, 2); // Behind and above for third-person view
+            }
 
             renderer = new THREE.WebGLRenderer({ 
                 antialias: true,
@@ -1177,9 +1368,15 @@
             gameState = 'explore';
             generateDungeon();
             targetRotationY = camera.rotation.y;
+            startMusic(); // Start sacred music
         }
 
         function createPlayerModel() {
+            // In New Game+ mode, use Jesus model
+            if (newGamePlus) {
+                return createJesusModel();
+            }
+            
             const group = new THREE.Group();
             
             // Body (dark blue tunic with PBR materials)
@@ -1690,6 +1887,186 @@
             
             return group;
         }
+        
+        function createPadrePioModel() {
+            const group = new THREE.Group();
+            
+            // Brown Franciscan robe
+            const robeGeometry = new THREE.BoxGeometry(0.8, 1.2, 0.5);
+            const robeMaterial = new THREE.MeshStandardMaterial({ color: 0x6B4423, roughness: 0.9 });
+            const robe = new THREE.Mesh(robeGeometry, robeMaterial);
+            robe.position.y = 0.7;
+            robe.castShadow = true;
+            group.add(robe);
+            
+            // Head with beard
+            const headGeometry = new THREE.SphereGeometry(0.25, 16, 16);
+            const headMaterial = new THREE.MeshStandardMaterial({ color: 0xf0c291 });
+            const head = new THREE.Mesh(headGeometry, headMaterial);
+            head.position.y = 1.5;
+            head.castShadow = true;
+            group.add(head);
+            
+            // Stigmata wounds on hands (red glowing spheres)
+            const stigmataGeometry = new THREE.SphereGeometry(0.08, 8, 8);
+            const stigmataMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0xff0000,
+                emissive: 0xff0000,
+                emissiveIntensity: 0.8
+            });
+            const leftStigmata = new THREE.Mesh(stigmataGeometry, stigmataMaterial);
+            leftStigmata.position.set(-0.5, 0.9, 0.3);
+            group.add(leftStigmata);
+            
+            const rightStigmata = new THREE.Mesh(stigmataGeometry, stigmataMaterial);
+            rightStigmata.position.set(0.5, 0.9, 0.3);
+            group.add(rightStigmata);
+            
+            // Rosary beads
+            const beadGeometry = new THREE.SphereGeometry(0.03, 8, 8);
+            const beadMaterial = new THREE.MeshStandardMaterial({ color: 0x654321 });
+            for (let i = 0; i < 10; i++) {
+                const bead = new THREE.Mesh(beadGeometry, beadMaterial);
+                const angle = (i / 10) * Math.PI;
+                bead.position.set(Math.sin(angle) * 0.25, 0.3 - i * 0.05, 0.25);
+                group.add(bead);
+            }
+            
+            return group;
+        }
+        
+        function createStVincentFerrerModel() {
+            const group = new THREE.Group();
+            
+            // Black Dominican robe
+            const robeGeometry = new THREE.BoxGeometry(0.8, 1.3, 0.5);
+            const robeMaterial = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.85 });
+            const robe = new THREE.Mesh(robeGeometry, robeMaterial);
+            robe.position.y = 0.75;
+            robe.castShadow = true;
+            group.add(robe);
+            
+            // White scapular
+            const scapularGeometry = new THREE.BoxGeometry(0.6, 1.2, 0.52);
+            const scapularMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.9 });
+            const scapular = new THREE.Mesh(scapularGeometry, scapularMaterial);
+            scapular.position.y = 0.75;
+            group.add(scapular);
+            
+            // Head
+            const headGeometry = new THREE.SphereGeometry(0.25, 16, 16);
+            const headMaterial = new THREE.MeshStandardMaterial({ color: 0xf0c291 });
+            const head = new THREE.Mesh(headGeometry, headMaterial);
+            head.position.y = 1.6;
+            head.castShadow = true;
+            group.add(head);
+            
+            // ANGEL WINGS - The key feature
+            const wingGeometry = new THREE.BoxGeometry(1.5, 2, 0.2);
+            const wingMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0xffffff,
+                roughness: 0.4,
+                metalness: 0.3,
+                emissive: 0xffffcc,
+                emissiveIntensity: 0.3
+            });
+            
+            const leftWing = new THREE.Mesh(wingGeometry, wingMaterial);
+            leftWing.position.set(-1.2, 1, -0.3);
+            leftWing.rotation.y = Math.PI / 4;
+            leftWing.rotation.z = Math.PI / 8;
+            leftWing.castShadow = true;
+            group.add(leftWing);
+            
+            const rightWing = new THREE.Mesh(wingGeometry, wingMaterial);
+            rightWing.position.set(1.2, 1, -0.3);
+            rightWing.rotation.y = -Math.PI / 4;
+            rightWing.rotation.z = -Math.PI / 8;
+            rightWing.castShadow = true;
+            group.add(rightWing);
+            
+            // Glowing halo
+            const haloGeometry = new THREE.TorusGeometry(0.35, 0.05, 8, 32);
+            const haloMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0xffeb3b,
+                emissive: 0xffeb3b,
+                emissiveIntensity: 1.5
+            });
+            const halo = new THREE.Mesh(haloGeometry, haloMaterial);
+            halo.position.y = 2;
+            halo.rotation.x = Math.PI / 2;
+            group.add(halo);
+            
+            return group;
+        }
+        
+        function createMotherMaryModel() {
+            const group = new THREE.Group();
+            
+            // Blue mantle
+            const mantleGeometry = new THREE.BoxGeometry(0.9, 1.4, 0.5);
+            const mantleMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0x1e40af,
+                roughness: 0.6,
+                metalness: 0.2
+            });
+            const mantle = new THREE.Mesh(mantleGeometry, mantleMaterial);
+            mantle.position.y = 0.8;
+            mantle.castShadow = true;
+            group.add(mantle);
+            
+            // White inner robe
+            const robeGeometry = new THREE.BoxGeometry(0.7, 1.2, 0.48);
+            const robeMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.8 });
+            const robe = new THREE.Mesh(robeGeometry, robeMaterial);
+            robe.position.y = 0.75;
+            group.add(robe);
+            
+            // Head
+            const headGeometry = new THREE.SphereGeometry(0.23, 16, 16);
+            const headMaterial = new THREE.MeshStandardMaterial({ color: 0xf0c291 });
+            const head = new THREE.Mesh(headGeometry, headMaterial);
+            head.position.y = 1.6;
+            head.castShadow = true;
+            group.add(head);
+            
+            // Veil
+            const veilGeometry = new THREE.ConeGeometry(0.35, 0.5, 16);
+            const veilMaterial = new THREE.MeshStandardMaterial({ color: 0x1e40af, roughness: 0.7 });
+            const veil = new THREE.Mesh(veilGeometry, veilMaterial);
+            veil.position.y = 1.9;
+            veil.rotation.y = Math.PI;
+            group.add(veil);
+            
+            // Golden halo
+            const haloGeometry = new THREE.TorusGeometry(0.35, 0.05, 8, 32);
+            const haloMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0xffd700,
+                emissive: 0xffd700,
+                emissiveIntensity: 1.2,
+                metalness: 0.8,
+                roughness: 0.2
+            });
+            const halo = new THREE.Mesh(haloGeometry, haloMaterial);
+            halo.position.y = 2.1;
+            halo.rotation.x = Math.PI / 2;
+            group.add(halo);
+            
+            // Rosary in hands
+            const rosaryGeometry = new THREE.TorusGeometry(0.15, 0.03, 8, 24);
+            const rosaryMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
+            const rosary = new THREE.Mesh(rosaryGeometry, rosaryMaterial);
+            rosary.position.set(0, 0.5, 0.3);
+            rosary.rotation.x = Math.PI / 3;
+            group.add(rosary);
+            
+            // Soft glow around Mary
+            const glowLight = new THREE.PointLight(0xffffff, 0.5, 3);
+            glowLight.position.set(0, 1, 0);
+            group.add(glowLight);
+            
+            return group;
+        }
 
         function generateDungeon(spawnDevilBoss = false) {
             // Clear existing dungeon
@@ -1884,10 +2261,12 @@
                             // Spinning warning symbols above
                             for (let i = 0; i < 4; i++) {
                                 const warningGeometry = new THREE.BoxGeometry(1, 1, 0.1);
-                                const warningMaterial = new THREE.MeshBasicMaterial({ 
+                                const warningMaterial = new THREE.MeshStandardMaterial({ 
                                     color: 0xffff00,
                                     emissive: 0xffff00,
-                                    emissiveIntensity: 1
+                                    emissiveIntensity: 1,
+                                    metalness: 0.3,
+                                    roughness: 0.4
                                 });
                                 const warning = new THREE.Mesh(warningGeometry, warningMaterial);
                                 const angle = (i / 4) * Math.PI * 2;
@@ -1899,6 +2278,12 @@
                                 warning.userData.rotate = true;
                                 scene.add(warning);
                             }
+                            
+                            // Add Jesus standing nearby before the Devil fight
+                            const jesusBeforeBattle = createJesusModel();
+                            jesusBeforeBattle.position.set(ex - 5, 0, ez + 5); // Positioned near the Devil
+                            jesusBeforeBattle.rotation.y = Math.atan2(ez - (ez + 5), ex - (ex - 5)); // Face towards Devil
+                            scene.add(jesusBeforeBattle);
                         }
                         
                         // Add name label above enemy
@@ -2075,8 +2460,11 @@
             heroes.forEach(hero => {
                 hero.hp = hero.maxHp + inventory.hpBoost;
                 hero.mp = hero.maxMp;
-                hero.atk = (hero.name === "St. Vincent" ? 15 : hero.name === "St. Michael" ? 18 : 14) + inventory.atkBoost;
-                hero.def = (hero.name === "St. Vincent" ? 8 : hero.name === "St. Michael" ? 6 : 10) + inventory.defBoost;
+                // Don't adjust divine party stats - they're already powerful
+                if (!newGamePlus) {
+                    hero.atk = (hero.name === "St. Vincent" ? 15 : hero.name === "St. Michael" ? 18 : 14) + inventory.atkBoost;
+                    hero.def = (hero.name === "St. Vincent" ? 8 : hero.name === "St. Michael" ? 6 : 10) + inventory.defBoost;
+                }
             });
             
             // Setup enemies
@@ -2178,15 +2566,28 @@
             
             // Position heroes on the left side
             battleHeroModels = [];
-            const heroModels = [
-                createStVincentModel(),
-                createStMichaelModel(),
-                createStJoanModel()
-            ];
+            let heroModels;
+            
+            if (newGamePlus) {
+                // Divine party models
+                heroModels = [
+                    createJesusModel(),
+                    createPadrePioModel(),
+                    createStVincentFerrerModel(),
+                    createMotherMaryModel()
+                ];
+            } else {
+                // Regular party models
+                heroModels = [
+                    createStVincentModel(),
+                    createStMichaelModel(),
+                    createStJoanModel()
+                ];
+            }
             
             for (let i = 0; i < heroModels.length; i++) {
                 const heroModel = heroModels[i];
-                heroModel.position.set(-5, 0, -2 + i * 2);
+                heroModel.position.set(-5, 0, -3 + i * 2);
                 heroModel.rotation.y = Math.PI / 6; // Face right slightly
                 heroModel.castShadow = true;
                 battleScene.add(heroModel);
@@ -2351,7 +2752,13 @@
                     <button class="battle-btn" onclick="selectBattleAction('flee')">Flee</button>
                 `;
             } else if (battle.phase === 'target') {
+                const targetEnemy = battle.enemies[battle.targetIndex];
+                const enemyName = targetEnemy ? targetEnemy.name : 'Enemy';
                 actionsEl.innerHTML = `
+                    <div style="padding: 6px; background: rgba(231, 76, 60, 0.2); border: 1px solid rgba(231, 76, 60, 0.4); border-radius: 3px; margin-bottom: 4px; text-align: center;">
+                        <div style="font-weight: bold; color: #e74c3c; text-shadow: 2px 2px 4px rgba(0, 0, 0, 1);">TARGET:</div>
+                        <div style="font-weight: bold; color: #ecf0f1; text-shadow: 2px 2px 4px rgba(0, 0, 0, 1); font-size: clamp(10px, 1.5vw, 12px);">${enemyName}</div>
+                    </div>
                     <button class="battle-btn" onclick="changeTarget(-1)">◀ Prev</button>
                     <button class="battle-btn selected" onclick="confirmTarget()">Confirm</button>
                     <button class="battle-btn" onclick="changeTarget(1)">Next ▶</button>
@@ -3044,7 +3451,13 @@
             // STATION 6 - Mother Mary (distance: 75)
             createMotherMaryStatue(-4, 0, -75);
             
-            // STATION 6 - Bible Passage Stands (various locations)
+            // STATION 7 - Cherubim with Flaming Sword (distance: 88 - at the end)
+            createCherubimStatue(0, 0, -88);
+            
+            // STATION 8 - Open Bible (distance: 82)
+            createOpenBible(3, 0, -82);
+            
+            // STATION 9 - Bible Passage Stands (various locations)
             createBiblePassageStand(-5, 0, -20, "The Lord's Prayer", "Our Father who art in heaven, hallowed be thy name. Thy kingdom come. Thy will be done on earth as it is in heaven. Give us this day our daily bread, and forgive us our trespasses, as we forgive those who trespass against us, and lead us not into temptation, but deliver us from evil.", "Matthew 6:9-13");
             createBiblePassageStand(5, 0, -35, "The Greatest Commandment", "You shall love the Lord your God with all your heart, with all your soul, and with all your mind. This is the greatest and first commandment. And the second is like it: You shall love your neighbor as yourself.", "Matthew 22:37-39");
             createBiblePassageStand(-5, 0, -50, "Psalm 23", "The Lord is my shepherd, I shall not want. He makes me lie down in green pastures; he leads me beside still waters; he restores my soul. He leads me in right paths for his name's sake. Even though I walk through the darkest valley, I fear no evil; for you are with me; your rod and your staff they comfort me.", "Psalm 23:1-4");
@@ -3485,6 +3898,164 @@
             const post = new THREE.Mesh(postGeometry, standMaterial);
             post.position.set(x, y + 0.75, z);
             gardenScene.add(post);
+        }
+
+        function createCherubimStatue(x, y, z) {
+            const group = new THREE.Group();
+            
+            // Cherubim body (angelic figure)
+            const bodyGeometry = new THREE.CylinderGeometry(0.4, 0.5, 2, 8);
+            const bodyMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0xf5f5dc, // Beige/cream
+                roughness: 0.6,
+                metalness: 0.1
+            });
+            const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+            body.position.set(0, 1.5, 0);
+            body.castShadow = true;
+            group.add(body);
+            
+            // Head
+            const headGeometry = new THREE.SphereGeometry(0.3, 16, 16);
+            const head = new THREE.Mesh(headGeometry, bodyMaterial);
+            head.position.set(0, 2.7, 0);
+            head.castShadow = true;
+            group.add(head);
+            
+            // Glowing halo
+            const haloGeometry = new THREE.TorusGeometry(0.4, 0.05, 8, 32);
+            const haloMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0xffeb3b,
+                emissive: 0xffeb3b,
+                emissiveIntensity: 1.5,
+                metalness: 0.5,
+                roughness: 0.3
+            });
+            const halo = new THREE.Mesh(haloGeometry, haloMaterial);
+            halo.position.set(0, 3.2, 0);
+            halo.rotation.x = Math.PI / 2;
+            group.add(halo);
+            
+            // Wings (two large wings)
+            const wingGeometry = new THREE.BoxGeometry(1.5, 1.8, 0.1);
+            const wingMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0xffffff,
+                roughness: 0.5,
+                metalness: 0.2,
+                transparent: true,
+                opacity: 0.9
+            });
+            const leftWing = new THREE.Mesh(wingGeometry, wingMaterial);
+            leftWing.position.set(-1, 2, 0);
+            leftWing.rotation.y = Math.PI / 6;
+            leftWing.castShadow = true;
+            group.add(leftWing);
+            
+            const rightWing = new THREE.Mesh(wingGeometry, wingMaterial);
+            rightWing.position.set(1, 2, 0);
+            rightWing.rotation.y = -Math.PI / 6;
+            rightWing.castShadow = true;
+            group.add(rightWing);
+            
+            // FLAMING SWORD - The Key Feature
+            const swordHandleGeo = new THREE.CylinderGeometry(0.08, 0.08, 0.6, 8);
+            const swordHandleMat = new THREE.MeshStandardMaterial({ color: 0x654321 });
+            const swordHandle = new THREE.Mesh(swordHandleGeo, swordHandleMat);
+            swordHandle.position.set(0.5, 1.5, 0);
+            swordHandle.rotation.z = Math.PI / 4;
+            group.add(swordHandle);
+            
+            const swordBladeGeo = new THREE.BoxGeometry(0.15, 1.5, 0.05);
+            const swordBladeMat = new THREE.MeshStandardMaterial({ 
+                color: 0xc0c0c0,
+                metalness: 0.9,
+                roughness: 0.2
+            });
+            const swordBlade = new THREE.Mesh(swordBladeGeo, swordBladeMat);
+            swordBlade.position.set(0.5, 2.5, 0);
+            swordBlade.rotation.z = Math.PI / 4;
+            group.add(swordBlade);
+            
+            // FLAMES on the sword
+            const flameGeometry = new THREE.ConeGeometry(0.25, 0.8, 8);
+            const flameMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0xff4500,
+                emissive: 0xff4500,
+                emissiveIntensity: 2,
+                transparent: true,
+                opacity: 0.8
+            });
+            const flame = new THREE.Mesh(flameGeometry, flameMaterial);
+            flame.position.set(0.5, 3.3, 0);
+            flame.rotation.z = Math.PI / 4;
+            group.add(flame);
+            
+            // Flame light
+            const flameLight = new THREE.PointLight(0xff4500, 1.5, 5);
+            flameLight.position.set(0.5, 3.3, 0);
+            group.add(flameLight);
+            
+            group.position.set(x, y, z);
+            group.userData.type = 'cherubim';
+            group.userData.clickable = true;
+            gardenScene.add(group);
+        }
+
+        function createOpenBible(x, y, z) {
+            const group = new THREE.Group();
+            
+            // Pedestal
+            const pedestalGeometry = new THREE.CylinderGeometry(0.5, 0.6, 0.8, 8);
+            const pedestalMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0x8b7355,
+                roughness: 0.8,
+                metalness: 0.1
+            });
+            const pedestal = new THREE.Mesh(pedestalGeometry, pedestalMaterial);
+            pedestal.position.set(0, 0.4, 0);
+            pedestal.castShadow = true;
+            group.add(pedestal);
+            
+            // Open book (two pages)
+            const pageGeometry = new THREE.BoxGeometry(0.8, 0.02, 0.6);
+            const pageMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0xf5f5dc,
+                roughness: 0.9,
+                metalness: 0
+            });
+            
+            const leftPage = new THREE.Mesh(pageGeometry, pageMaterial);
+            leftPage.position.set(-0.4, 0.81, 0);
+            leftPage.rotation.z = -0.2;
+            leftPage.castShadow = true;
+            group.add(leftPage);
+            
+            const rightPage = new THREE.Mesh(pageGeometry, pageMaterial);
+            rightPage.position.set(0.4, 0.81, 0);
+            rightPage.rotation.z = 0.2;
+            rightPage.castShadow = true;
+            group.add(rightPage);
+            
+            // Book spine
+            const spineGeometry = new THREE.BoxGeometry(0.1, 0.05, 0.6);
+            const spineMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0x654321,
+                roughness: 0.7,
+                metalness: 0.1
+            });
+            const spine = new THREE.Mesh(spineGeometry, spineMaterial);
+            spine.position.set(0, 0.83, 0);
+            group.add(spine);
+            
+            // Glow around bible
+            const glowLight = new THREE.PointLight(0xffffff, 0.8, 4);
+            glowLight.position.set(0, 1, 0);
+            group.add(glowLight);
+            
+            group.position.set(x, y, z);
+            group.userData.type = 'openbible';
+            group.userData.clickable = true;
+            gardenScene.add(group);
         }
 
         // TREE CREATION FUNCTIONS
@@ -4058,6 +4629,120 @@
                     </div>
                     <div style="color: #f39c12; font-size: 12px; font-weight: bold;">
                         — John 2:1-5
+                    </div>
+                `;
+            } else if (type === 'cherubim') {
+                content = `
+                    <div style="color: #f1c40f; font-size: 22px; font-weight: bold; margin-bottom: 15px;">
+                        ⚔️ THE CHERUBIM GUARDIAN ⚔️
+                    </div>
+                    <div style="color: #ecf0f1; font-size: 14px; line-height: 1.7; text-align: center; margin-bottom: 15px;">
+                        The angel stands at the eastern gate with a flaming sword, guarding the way to the Tree of Life.
+                    </div>
+                    <div style="color: #ecf0f1; font-size: 13px; line-height: 1.7; text-align: left; margin-bottom: 15px;">
+                        "After he drove the man out, he placed on the east side of the Garden of Eden cherubim and a flaming sword flashing back and forth to guard the way to the tree of life."
+                    </div>
+                    <div style="color: #95a5a6; font-size: 11px; margin-bottom: 15px;">— Genesis 3:24</div>
+                    <div style="color: #2ecc71; font-size: 16px; font-weight: bold; text-align: center; margin-bottom: 15px;">
+                        "Would you like to continue exploring this peaceful garden, or begin a new journey?"
+                    </div>
+                `;
+                
+                // Special handling for Cherubim - offer choices
+                document.getElementById('quote-text').innerHTML = content;
+                document.getElementById('quote-author').textContent = '';
+                document.getElementById('quote-continue').style.display = 'none';
+                document.getElementById('quote-overlay').style.display = 'flex';
+                
+                // Add choice buttons
+                const quoteBox = document.getElementById('quote-box');
+                const buttonContainer = document.createElement('div');
+                buttonContainer.style.cssText = 'display: flex; gap: 15px; justify-content: center; margin-top: 20px;';
+                buttonContainer.innerHTML = `
+                    <button id="explore-btn" style="padding: 12px 25px; font-size: 16px; font-weight: bold; background: linear-gradient(135deg, #2ecc71, #27ae60); color: white; border: none; border-radius: 5px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
+                        🌺 Keep Exploring
+                    </button>
+                    <button id="newgame-btn" style="padding: 12px 25px; font-size: 16px; font-weight: bold; background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; border: none; border-radius: 5px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
+                        ⚔️ New Game
+                    </button>
+                `;
+                quoteBox.appendChild(buttonContainer);
+                
+                document.getElementById('explore-btn').addEventListener('click', () => {
+                    document.getElementById('quote-overlay').style.display = 'none';
+                    buttonContainer.remove();
+                    document.getElementById('quote-continue').style.display = 'block';
+                });
+                
+                document.getElementById('newgame-btn').addEventListener('click', () => {
+                    document.getElementById('quote-overlay').style.display = 'none';
+                    buttonContainer.remove();
+                    document.getElementById('quote-continue').style.display = 'block';
+                    
+                    // Enable New Game+ mode with divine party
+                    newGamePlus = true;
+                    enableDivineParty(); // Replace heroes with divine party
+                    
+                    // Reset game
+                    dungeonLevel = 1;
+                    defeatedSins.clear();
+                    inventory.holyWater = 3;
+                    inventory.rosaries = 2;
+                    inventory.gold = 0;
+                    inventory.atkBoost = 0;
+                    inventory.defBoost = 0;
+                    inventory.hpBoost = 0;
+                    inventory.virtueItems = [];
+                    
+                    // Clean up garden
+                    if (gardenScene) {
+                        while(gardenScene.children.length > 0) { 
+                            const obj = gardenScene.children[0];
+                            if (obj.geometry) obj.geometry.dispose();
+                            if (obj.material) obj.material.dispose();
+                            gardenScene.remove(obj);
+                        }
+                        gardenScene = null;
+                    }
+                    
+                    // Reset divine heroes
+                    heroes.forEach(hero => {
+                        hero.hp = hero.maxHp;
+                        hero.mp = hero.maxMp;
+                    });
+                    
+                    // Generate dungeon with divine party
+                    generateDungeon();
+                    gameState = 'explore';
+                    document.getElementById('title-screen').style.display = 'none';
+                    document.getElementById('hud').style.display = 'block';
+                    startMusic(); // Start sacred music
+                });
+                
+                return; // Exit early for cherubim special handling
+            } else if (type === 'openbible') {
+                content = `
+                    <div style="color: #f1c40f; font-size: 22px; font-weight: bold; margin-bottom: 15px;">
+                        📖 THE HOLY SCRIPTURES 📖
+                    </div>
+                    <div style="color: #ecf0f1; font-size: 14px; line-height: 1.7; text-align: left; margin-bottom: 15px;">
+                        <strong>"All Scripture is God-breathed and is useful for teaching, rebuking, correcting and training in righteousness, so that the servant of God may be thoroughly equipped for every good work."</strong>
+                    </div>
+                    <div style="color: #95a5a6; font-size: 11px; margin-bottom: 10px;">— 2 Timothy 3:16-17</div>
+                    <div style="color: #ecf0f1; font-size: 13px; line-height: 1.7; text-align: left; margin-bottom: 15px;">
+                        "Your word is a lamp for my feet, a light on my path."
+                    </div>
+                    <div style="color: #95a5a6; font-size: 11px; margin-bottom: 10px;">— Psalm 119:105</div>
+                    <div style="color: #ecf0f1; font-size: 13px; line-height: 1.7; text-align: left; margin-bottom: 15px;">
+                        "Heaven and earth will pass away, but my words will never pass away."
+                    </div>
+                    <div style="color: #95a5a6; font-size: 11px; margin-bottom: 10px;">— Matthew 24:35</div>
+                    <div style="color: #ecf0f1; font-size: 13px; line-height: 1.7; text-align: left; margin-bottom: 15px;">
+                        "In the beginning was the Word, and the Word was with God, and the Word was God. He was with God in the beginning. Through him all things were made; without him nothing was made that has been made."
+                    </div>
+                    <div style="color: #95a5a6; font-size: 11px; margin-bottom: 10px;">— John 1:1-3</div>
+                    <div style="color: #7f8c8d; font-size: 12px; line-height: 1.5; margin-top: 15px;">
+                        The Bible is the living Word of God, speaking truth and light into the hearts of all who seek Him.
                     </div>
                 `;
             } else if (type === 'passage') {
