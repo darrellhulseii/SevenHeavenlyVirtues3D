@@ -261,6 +261,96 @@
             #controls { display: none; }
         }
         
+        /* Responsive joystick sizing for different screens */
+        @media (max-width: 480px) {
+            .mobile-joystick {
+                width: 100px;
+                height: 100px;
+            }
+            #movement-joystick {
+                bottom: 30px;
+                left: 30px;
+            }
+            #camera-joystick {
+                bottom: 30px;
+                right: 30px;
+            }
+        }
+        
+        @media (min-width: 481px) and (max-width: 768px) {
+            .mobile-joystick {
+                width: 110px;
+                height: 110px;
+            }
+        }
+        
+        /* Tablet landscape adjustments */
+        @media (min-width: 769px) and (max-width: 1024px) and (orientation: landscape) {
+            #hud {
+                font-size: 12px;
+                padding: 12px;
+            }
+        }
+        
+        /* Large screen optimizations */
+        @media (min-width: 1920px) {
+            #hud {
+                font-size: 16px;
+                padding: 18px;
+            }
+        }
+        
+        /* Ultrawide screen adjustments */
+        @media (min-aspect-ratio: 21/9) {
+            #hud {
+                left: 40px;
+                top: 30px;
+            }
+            #battle-status {
+                left: 40px;
+            }
+            #battle-ui {
+                right: 40px;
+            }
+        }
+        
+        /* Portrait mobile adjustments */
+        @media (max-width: 768px) and (orientation: portrait) {
+            #battle-status {
+                top: 60px;
+                max-width: calc(100vw - 40px);
+            }
+            #battle-ui {
+                bottom: 220px;
+                max-width: calc(100vw - 40px);
+            }
+        }
+        
+        /* Landscape mobile adjustments */
+        @media (max-height: 500px) and (orientation: landscape) {
+            #hud {
+                top: 5px;
+                left: 5px;
+                font-size: 10px;
+                padding: 8px;
+            }
+            #mobile-interact-btn {
+                bottom: 140px;
+            }
+            .mobile-joystick {
+                width: 90px;
+                height: 90px;
+            }
+            #movement-joystick {
+                bottom: 20px;
+                left: 20px;
+            }
+            #camera-joystick {
+                bottom: 20px;
+                right: 20px;
+            }
+        }
+        
         .mobile-joystick {
             position: absolute;
             width: 120px;
@@ -328,6 +418,40 @@
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
             z-index: 151;
             pointer-events: all;
+        }
+        #fullscreen-btn {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            width: 40px;
+            height: 40px;
+            background: rgba(52, 152, 219, 0.8);
+            border: 2px solid rgba(41, 128, 185, 0.9);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: white;
+            cursor: pointer;
+            z-index: 200;
+            pointer-events: all;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+        }
+        #fullscreen-btn:hover {
+            background: rgba(52, 152, 219, 1);
+            transform: scale(1.1);
+        }
+        #fullscreen-btn:active {
+            transform: scale(0.95);
+        }
+        @media (max-width: 768px) {
+            #fullscreen-btn {
+                width: 35px;
+                height: 35px;
+                font-size: 16px;
+            }
         }
         #title-screen {
             position: fixed;
@@ -837,6 +961,7 @@
     </div>
     
     <button id="mobile-interact-btn">INTERACT</button>
+    <div id="fullscreen-btn" title="Toggle Fullscreen (F11)">⛶</div>
 
     <div id="battle-status"></div>
     <div id="enemy-status"></div>
@@ -1310,13 +1435,22 @@
 
             // Event listeners
             window.addEventListener('resize', onWindowResize);
-            window.addEventListener('orientationchange', () => {
-                setTimeout(onWindowResize, 100); // Delay to ensure proper dimensions after orientation change
-            });
+            window.addEventListener('orientationchange', onOrientationChange);
+            document.addEventListener('fullscreenchange', onFullscreenChange);
+            document.addEventListener('webkitfullscreenchange', onFullscreenChange); // Safari
+            document.addEventListener('msfullscreenchange', onFullscreenChange); // IE11
             document.addEventListener('keydown', onKeyDown);
             document.addEventListener('keyup', onKeyUp);
             document.addEventListener('mousemove', onMouseMove);
             document.addEventListener('click', onClick);
+            
+            // F11 key for fullscreen toggle
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'F11') {
+                    e.preventDefault();
+                    toggleFullscreen();
+                }
+            });
             
             // No pointer lock for click-to-move camera
 
@@ -1410,6 +1544,12 @@
                 if (gameState === 'garden' && nearestInteractable) {
                     showGardenDialog(nearestInteractable.type, nearestInteractable);
                 }
+            });
+            
+            // Fullscreen button
+            document.getElementById('fullscreen-btn').addEventListener('click', (e) => {
+                e.preventDefault();
+                toggleFullscreen();
             });
         }
         
@@ -6259,26 +6399,114 @@
             }
         }
 
+        let resizeTimeout;
         function onWindowResize() {
-            const width = window.innerWidth;
-            const height = window.innerHeight;
-            
-            camera.aspect = width / height;
-            camera.updateProjectionMatrix();
-            renderer.setSize(width, height);
-            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Limit pixel ratio for performance
-            
-            // Update garden camera if it exists
-            if (gardenCamera) {
-                gardenCamera.aspect = width / height;
-                gardenCamera.updateProjectionMatrix();
+            // Debounce resize events for better performance
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                const width = window.innerWidth;
+                const height = window.innerHeight;
+                
+                // Update main camera
+                camera.aspect = width / height;
+                camera.updateProjectionMatrix();
+                
+                // Update renderer size and pixel ratio
+                renderer.setSize(width, height);
+                renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Limit pixel ratio for performance
+                
+                // Update garden camera if it exists
+                if (gardenCamera) {
+                    gardenCamera.aspect = width / height;
+                    gardenCamera.updateProjectionMatrix();
+                }
+                
+                // Update battle camera if it exists
+                if (battleCamera) {
+                    battleCamera.aspect = width / height;
+                    battleCamera.updateProjectionMatrix();
+                }
+                
+                // Update mobile detection on resize
+                isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+                           window.innerWidth < 768 ||
+                           ('ontouchstart' in window) || 
+                           (navigator.maxTouchPoints > 0);
+                
+                // Show/hide touch controls based on screen size
+                const joystickLeft = document.getElementById('joystick-left');
+                const joystickRight = document.getElementById('joystick-right');
+                if (joystickLeft && joystickRight) {
+                    if (isMobile) {
+                        joystickLeft.style.display = 'block';
+                        joystickRight.style.display = 'block';
+                    } else {
+                        joystickLeft.style.display = 'none';
+                        joystickRight.style.display = 'none';
+                    }
+                }
+                
+                // Force a render to update the display immediately
+                if (gameState === 'battle' && battleScene && battleCamera) {
+                    renderer.render(battleScene, battleCamera);
+                } else if (gameState === 'garden' && gardenScene && gardenCamera) {
+                    renderer.render(gardenScene, gardenCamera);
+                } else if (scene && camera) {
+                    renderer.render(scene, camera);
+                }
+            }, 100); // 100ms debounce delay
+        }
+
+        // Handle orientation changes on mobile devices
+        function onOrientationChange() {
+            // Wait for the browser to finish orientation change
+            setTimeout(() => {
+                onWindowResize();
+            }, 200);
+        }
+
+        // Fullscreen support for better immersion
+        function requestFullscreen() {
+            const elem = document.documentElement;
+            if (elem.requestFullscreen) {
+                elem.requestFullscreen();
+            } else if (elem.webkitRequestFullscreen) { // Safari
+                elem.webkitRequestFullscreen();
+            } else if (elem.msRequestFullscreen) { // IE11
+                elem.msRequestFullscreen();
             }
-            
-            // Update battle camera if it exists
-            if (battleCamera) {
-                battleCamera.aspect = width / height;
-                battleCamera.updateProjectionMatrix();
+        }
+
+        function exitFullscreen() {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.webkitExitFullscreen) { // Safari
+                document.webkitExitFullscreen();
+            } else if (document.msExitFullscreen) { // IE11
+                document.msExitFullscreen();
             }
+        }
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement) {
+                requestFullscreen();
+            } else {
+                exitFullscreen();
+            }
+        }
+
+        // Detect fullscreen changes and adjust UI
+        function onFullscreenChange() {
+            const isFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement);
+            if (isFullscreen) {
+                // In fullscreen - maximize canvas
+                document.body.style.overflow = 'hidden';
+            } else {
+                // Exited fullscreen
+                document.body.style.overflow = 'hidden';
+            }
+            // Force resize to adjust to new dimensions
+            setTimeout(onWindowResize, 100);
         }
 
         function checkWallCollision(x, z, radius = 0.5) {
