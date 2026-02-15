@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>The Seven Heavenly Virtues - 3D</title>
     <style>
         body { 
@@ -19,13 +21,23 @@
             position: fixed;
             top: 20px;
             left: 20px;
-            background: rgba(0, 0, 0, 0.7);
-            padding: 15px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: clamp(10px, 2vw, 15px);
             border-radius: 5px;
             border: 2px solid #f39c12;
             z-index: 100;
-            font-size: 14px;
+            font-size: clamp(11px, 2vw, 14px);
             line-height: 1.6;
+            max-width: calc(100vw - 40px);
+            box-sizing: border-box;
+        }
+        @media (max-width: 768px) {
+            #hud {
+                top: 10px;
+                left: 10px;
+                right: 10px;
+                font-size: 11px;
+            }
         }
         #hud strong { color: #f39c12; }
         #crosshair {
@@ -82,6 +94,226 @@
             text-align: center;
             z-index: 100;
         }
+        
+        /* FF-Style Stat Bars - FFX Inspired */
+        .stat-bar-container {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .stat-label {
+            font-size: clamp(9px, 1.4vw, 10px);
+            color: #bdc3c7;
+            min-width: 22px;
+            font-weight: bold;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.9);
+        }
+        
+        .stat-bar {
+            flex: 1;
+            height: clamp(12px, 2.2vh, 16px);
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 3px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.6), 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+        
+        .stat-bar-fill {
+            height: 100%;
+            transition: width 0.4s ease;
+            position: relative;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), 0 1px 2px rgba(0, 0, 0, 0.4);
+        }
+        
+        .stat-bar-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 50%;
+            background: linear-gradient(to bottom, rgba(255, 255, 255, 0.4), transparent);
+            border-radius: 2px 2px 0 0;
+        }
+        
+        .hp-bar .stat-bar-fill {
+            background: linear-gradient(90deg, #16a085 0%, #1abc9c 50%, #16a085 100%);
+        }
+        
+        .mp-bar .stat-bar-fill {
+            background: linear-gradient(90deg, #2471a3 0%, #3498db 50%, #2471a3 100%);
+        }
+        
+        .stat-value {
+            font-size: clamp(9px, 1.4vw, 10px);
+            color: #ecf0f1;
+            font-weight: bold;
+            min-width: 60px;
+            text-align: right;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9);
+        }
+        
+        .enemy-hp-bar {
+            display: none; /* Hidden - no enemy health shown */
+        }
+        
+        .enemy-hp-fill {
+            display: none; /* Hidden - no enemy health shown */
+        }
+        
+        /* Battle Log & Actions - FFX Style */
+        #battle-log {
+            display: none; /* Hidden like in FFX */
+        }
+        
+        #battle-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            padding: clamp(8px, 1.5vw, 12px);
+            background: rgba(0, 0, 0, 0.15);
+        }
+        
+        .battle-btn {
+            background: linear-gradient(135deg, rgba(52, 73, 94, 0.6) 0%, rgba(44, 62, 80, 0.6) 100%);
+            color: #ecf0f1;
+            border: 1px solid rgba(149, 165, 166, 0.4);
+            border-left: 3px solid rgba(52, 152, 219, 0.5);
+            padding: clamp(6px, 1.5vw, 10px) clamp(10px, 2vw, 15px);
+            font-size: clamp(10px, 1.5vw, 12px);
+            font-weight: bold;
+            border-radius: 3px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            transition: all 0.2s;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            position: relative;
+            text-align: left;
+            letter-spacing: 0.5px;
+        }
+        
+        .battle-btn:hover {
+            background: linear-gradient(135deg, rgba(52, 152, 219, 0.7) 0%, rgba(41, 128, 185, 0.7) 100%);
+            border-left-color: rgba(52, 152, 219, 0.9);
+            transform: translateX(3px);
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+        
+        .battle-btn:active {
+            transform: translateX(2px);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+        
+        .battle-btn.selected {
+            background: linear-gradient(135deg, rgba(243, 156, 18, 0.7) 0%, rgba(211, 84, 0, 0.7) 100%);
+            border-left-color: rgba(243, 156, 18, 1);
+            border-left-width: 4px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 0 12px rgba(243, 156, 18, 0.5);
+            transform: translateX(5px);
+        }
+        
+        .battle-btn.selected::before {
+            content: '▸ ';
+            position: absolute;
+            left: -15px;
+            color: #f39c12;
+            animation: pulse 0.8s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: translateX(0); }
+            50% { opacity: 0.7; transform: translateX(-3px); }
+        }
+        
+        /* Mobile Touch Controls */
+        #mobile-controls {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 200px;
+            display: none;
+            z-index: 150;
+            pointer-events: none;
+        }
+        
+        @media (max-width: 768px), (pointer: coarse) {
+            #mobile-controls { display: block; }
+            #controls { display: none; }
+        }
+        
+        .mobile-joystick {
+            position: absolute;
+            width: 120px;
+            height: 120px;
+            pointer-events: all;
+        }
+        
+        #movement-joystick {
+            bottom: 40px;
+            left: 40px;
+        }
+        
+        #camera-joystick {
+            bottom: 40px;
+            right: 40px;
+        }
+        
+        .joystick-base {
+            position: absolute;
+            width: 120px;
+            height: 120px;
+            background: radial-gradient(circle, rgba(52, 73, 94, 0.7) 0%, rgba(44, 62, 80, 0.8) 100%);
+            border: 3px solid rgba(149, 165, 166, 0.6);
+            border-radius: 50%;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+        }
+        
+        .joystick-stick {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background: radial-gradient(circle, rgba(243, 156, 18, 0.9) 0%, rgba(230, 126, 34, 1) 100%);
+            border: 3px solid rgba(211, 84, 0, 0.9);
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            transition: all 0.1s;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+        }
+        
+        #camera-joystick .joystick-stick {
+            background: radial-gradient(circle, rgba(52, 152, 219, 0.9) 0%, rgba(41, 128, 185, 1) 100%);
+            border-color: rgba(21, 67, 96, 0.9);
+        }
+        
+        /* Mobile interaction button - only appears in Garden of Eden */
+        #mobile-interact-btn {
+            position: fixed;
+            bottom: 180px;
+            right: 50%;
+            transform: translateX(50%);
+            width: 80px;
+            height: 80px;
+            background: radial-gradient(circle, rgba(46, 204, 113, 0.9) 0%, rgba(39, 174, 96, 1) 100%);
+            border: 4px solid rgba(34, 153, 84, 0.9);
+            border-radius: 50%;
+            display: none; /* Hidden by default, only shown in Garden */
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            z-index: 151;
+            pointer-events: all;
+        }
         #title-screen {
             position: fixed;
             top: 0;
@@ -96,43 +328,50 @@
             z-index: 200;
             padding: 20px;
             text-align: center;
+            box-sizing: border-box;
+            overflow-y: auto;
         }
         #title-screen h1 {
             color: #f39c12;
-            font-size: 36px;
+            font-size: clamp(24px, 6vw, 36px);
             margin-bottom: 10px;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
         }
         #title-screen h2 {
             color: #9b59b6;
-            font-size: 20px;
+            font-size: clamp(16px, 4vw, 20px);
             margin-bottom: 30px;
         }
         #verse-display {
-            max-width: 600px;
+            max-width: 90%;
+            width: 600px;
             background: rgba(0, 0, 0, 0.5);
             padding: 20px;
             border-radius: 10px;
             margin-bottom: 30px;
+            max-height: 50vh;
+            overflow-y: auto;
+            box-sizing: border-box;
         }
         #verse-text {
-            font-size: 14px;
+            font-size: clamp(12px, 2.5vw, 14px);
             line-height: 1.6;
             color: #ecf0f1;
             margin-bottom: 10px;
             font-style: italic;
+            text-align: left;
         }
         #verse-ref {
             color: #f39c12;
-            font-size: 12px;
+            font-size: clamp(11px, 2vw, 12px);
             font-weight: bold;
         }
         #start-button {
             background: #2ecc71;
             color: #fff;
             border: none;
-            padding: 15px 40px;
-            font-size: 18px;
+            padding: clamp(12px, 3vw, 15px) clamp(30px, 8vw, 40px);
+            font-size: clamp(16px, 4vw, 18px);
             font-weight: bold;
             border-radius: 10px;
             cursor: pointer;
@@ -151,93 +390,129 @@
         }
         #battle-ui {
             position: fixed;
-            bottom: 20px;
-            right: 20px;
-            width: 320px;
-            background: linear-gradient(135deg, rgba(0, 0, 40, 0.85) 0%, rgba(20, 20, 60, 0.85) 100%);
-            padding: 15px;
+            bottom: 10px;
+            left: 10px;
+            width: min(240px, 30vw);
+            max-height: 35vh;
+            background: linear-gradient(135deg, rgba(20, 20, 60, 0.25) 0%, rgba(10, 10, 40, 0.25) 100%);
+            backdrop-filter: blur(4px);
+            padding: 0;
             display: none;
             z-index: 150;
-            border: 2px solid rgba(243, 156, 18, 0.8);
-            border-radius: 10px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            border: 2px solid rgba(243, 156, 18, 0.6);
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.1);
             font-family: 'Courier New', monospace;
+            font-size: clamp(10px, 1.5vw, 12px);
+            box-sizing: border-box;
+        }
+        
+        @media (max-width: 768px) {
+            #battle-ui {
+                width: calc(100% - 20px);
+                max-height: 30vh;
+            }
         }
         
         #battle-status {
             position: fixed;
-            top: 20px;
-            left: 20px;
-            width: 280px;
-            background: linear-gradient(135deg, rgba(0, 0, 40, 0.75) 0%, rgba(20, 20, 60, 0.75) 100%);
-            padding: 12px;
+            top: 50%;
+            right: 10px;
+            transform: translateY(-50%);
+            width: min(200px, 25vw);
+            max-height: 70vh;
+            background: linear-gradient(135deg, rgba(20, 20, 60, 0.25) 0%, rgba(10, 10, 40, 0.25) 100%);
+            backdrop-filter: blur(4px);
+            padding: 0;
             display: none;
             z-index: 150;
             border: 2px solid rgba(46, 204, 113, 0.6);
             border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.1);
             font-family: 'Courier New', monospace;
+            font-size: clamp(9px, 1.4vw, 11px);
+            box-sizing: border-box;
+            overflow-y: auto;
+        }
+        
+        @media (max-width: 768px) {
+            #battle-status {
+                width: calc(100% - 20px);
+                top: 10px;
+                right: 10px;
+                left: 10px;
+                transform: none;
+                max-height: 25vh;
+            }
         }
         
         .hero-status {
-            margin-bottom: 8px;
-            padding: 6px;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 4px;
-            border-left: 3px solid #2ecc71;
+            display: flex;
+            flex-direction: column;
+            padding: clamp(6px, 1.2vw, 10px);
+            background: rgba(0, 0, 0, 0.2);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .hero-status:last-child {
+            border-bottom: none;
         }
         
         .hero-status.active {
-            border-left-color: #f39c12;
             background: rgba(243, 156, 18, 0.2);
+            border-left: 3px solid #f39c12;
+            box-shadow: inset 0 0 12px rgba(243, 156, 18, 0.3);
         }
         
         .hero-name {
             font-weight: bold;
-            color: #2ecc71;
-            font-size: 11px;
-            margin-bottom: 3px;
+            color: #ecf0f1;
+            font-size: clamp(11px, 1.8vw, 13px);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9);
+            margin-bottom: 4px;
+            letter-spacing: 1px;
+        }
+        
+        .hero-status.active .hero-name {
+            color: #f39c12;
         }
         
         .hero-stats {
             display: flex;
-            justify-content: space-between;
-            font-size: 9px;
-            color: #ecf0f1;
+            flex-direction: column;
+            gap: 3px;
         }
         
         #enemy-status {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            width: 280px;
-            background: linear-gradient(135deg, rgba(40, 0, 0, 0.75) 0%, rgba(60, 20, 20, 0.75) 100%);
-            padding: 12px;
-            display: none;
-            z-index: 150;
-            border: 2px solid rgba(231, 76, 60, 0.6);
-            border-radius: 8px;
-            font-family: 'Courier New', monospace;
+            display: none !important; /* Completely hidden - no enemy stats shown */
         }
         
         .enemy-status {
-            margin-bottom: 8px;
-            padding: 6px;
+            padding: clamp(4px, 0.8vw, 6px);
             background: rgba(0, 0, 0, 0.3);
-            border-radius: 4px;
-            border-left: 3px solid #e74c3c;
+            border-bottom: 1px solid rgba(231, 76, 60, 0.25);
+        }
+        
+        .enemy-status:last-child {
+            border-bottom: none;
         }
         
         .enemy-status.targeted {
-            border-left-color: #f39c12;
-            background: rgba(243, 156, 18, 0.2);
-            box-shadow: 0 0 10px rgba(243, 156, 18, 0.3);
+            background: linear-gradient(90deg, rgba(0, 0, 0, 0.3) 0%, rgba(243, 156, 18, 0.25) 100%);
+            border-right: 3px solid #f39c12;
+            box-shadow: inset 0 0 8px rgba(243, 156, 18, 0.25);
         }
         
         .enemy-name {
             font-weight: bold;
             color: #e74c3c;
-            font-size: 11px;
+            font-size: clamp(9px, 1.5vw, 11px);
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
             margin-bottom: 3px;
+        }
+        
+        .enemy-status.targeted .enemy-name {
+            color: #f39c12;
         }
         
         .status-bar {
@@ -335,23 +610,30 @@
             justify-content: center;
             z-index: 300;
             padding: 20px;
+            box-sizing: border-box;
         }
         #quote-box {
             background: linear-gradient(135deg, #2c3e50 0%, #1a252f 100%);
             border: 3px solid #f39c12;
             border-radius: 15px;
-            padding: 30px;
-            max-width: 600px;
+            padding: clamp(20px, 4vw, 30px);
+            max-width: 90%;
+            width: 600px;
             max-height: 80vh;
             overflow-y: auto;
             text-align: center;
+            box-sizing: border-box;
+        }
+        #quote-text {
+            font-size: clamp(12px, 2.5vw, 14px);
+            line-height: 1.6;
         }
         #quote-continue {
             background: #f39c12;
             color: #1a252f;
             border: none;
-            padding: 12px 30px;
-            font-size: 16px;
+            padding: clamp(10px, 2.5vw, 12px) clamp(25px, 6vw, 30px);
+            font-size: clamp(14px, 3.5vw, 16px);
             font-weight: bold;
             border-radius: 8px;
             cursor: pointer;
@@ -364,8 +646,10 @@
             left: 50%;
             transform: translate(-50%, -50%);
             color: #f39c12;
-            font-size: 24px;
+            font-size: clamp(18px, 5vw, 24px);
             z-index: 250;
+            text-align: center;
+            padding: 20px;
         }
     </style>
 </head>
@@ -400,6 +684,20 @@
     <div id="controls">
         <strong>WASD:</strong> Move | <strong>Click:</strong> Rotate camera | <strong>Walk into enemies to battle</strong>
     </div>
+    
+    <!-- Mobile Touch Controls -->
+    <div id="mobile-controls">
+        <div id="movement-joystick" class="mobile-joystick">
+            <div class="joystick-base"></div>
+            <div class="joystick-stick"></div>
+        </div>
+        <div id="camera-joystick" class="mobile-joystick">
+            <div class="joystick-base"></div>
+            <div class="joystick-stick"></div>
+        </div>
+    </div>
+    
+    <button id="mobile-interact-btn">INTERACT</button>
 
     <div id="battle-status"></div>
     <div id="enemy-status"></div>
@@ -420,17 +718,17 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
         // Game Constants
-        const MOVE_SPEED = 5;
+        const MOVE_SPEED = 13.5; // Reduced by 10% from 15 (15 * 0.9 = 13.5)
         const ROTATION_SPEED = 0.002;
         const MAP_SIZE = 40;
         const CELL_SIZE = 4;
         
         // Bible verses for title screen
         const titleScreenVerses = [
-            { text: "Death has been swallowed up in victory. Where, O death, is your victory? Where, O death, is your sting?", reference: "1 Corinthians 15:54-55" },
-            { text: "For the wages of sin is death, but the gift of God is eternal life in Christ Jesus our Lord.", reference: "Romans 6:23" },
-            { text: "He will wipe every tear from their eyes. There will be no more death or mourning or crying or pain.", reference: "Revelation 21:4" },
-            { text: "The last enemy to be destroyed is death. For he has put everything under his feet.", reference: "1 Corinthians 15:26-27" }
+            { text: "No one has ascended into heaven except the one who descended from heaven, the Son of Man. And just as Moses lifted up the serpent in the wilderness, so must the Son of Man be lifted up, that whoever believes in him may have eternal life. For God so loved the world that he gave his only Son, so that everyone who believes in him may not perish but may have eternal life. Indeed, God did not send the Son into the world to condemn the world, but in order that the world might be saved through him. Those who believe in him are not condemned; but those who do not believe are condemned already, because they have not believed in the name of the only Son of God.", reference: "John 3:13-18" },
+            { text: "Death has been swallowed up in victory. Where, O death, is your victory? Where, O death, is your sting? The sting of death is sin, and the power of sin is the law. But thanks be to God, who gives us the victory through our Lord Jesus Christ.", reference: "1 Corinthians 15:54-57" },
+            { text: "For the wages of sin is death, but the gift of God is eternal life in Christ Jesus our Lord. What then are we to say? Should we continue in sin in order that grace may abound? By no means! How can we who died to sin go on living in it?", reference: "Romans 6:23-7:2" },
+            { text: "Then I saw a new heaven and a new earth; for the first heaven and the first earth had passed away, and the sea was no more. And I saw the holy city, the new Jerusalem, coming down out of heaven from God, prepared as a bride adorned for her husband. And I heard a loud voice from the throne saying, 'See, the home of God is among mortals. He will dwell with them; they will be his peoples, and God himself will be with them; he will wipe every tear from their eyes. Death will be no more; mourning and crying and pain will be no more, for the first things have passed away.'", reference: "Revelation 21:1-4" }
         ];
 
         // Vice definitions
@@ -585,40 +883,77 @@
         let mouseX = 0, mouseY = 0;
         let isPointerLocked = false;
         let targetRotationY = 0; // Target camera rotation for click-to-move
+        
+        // Mobile touch controls
+        let isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        let movementJoystick = { active: false, startX: 0, startY: 0, deltaX: 0, deltaY: 0 };
+        let cameraJoystick = { active: false, startX: 0, startY: 0, deltaX: 0, deltaY: 0 };
+        let nearestInteractable = null;
 
         // Three.js setup
         function init3D() {
             scene = new THREE.Scene();
             scene.background = new THREE.Color(0x87CEEB); // Bright sky blue
-            scene.fog = new THREE.Fog(0x87CEEB, 30, 80);
+            scene.fog = new THREE.FogExp2(0x87CEEB, 0.015); // Exponential fog for atmospheric depth
 
             camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
             camera.position.set(0, 2, 0);
 
-            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer = new THREE.WebGLRenderer({ 
+                antialias: true,
+                powerPreference: "high-performance"
+            });
             renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
             renderer.shadowMap.enabled = true;
             renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            
+            // Enable physically-based rendering for cinematic quality
+            renderer.physicallyCorrectLights = true;
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 1.5;
+            renderer.outputEncoding = THREE.sRGBEncoding;
+            
             document.getElementById('canvas-container').appendChild(renderer.domElement);
 
-            // Lighting - bright and well-lit
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+            // Lighting - Cinematic dramatic lighting
+            const ambientLight = new THREE.AmbientLight(0x4a4a6a, 0.3);
             scene.add(ambientLight);
 
-            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.6);
+            // Main key light - warm dramatic lighting from above
+            const directionalLight = new THREE.DirectionalLight(0xffaa66, 3.5);
             directionalLight.position.set(10, 20, 10);
             directionalLight.castShadow = true;
+            directionalLight.shadow.mapSize.width = 2048;
+            directionalLight.shadow.mapSize.height = 2048;
             directionalLight.shadow.camera.left = -50;
             directionalLight.shadow.camera.right = 50;
             directionalLight.shadow.camera.top = 50;
             directionalLight.shadow.camera.bottom = -50;
+            directionalLight.shadow.camera.near = 0.5;
+            directionalLight.shadow.camera.far = 100;
+            directionalLight.shadow.bias = -0.0005;
+            directionalLight.shadow.radius = 2;
             scene.add(directionalLight);
+            
+            // Atmospheric hemisphere light for depth
+            const hemisphereLight = new THREE.HemisphereLight(0x87CEEB, 0x2a2a3a, 0.5);
+            scene.add(hemisphereLight);
 
-            const pointLight = new THREE.PointLight(0xffffff, 0.5, 30);
+            // Player torch light - warm orange glow
+            const pointLight = new THREE.PointLight(0xffaa44, 2.0, 20, 2);
             pointLight.position.copy(camera.position);
             pointLight.castShadow = true;
+            pointLight.shadow.mapSize.width = 1024;
+            pointLight.shadow.mapSize.height = 1024;
+            pointLight.shadow.bias = -0.001;
             scene.add(pointLight);
             camera.userData.light = pointLight;
+            
+            // Add subtle rim light for edge definition
+            const rimLight = new THREE.DirectionalLight(0x6699ff, 0.8);
+            rimLight.position.set(-10, 5, -10);
+            scene.add(rimLight);
 
             raycaster = new THREE.Raycaster();
             mouse = new THREE.Vector2();
@@ -636,6 +971,93 @@
             displayVerse(0);
             document.getElementById('start-button').addEventListener('click', startGame);
             document.getElementById('loading').style.display = 'none';
+            
+            // Setup mobile controls if on mobile device
+            if (isMobile) {
+                setupMobileControls();
+            }
+        }
+
+        function setupMobileControls() {
+            // Movement joystick (left)
+            const movementStick = document.querySelector('#movement-joystick .joystick-stick');
+            const movementBase = document.querySelector('#movement-joystick .joystick-base');
+            
+            movementBase.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                movementJoystick.active = true;
+                const touch = e.touches[0];
+                const rect = movementBase.getBoundingClientRect();
+                movementJoystick.startX = rect.left + rect.width / 2;
+                movementJoystick.startY = rect.top + rect.height / 2;
+            });
+            
+            movementBase.addEventListener('touchmove', (e) => {
+                if (!movementJoystick.active) return;
+                e.preventDefault();
+                const touch = e.touches[0];
+                const deltaX = touch.clientX - movementJoystick.startX;
+                const deltaY = touch.clientY - movementJoystick.startY;
+                const distance = Math.min(35, Math.sqrt(deltaX * deltaX + deltaY * deltaY));
+                const angle = Math.atan2(deltaY, deltaX);
+                
+                movementJoystick.deltaX = (distance * Math.cos(angle)) / 35;
+                movementJoystick.deltaY = (distance * Math.sin(angle)) / 35;
+                
+                movementStick.style.transform = `translate(calc(-50% + ${distance * Math.cos(angle)}px), calc(-50% + ${distance * Math.sin(angle)}px))`;
+            });
+            
+            movementBase.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                movementJoystick.active = false;
+                movementJoystick.deltaX = 0;
+                movementJoystick.deltaY = 0;
+                movementStick.style.transform = 'translate(-50%, -50%)';
+            });
+            
+            // Camera joystick (right)
+            const cameraStick = document.querySelector('#camera-joystick .joystick-stick');
+            const cameraBase = document.querySelector('#camera-joystick .joystick-base');
+            
+            cameraBase.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                cameraJoystick.active = true;
+                const touch = e.touches[0];
+                const rect = cameraBase.getBoundingClientRect();
+                cameraJoystick.startX = rect.left + rect.width / 2;
+                cameraJoystick.startY = rect.top + rect.height / 2;
+            });
+            
+            cameraBase.addEventListener('touchmove', (e) => {
+                if (!cameraJoystick.active) return;
+                e.preventDefault();
+                const touch = e.touches[0];
+                const deltaX = touch.clientX - cameraJoystick.startX;
+                const deltaY = touch.clientY - cameraJoystick.startY;
+                const distance = Math.min(35, Math.sqrt(deltaX * deltaX + deltaY * deltaY));
+                const angle = Math.atan2(deltaY, deltaX);
+                
+                cameraJoystick.deltaX = (distance * Math.cos(angle)) / 35;
+                cameraJoystick.deltaY = (distance * Math.sin(angle)) / 35;
+                
+                cameraStick.style.transform = `translate(calc(-50% + ${distance * Math.cos(angle)}px), calc(-50% + ${distance * Math.sin(angle)}px))`;
+            });
+            
+            cameraBase.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                cameraJoystick.active = false;
+                cameraJoystick.deltaX = 0;
+                cameraJoystick.deltaY = 0;
+                cameraStick.style.transform = 'translate(-50%, -50%)';
+            });
+            
+            // Mobile interact button
+            document.getElementById('mobile-interact-btn').addEventListener('click', (e) => {
+                e.preventDefault();
+                if (gameState === 'garden' && nearestInteractable) {
+                    showGardenDialog(nearestInteractable.type, nearestInteractable);
+                }
+            });
         }
         
         function setupTouchControls() {
@@ -760,44 +1182,75 @@
         function createPlayerModel() {
             const group = new THREE.Group();
             
-            // Body (dark blue tunic)
+            // Body (dark blue tunic with PBR materials)
             const bodyGeometry = new THREE.BoxGeometry(0.6, 0.7, 0.4);
-            const bodyMaterial = new THREE.MeshStandardMaterial({ color: 0x2c3e50 });
+            const bodyMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0x2c3e50,
+                roughness: 0.8,
+                metalness: 0.1,
+                envMapIntensity: 0.5
+            });
             const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
             body.position.y = 0.5;
+            body.castShadow = true;
+            body.receiveShadow = true;
             group.add(body);
             
-            // Head (skin tone)
-            const headGeometry = new THREE.BoxGeometry(0.4, 0.4, 0.4);
-            const headMaterial = new THREE.MeshStandardMaterial({ color: 0xf0c291 });
+            // Head (realistic skin tone with subsurface scattering simulation)
+            const headGeometry = new THREE.SphereGeometry(0.2, 32, 32);
+            const headMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0xf0c291,
+                roughness: 0.6,
+                metalness: 0.0,
+                envMapIntensity: 0.3
+            });
             const head = new THREE.Mesh(headGeometry, headMaterial);
             head.position.y = 1.0;
+            head.castShadow = true;
+            head.receiveShadow = true;
             group.add(head);
             
-            // Hair (brown)
-            const hairGeometry = new THREE.BoxGeometry(0.4, 0.1, 0.4);
-            const hairMaterial = new THREE.MeshStandardMaterial({ color: 0x3e2723 });
+            // Hair (brown with texture variation)
+            const hairGeometry = new THREE.BoxGeometry(0.4, 0.15, 0.4);
+            const hairMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0x3e2723,
+                roughness: 0.9,
+                metalness: 0.0
+            });
             const hair = new THREE.Mesh(hairGeometry, hairMaterial);
-            hair.position.y = 1.25;
+            hair.position.y = 1.15;
+            hair.castShadow = true;
             group.add(hair);
             
-            // Eyes
-            const eyeGeometry = new THREE.BoxGeometry(0.08, 0.08, 0.05);
-            const eyeMaterial = new THREE.MeshStandardMaterial({ color: 0x5d4037 });
+            // Eyes (glossy)
+            const eyeGeometry = new THREE.SphereGeometry(0.04, 16, 16);
+            const eyeMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0x5d4037,
+                roughness: 0.1,
+                metalness: 0.0,
+                emissive: 0x5d4037,
+                emissiveIntensity: 0.1
+            });
             const leftEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
-            leftEye.position.set(-0.1, 1.0, 0.2);
+            leftEye.position.set(-0.08, 1.0, 0.18);
             const rightEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
-            rightEye.position.set(0.1, 1.0, 0.2);
+            rightEye.position.set(0.08, 1.0, 0.18);
             group.add(leftEye);
             group.add(rightEye);
             
-            // Legs (brown)
-            const legGeometry = new THREE.BoxGeometry(0.2, 0.4, 0.2);
-            const legMaterial = new THREE.MeshStandardMaterial({ color: 0x8d6e63 });
+            // Legs (brown cloth material)
+            const legGeometry = new THREE.CylinderGeometry(0.1, 0.08, 0.4, 16);
+            const legMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0x8d6e63,
+                roughness: 0.9,
+                metalness: 0.0
+            });
             const leftLeg = new THREE.Mesh(legGeometry, legMaterial);
             leftLeg.position.set(-0.15, 0.1, 0);
+            leftLeg.castShadow = true;
             const rightLeg = new THREE.Mesh(legGeometry, legMaterial);
             rightLeg.position.set(0.15, 0.1, 0);
+            rightLeg.castShadow = true;
             group.add(leftLeg);
             group.add(rightLeg);
             
@@ -1049,32 +1502,56 @@
             const group = new THREE.Group();
             const color = vice.color;
             
-            // Body
+            // Body with detailed muscular definition
             const bodyGeometry = new THREE.BoxGeometry(0.8, 1.2, 0.6);
+            // Add vertex displacement for muscle definition
+            const positions = bodyGeometry.attributes.position;
+            for (let i = 0; i < positions.count; i++) {
+                const x = positions.getX(i);
+                const y = positions.getY(i);
+                const noise = Math.sin(x * 5) * Math.cos(y * 5) * 0.05;
+                positions.setX(i, x + noise);
+                positions.setZ(i, positions.getZ(i) + noise);
+            }
+            positions.needsUpdate = true;
+            bodyGeometry.computeVertexNormals();
+            
             const bodyMaterial = new THREE.MeshStandardMaterial({ 
                 color: color,
                 emissive: color,
-                emissiveIntensity: 0.3
+                emissiveIntensity: 0.4,
+                roughness: 0.7,
+                metalness: 0.2,
+                envMapIntensity: 0.6
             });
             const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
             body.position.y = 0.8;
+            body.castShadow = true;
+            body.receiveShadow = true;
             group.add(body);
             
-            // Head
-            const headGeometry = new THREE.BoxGeometry(0.6, 0.6, 0.6);
+            // Head with more detail
+            const headGeometry = new THREE.DodecahedronGeometry(0.4, 1);
             const headMaterial = new THREE.MeshStandardMaterial({ 
-                color: vice.name === "The Devil" ? 0xCD0000 : 0x8b6f47
+                color: vice.name === "The Devil" ? 0xCD0000 : 0x8b6f47,
+                roughness: 0.8,
+                metalness: 0.1,
+                envMapIntensity: 0.4
             });
             const head = new THREE.Mesh(headGeometry, headMaterial);
             head.position.y = 1.6;
+            head.castShadow = true;
+            head.receiveShadow = true;
             group.add(head);
             
-            // Eyes (glowing)
-            const eyeGeometry = new THREE.BoxGeometry(0.1, 0.1, 0.05);
+            // Eyes (glowing intensely)
+            const eyeGeometry = new THREE.SphereGeometry(0.08, 16, 16);
             const eyeMaterial = new THREE.MeshStandardMaterial({ 
-                color: vice.name === "The Devil" ? 0xffff00 : 0xf39c12,
-                emissive: 0xffff00,
-                emissiveIntensity: 0.8
+                color: vice.name === "The Devil" ? 0xffff00 : 0xff4400,
+                emissive: vice.name === "The Devil" ? 0xffff00 : 0xff4400,
+                emissiveIntensity: 2.0,
+                roughness: 0.1,
+                metalness: 0.0
             });
             const leftEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
             leftEye.position.set(-0.15, 1.6, 0.3);
@@ -1083,82 +1560,131 @@
             group.add(leftEye);
             group.add(rightEye);
             
-            // Special features for specific sins
+            // Add glowing point lights for eyes
+            const leftEyeLight = new THREE.PointLight(
+                vice.name === "The Devil" ? 0xffff00 : 0xff4400, 
+                0.5, 
+                3
+            );
+            leftEyeLight.position.copy(leftEye.position);
+            group.add(leftEyeLight);
+            
+            const rightEyeLight = new THREE.PointLight(
+                vice.name === "The Devil" ? 0xffff00 : 0xff4400, 
+                0.5, 
+                3
+            );
+            rightEyeLight.position.copy(rightEye.position);
+            group.add(rightEyeLight);
+            
+            // Special features for specific sins with enhanced materials
             if (vice.name === "Pride") {
-                // Crown (gold)
+                // Crown (highly reflective gold)
                 const crownGeometry = new THREE.BoxGeometry(0.7, 0.2, 0.6);
                 const crownMaterial = new THREE.MeshStandardMaterial({ 
-                    color: 0xf39c12,
-                    emissive: 0xf39c12,
-                    emissiveIntensity: 0.3
+                    color: 0xffd700,
+                    emissive: 0xffd700,
+                    emissiveIntensity: 0.6,
+                    roughness: 0.2,
+                    metalness: 0.9
                 });
                 const crown = new THREE.Mesh(crownGeometry, crownMaterial);
                 crown.position.y = 2.0;
+                crown.castShadow = true;
                 group.add(crown);
                 
-                // Crown spikes
+                // Crown spikes with glow
                 for (let i = -1; i <= 1; i++) {
-                    const spikeGeometry = new THREE.BoxGeometry(0.1, 0.2, 0.1);
+                    const spikeGeometry = new THREE.ConeGeometry(0.08, 0.3, 8);
                     const spike = new THREE.Mesh(spikeGeometry, crownMaterial);
-                    spike.position.set(i * 0.25, 2.2, 0);
+                    spike.position.set(i * 0.25, 2.25, 0);
+                    spike.castShadow = true;
                     group.add(spike);
                 }
             } else if (vice.name === "Greed") {
-                // Money bag
-                const bagGeometry = new THREE.BoxGeometry(0.3, 0.4, 0.3);
-                const bagMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
+                // Money bag with realistic cloth
+                const bagGeometry = new THREE.SphereGeometry(0.2, 16, 16);
+                bagGeometry.scale(1, 1.3, 1);
+                const bagMaterial = new THREE.MeshStandardMaterial({ 
+                    color: 0x8B4513,
+                    roughness: 0.95,
+                    metalness: 0.0
+                });
                 const bag = new THREE.Mesh(bagGeometry, bagMaterial);
                 bag.position.set(-0.6, 0.8, 0);
+                bag.castShadow = true;
                 group.add(bag);
                 
-                // Gold coins
-                const coinGeometry = new THREE.CylinderGeometry(0.08, 0.08, 0.05, 16);
-                const coinMaterial = new THREE.MeshStandardMaterial({ color: 0xf39c12 });
-                const coin1 = new THREE.Mesh(coinGeometry, coinMaterial);
-                coin1.position.set(-0.6, 1.0, 0.1);
-                const coin2 = new THREE.Mesh(coinGeometry, coinMaterial);
-                coin2.position.set(-0.5, 1.1, 0.15);
-                group.add(coin1);
-                group.add(coin2);
-            } else if (vice.name === "Lust") {
-                // Heart shape
-                const heartGeometry = new THREE.BoxGeometry(0.3, 0.15, 0.1);
-                const heartMaterial = new THREE.MeshStandardMaterial({ color: 0xff1744 });
-                const heart1 = new THREE.Mesh(heartGeometry, heartMaterial);
-                heart1.position.set(-0.55, 0.9, 0.15);
-                const heart2 = new THREE.Mesh(heartGeometry, heartMaterial);
-                heart2.position.set(-0.45, 0.9, 0.15);
-                const heartBottom = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.15, 0.1), heartMaterial);
-                heartBottom.position.set(-0.5, 0.8, 0.15);
-                group.add(heart1);
-                group.add(heart2);
-                group.add(heartBottom);
+                // Gold coins with high metalness
+                const coinGeometry = new THREE.CylinderGeometry(0.08, 0.08, 0.05, 32);
+                const coinMaterial = new THREE.MeshStandardMaterial({ 
+                    color: 0xffd700,
+                    roughness: 0.15,
+                    metalness: 0.95,
+                    emissive: 0xffd700,
+                    emissiveIntensity: 0.3
+                });
+                for (let i = 0; i < 3; i++) {
+                    const coin = new THREE.Mesh(coinGeometry, coinMaterial);
+                    coin.position.set(-0.6 + i * 0.1, 1.0 + i * 0.08, 0.1 + i * 0.05);
+                    coin.castShadow = true;
+                    group.add(coin);
+                }
             } else if (vice.name === "The Devil") {
-                // Horns
-                const hornGeometry = new THREE.BoxGeometry(0.15, 0.3, 0.15);
-                const hornMaterial = new THREE.MeshStandardMaterial({ color: 0x4a0000 });
+                // Horns with dark red glow
+                const hornGeometry = new THREE.ConeGeometry(0.1, 0.4, 8);
+                const hornMaterial = new THREE.MeshStandardMaterial({ 
+                    color: 0x4a0000,
+                    roughness: 0.6,
+                    metalness: 0.4,
+                    emissive: 0x8B0000,
+                    emissiveIntensity: 0.5
+                });
                 const leftHorn = new THREE.Mesh(hornGeometry, hornMaterial);
-                leftHorn.position.set(-0.25, 2.0, 0);
+                leftHorn.position.set(-0.25, 2.1, 0);
+                leftHorn.rotation.z = -Math.PI / 6;
+                leftHorn.castShadow = true;
                 const rightHorn = new THREE.Mesh(hornGeometry, hornMaterial);
-                rightHorn.position.set(0.25, 2.0, 0);
+                rightHorn.position.set(0.25, 2.1, 0);
+                rightHorn.rotation.z = Math.PI / 6;
+                rightHorn.castShadow = true;
                 group.add(leftHorn);
                 group.add(rightHorn);
                 
-                // Tail
-                const tailGeometry = new THREE.CylinderGeometry(0.08, 0.05, 0.8, 8);
-                const tail = new THREE.Mesh(tailGeometry, new THREE.MeshStandardMaterial({ color: 0x8B0000 }));
-                tail.position.set(0.4, 0.6, -0.3);
-                tail.rotation.x = Math.PI / 3;
-                group.add(tail);
+                // Tail with segments
+                for (let i = 0; i < 5; i++) {
+                    const segmentGeometry = new THREE.SphereGeometry(0.08 - i * 0.01, 8, 8);
+                    const segmentMaterial = new THREE.MeshStandardMaterial({ 
+                        color: 0x8B0000,
+                        roughness: 0.8,
+                        metalness: 0.2,
+                        emissive: 0x4a0000,
+                        emissiveIntensity: 0.3
+                    });
+                    const segment = new THREE.Mesh(segmentGeometry, segmentMaterial);
+                    segment.position.set(
+                        0.3 + i * 0.1,
+                        0.6 - i * 0.15,
+                        -0.3 - i * 0.1
+                    );
+                    segment.castShadow = true;
+                    group.add(segment);
+                }
             }
             
-            // Legs
-            const legGeometry = new THREE.BoxGeometry(0.25, 0.5, 0.25);
-            const legMaterial = new THREE.MeshStandardMaterial({ color: 0x000000 });
+            // Legs with muscle definition
+            const legGeometry = new THREE.CylinderGeometry(0.12, 0.10, 0.5, 16);
+            const legMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0x2a2a2a,
+                roughness: 0.85,
+                metalness: 0.1
+            });
             const leftLeg = new THREE.Mesh(legGeometry, legMaterial);
             leftLeg.position.set(-0.2, 0.15, 0);
+            leftLeg.castShadow = true;
             const rightLeg = new THREE.Mesh(legGeometry, legMaterial);
             rightLeg.position.set(0.2, 0.15, 0);
+            rightLeg.castShadow = true;
             group.add(leftLeg);
             group.add(rightLeg);
             
@@ -1248,17 +1774,22 @@
             const ceilingGeometry = new THREE.BoxGeometry(CELL_SIZE, 0.2, CELL_SIZE);
             
             const wallMaterial = new THREE.MeshStandardMaterial({ 
-                color: 0x8B7355, // Sandy brown
-                roughness: 0.7,
-                metalness: 0.1
+                color: 0x8B7355,
+                roughness: 0.95,
+                metalness: 0.0,
+                envMapIntensity: 0.2
             });
             const floorMaterial = new THREE.MeshStandardMaterial({ 
-                color: 0xD2B48C, // Tan
-                roughness: 0.8
+                color: 0xD2B48C,
+                roughness: 0.9,
+                metalness: 0.0,
+                envMapIntensity: 0.15
             });
             const ceilingMaterial = new THREE.MeshStandardMaterial({ 
-                color: 0xF5DEB3, // Wheat
-                roughness: 0.7
+                color: 0xF5DEB3,
+                roughness: 0.85,
+                metalness: 0.0,
+                envMapIntensity: 0.2
             });
 
             for (let y = 0; y < MAP_SIZE; y++) {
@@ -1332,23 +1863,61 @@
                         enemyMesh.castShadow = true;
                         scene.add(enemyMesh);
                         
+                        // If this is the Devil and all sins are defeated, add a HUGE beacon
+                        if (vice.name === "The Devil") {
+                            // Massive glowing red pillar of light reaching to the sky
+                            const beaconGeometry = new THREE.CylinderGeometry(2, 2, 50, 32);
+                            const beaconMaterial = new THREE.MeshBasicMaterial({ 
+                                color: 0xff0000,
+                                transparent: true,
+                                opacity: 0.4
+                            });
+                            const beacon = new THREE.Mesh(beaconGeometry, beaconMaterial);
+                            beacon.position.set(ex, 25, ez);
+                            scene.add(beacon);
+                            
+                            // Pulsing red light at Devil's location
+                            const devilLight = new THREE.PointLight(0xff0000, 5, 50);
+                            devilLight.position.set(ex, 5, ez);
+                            scene.add(devilLight);
+                            
+                            // Spinning warning symbols above
+                            for (let i = 0; i < 4; i++) {
+                                const warningGeometry = new THREE.BoxGeometry(1, 1, 0.1);
+                                const warningMaterial = new THREE.MeshBasicMaterial({ 
+                                    color: 0xffff00,
+                                    emissive: 0xffff00,
+                                    emissiveIntensity: 1
+                                });
+                                const warning = new THREE.Mesh(warningGeometry, warningMaterial);
+                                const angle = (i / 4) * Math.PI * 2;
+                                warning.position.set(
+                                    ex + Math.cos(angle) * 3,
+                                    10 + Math.sin(Date.now() * 0.001 + i) * 2,
+                                    ez + Math.sin(angle) * 3
+                                );
+                                warning.userData.rotate = true;
+                                scene.add(warning);
+                            }
+                        }
+                        
                         // Add name label above enemy
                         const canvas = document.createElement('canvas');
                         const context = canvas.getContext('2d');
                         canvas.width = 256;
                         canvas.height = 64;
-                        context.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                        context.fillStyle = vice.name === "The Devil" ? 'rgba(139, 0, 0, 0.9)' : 'rgba(0, 0, 0, 0.7)';
                         context.fillRect(0, 0, 256, 64);
-                        context.font = 'bold 32px Arial';
-                        context.fillStyle = '#e74c3c';
+                        context.font = vice.name === "The Devil" ? 'bold 36px Arial' : 'bold 32px Arial';
+                        context.fillStyle = vice.name === "The Devil" ? '#ff0000' : '#e74c3c';
                         context.textAlign = 'center';
                         context.fillText(vice.name.toUpperCase(), 128, 42);
                         
                         const texture = new THREE.CanvasTexture(canvas);
                         const spriteMaterial = new THREE.SpriteMaterial({ map: texture });
                         const sprite = new THREE.Sprite(spriteMaterial);
-                        sprite.position.set(0, 2.5, 0);
-                        sprite.scale.set(2, 0.5, 1);
+                        sprite.position.set(0, vice.name === "The Devil" ? 4 : 2.5, 0);
+                        sprite.scale.set(vice.name === "The Devil" ? 3 : 2, vice.name === "The Devil" ? 0.75 : 0.5, 1);
                         enemyMesh.add(sprite);
                         
                         enemies.push({ 
@@ -1488,6 +2057,12 @@
         function startBattle(enemy) {
             gameState = 'battle';
             battle.active = true;
+            
+            // Hide mobile interact button during battle
+            if (isMobile) {
+                const interactBtn = document.getElementById('mobile-interact-btn');
+                if (interactBtn) interactBtn.style.display = 'none';
+            }
             
             const isFinalBoss = enemy.vice.name === "The Devil";
             
@@ -1730,7 +2305,7 @@
                 }
             });
             
-            // Update hero status display (top left)
+            // Update hero status display (bottom right - FF style)
             const heroStatusEl = document.getElementById('battle-status');
             heroStatusEl.innerHTML = '';
             heroStatusEl.style.display = 'block';
@@ -1743,47 +2318,28 @@
                 statusDiv.innerHTML = `
                     <div class="hero-name">${hero.name}</div>
                     <div class="hero-stats">
-                        <span>HP: ${Math.max(0, hero.hp)}/${hero.maxHp + inventory.hpBoost}</span>
-                        <span>MP: ${hero.mp}/${hero.maxMp}</span>
-                    </div>
-                    <div class="status-bar hp-bar">
-                        <div class="status-fill" style="width: ${hpPercent}%;"></div>
-                    </div>
-                    <div class="status-bar mp-bar">
-                        <div class="status-fill" style="width: ${mpPercent}%;"></div>
+                        <div class="stat-bar-container hp-bar">
+                            <span class="stat-label">HP</span>
+                            <div class="stat-bar">
+                                <div class="stat-bar-fill" style="width: ${hpPercent}%;"></div>
+                            </div>
+                            <span class="stat-value">${Math.max(0, hero.hp)}/${hero.maxHp + inventory.hpBoost}</span>
+                        </div>
+                        <div class="stat-bar-container mp-bar">
+                            <span class="stat-label">MP</span>
+                            <div class="stat-bar">
+                                <div class="stat-bar-fill" style="width: ${mpPercent}%;"></div>
+                            </div>
+                            <span class="stat-value">${hero.mp}/${hero.maxMp}</span>
+                        </div>
                     </div>
                 `;
                 heroStatusEl.appendChild(statusDiv);
             });
             
-            // Update enemy status display (top right)
-            const enemyStatusEl = document.getElementById('enemy-status');
-            enemyStatusEl.innerHTML = '';
-            enemyStatusEl.style.display = 'block';
+            // Enemy status hidden in FFX style - no enemy health bars shown
             
-            battle.enemies.forEach((enemy, i) => {
-                const statusDiv = document.createElement('div');
-                statusDiv.className = 'enemy-status' + (i === battle.targetIndex && battle.phase === 'target' ? ' targeted' : '');
-                if (enemy.hp > 0) {
-                    const hpPercent = Math.max(0, (enemy.hp / enemy.maxHp) * 100);
-                    statusDiv.innerHTML = `
-                        <div class="enemy-name">${enemy.name}</div>
-                        <div class="hero-stats">
-                            <span>HP: ${enemy.hp}/${enemy.maxHp}</span>
-                        </div>
-                        <div class="status-bar hp-bar">
-                            <div class="status-fill" style="width: ${hpPercent}%;"></div>
-                        </div>
-                    `;
-                } else {
-                    statusDiv.innerHTML = `
-                        <div class="enemy-name" style="color: #7f8c8d;">DEFEATED</div>
-                    `;
-                }
-                enemyStatusEl.appendChild(statusDiv);
-            });
-            
-            // Update actions menu (bottom right)
+            // Update actions menu (bottom left - FFX style)
             const actionsEl = document.getElementById('battle-actions');
             if (battle.phase === 'menu') {
                 const hero = heroes[battle.currentHeroIndex];
@@ -1796,9 +2352,9 @@
                 `;
             } else if (battle.phase === 'target') {
                 actionsEl.innerHTML = `
-                    <button class="battle-btn" onclick="changeTarget(-1)">◀ Previous Target</button>
+                    <button class="battle-btn" onclick="changeTarget(-1)">◀ Prev</button>
                     <button class="battle-btn selected" onclick="confirmTarget()">Confirm</button>
-                    <button class="battle-btn" onclick="changeTarget(1)">Next Target ▶</button>
+                    <button class="battle-btn" onclick="changeTarget(1)">Next ▶</button>
                     <button class="battle-btn" onclick="cancelTarget()">Back</button>
                 `;
             } else if (battle.phase === 'item') {
@@ -1809,12 +2365,7 @@
                 `;
             }
             
-            // Update log
-            const logEl = document.getElementById('battle-log');
-            logEl.innerHTML = battle.log.slice(-3).map(msg => 
-                `<div class="log-entry">${msg}</div>`
-            ).join('');
-            logEl.scrollTop = logEl.scrollHeight;
+            // Battle log hidden in FFX style - no update needed
         }
 
         function selectBattleAction(action) {
@@ -2440,31 +2991,36 @@
             document.getElementById('battle-status').style.display = 'none';
             document.getElementById('enemy-status').style.display = 'none';
             
-            // Create garden scene
+            // Create garden scene with cinematic atmosphere
             gardenScene = new THREE.Scene();
-            gardenScene.background = new THREE.Color(0x87CEEB); // Sky blue
-            gardenScene.fog = new THREE.Fog(0x87CEEB, 30, 100);
+            gardenScene.background = new THREE.Color(0xffd4a3); // Golden sky
+            gardenScene.fog = new THREE.FogExp2(0xffd4a3, 0.008); // Atmospheric depth
             
-            // Ground - lush green grass with varied terrain
-            const groundGeometry = new THREE.PlaneGeometry(150, 150);
+            // Ground - photorealistic lush green grass
+            const groundGeometry = new THREE.PlaneGeometry(150, 150, 100, 100);
             const groundMaterial = new THREE.MeshStandardMaterial({ 
                 color: 0x2d5016,
-                roughness: 0.9
+                roughness: 0.95,
+                metalness: 0.0,
+                envMapIntensity: 0.3
             });
             const ground = new THREE.Mesh(groundGeometry, groundMaterial);
             ground.rotation.x = -Math.PI / 2;
             ground.receiveShadow = true;
             gardenScene.add(ground);
             
-            // Main path
-            const pathGeometry = new THREE.PlaneGeometry(5, 150);
+            // Path with realistic dirt/stone texture
+            const pathGeometry = new THREE.PlaneGeometry(5, 150, 50, 50);
             const pathMaterial = new THREE.MeshStandardMaterial({ 
                 color: 0xD2B48C,
-                roughness: 0.85
+                roughness: 0.92,
+                metalness: 0.0,
+                envMapIntensity: 0.2
             });
             const path = new THREE.Mesh(pathGeometry, pathMaterial);
             path.rotation.x = -Math.PI / 2;
             path.position.y = 0.05;
+            path.receiveShadow = true;
             gardenScene.add(path);
             
             // ENTRANCE - Beatitudes Plaque
@@ -2482,15 +3038,19 @@
             // STATION 4 - Moses (distance: 60)
             createMosesStatue(-4, 0, -60);
             
-            // STATION 5 - Mother Mary (distance: 75)
-            createMotherMaryStatue(4, 0, -75);
+            // STATION 5 - Elijah (distance: 68)
+            createElijahStatue(4, 0, -68);
+            
+            // STATION 6 - Mother Mary (distance: 75)
+            createMotherMaryStatue(-4, 0, -75);
             
             // STATION 6 - Bible Passage Stands (various locations)
             createBiblePassageStand(-5, 0, -20, "The Lord's Prayer", "Our Father who art in heaven, hallowed be thy name. Thy kingdom come. Thy will be done on earth as it is in heaven. Give us this day our daily bread, and forgive us our trespasses, as we forgive those who trespass against us, and lead us not into temptation, but deliver us from evil.", "Matthew 6:9-13");
             createBiblePassageStand(5, 0, -35, "The Greatest Commandment", "You shall love the Lord your God with all your heart, with all your soul, and with all your mind. This is the greatest and first commandment. And the second is like it: You shall love your neighbor as yourself.", "Matthew 22:37-39");
             createBiblePassageStand(-5, 0, -50, "Psalm 23", "The Lord is my shepherd, I shall not want. He makes me lie down in green pastures; he leads me beside still waters; he restores my soul. He leads me in right paths for his name's sake. Even though I walk through the darkest valley, I fear no evil; for you are with me; your rod and your staff they comfort me.", "Psalm 23:1-4");
-            createBiblePassageStand(5, 0, -65, "Love Chapter", "Love is patient; love is kind; love is not envious or boastful or arrogant or rude. It does not insist on its own way; it is not irritable or resentful; it does not rejoice in wrongdoing, but rejoices in the truth. It bears all things, believes all things, hopes all things, endures all things. Love never ends.", "1 Corinthians 13:4-8");
-            createBiblePassageStand(-5, 0, -80, "Faith and Works", "What good is it, my brothers and sisters, if you say you have faith but do not have works? Can faith save you? If a brother or sister is naked and lacks daily food, and one of you says to them, 'Go in peace; keep warm and eat your fill,' and yet you do not supply their bodily needs, what is the good of that? So faith by itself, if it has no works, is dead.", "James 2:14-17");
+            createBiblePassageStand(5, 0, -55, "Love Chapter", "Love is patient; love is kind; love is not envious or boastful or arrogant or rude. It does not insist on its own way; it is not irritable or resentful; it does not rejoice in wrongdoing, but rejoices in the truth. It bears all things, believes all things, hopes all things, endures all things. Love never ends.", "1 Corinthians 13:4-8");
+            createBiblePassageStand(-5, 0, -82, "Faith and Works", "What good is it, my brothers and sisters, if you say you have faith but do not have works? Can faith save you? If a brother or sister is naked and lacks daily food, and one of you says to them, 'Go in peace; keep warm and eat your fill,' and yet you do not supply their bodily needs, what is the good of that? So faith by itself, if it has no works, is dead.", "James 2:14-17");
+            createBiblePassageStand(5, 0, -85, "The Armor of God", "Put on the full armor of God, so that you can take your stand against the devil's schemes. For our struggle is not against flesh and blood, but against the rulers, against the authorities, against the powers of this dark world and against the spiritual forces of evil in the heavenly realms.", "Ephesians 6:11-12");
             
             // DIVERSE TREE TYPES
             // Oak trees
@@ -2557,23 +3117,38 @@
                 createRock(-20 + Math.random() * 40, 0, -5 - Math.random() * 90);
             }
             
-            // Lighting - Beautiful golden sunlight
-            const ambientLight = new THREE.AmbientLight(0xffffee, 0.7);
+            // Lighting - Photorealistic golden hour lighting
+            const ambientLight = new THREE.AmbientLight(0xffffee, 0.5);
             gardenScene.add(ambientLight);
             
-            const sunLight = new THREE.DirectionalLight(0xffd700, 1.2);
+            // Main sun with realistic color temperature
+            const sunLight = new THREE.DirectionalLight(0xfff5e6, 3.0);
             sunLight.position.set(15, 30, 10);
             sunLight.castShadow = true;
+            sunLight.shadow.mapSize.width = 4096;
+            sunLight.shadow.mapSize.height = 4096;
             sunLight.shadow.camera.left = -80;
             sunLight.shadow.camera.right = 80;
             sunLight.shadow.camera.top = 80;
             sunLight.shadow.camera.bottom = -80;
+            sunLight.shadow.camera.near = 0.5;
+            sunLight.shadow.camera.far = 200;
+            sunLight.shadow.bias = -0.00001;
             gardenScene.add(sunLight);
             
-            // Warm fill light
-            const fillLight = new THREE.DirectionalLight(0xffe4b5, 0.5);
+            // Hemisphere light for realistic sky/ground bounce lighting
+            const hemisphereLight = new THREE.HemisphereLight(0x87CEEB, 0x5D8C3E, 1.0);
+            gardenScene.add(hemisphereLight);
+            
+            // Warm fill light (simulating bounced sunlight)
+            const fillLight = new THREE.DirectionalLight(0xffe4b5, 0.8);
             fillLight.position.set(-10, 20, -10);
             gardenScene.add(fillLight);
+            
+            // Subtle rim light for depth
+            const rimLight = new THREE.DirectionalLight(0xffd700, 0.4);
+            rimLight.position.set(10, 10, -20);
+            gardenScene.add(rimLight);
             
             // Create Jesus model at the end of the path
             jesusModel = createJesusModel();
@@ -2771,6 +3346,77 @@
             gardenScene.add(group);
         }
 
+        function createElijahStatue(x, y, z) {
+            const group = new THREE.Group();
+            
+            // Robes (darker, weathered prophet's garb)
+            const robeGeometry = new THREE.BoxGeometry(1, 1.8, 0.8);
+            const robeMaterial = new THREE.MeshStandardMaterial({ color: 0x5D4037 });
+            const robe = new THREE.Mesh(robeGeometry, robeMaterial);
+            robe.position.y = 1;
+            group.add(robe);
+            
+            // Mantle/Cloak (distinctive feature of Elijah)
+            const mantleGeometry = new THREE.BoxGeometry(1.3, 1.2, 0.2);
+            const mantleMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0x6D4C41,
+                roughness: 0.9
+            });
+            const mantle = new THREE.Mesh(mantleGeometry, mantleMaterial);
+            mantle.position.set(0, 1.2, -0.4);
+            group.add(mantle);
+            
+            // Head
+            const headGeometry = new THREE.BoxGeometry(0.6, 0.6, 0.6);
+            const headMaterial = new THREE.MeshStandardMaterial({ color: 0xf0c291 });
+            const head = new THREE.Mesh(headGeometry, headMaterial);
+            head.position.y = 2.1;
+            group.add(head);
+            
+            // Wild beard (Elijah lived in wilderness)
+            const beardGeometry = new THREE.BoxGeometry(0.7, 0.9, 0.5);
+            const beardMaterial = new THREE.MeshStandardMaterial({ color: 0x4A4A4A });
+            const beard = new THREE.Mesh(beardGeometry, beardMaterial);
+            beard.position.y = 1.5;
+            beard.position.z = 0.3;
+            group.add(beard);
+            
+            // Wild hair
+            const hairGeometry = new THREE.BoxGeometry(0.7, 0.4, 0.7);
+            const hairMaterial = new THREE.MeshStandardMaterial({ color: 0x4A4A4A });
+            const hair = new THREE.Mesh(hairGeometry, hairMaterial);
+            hair.position.y = 2.4;
+            group.add(hair);
+            
+            // Staff/Walking stick
+            const staffGeometry = new THREE.CylinderGeometry(0.06, 0.06, 2.3, 8);
+            const staffMaterial = new THREE.MeshStandardMaterial({ color: 0x654321 });
+            const staff = new THREE.Mesh(staffGeometry, staffMaterial);
+            staff.position.set(0.6, 1.4, 0);
+            group.add(staff);
+            
+            // Flame symbol (Elijah called down fire from heaven)
+            const flameGeometry = new THREE.ConeGeometry(0.15, 0.4, 6);
+            const flameMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0xff6600,
+                emissive: 0xff6600,
+                emissiveIntensity: 0.6
+            });
+            const flame = new THREE.Mesh(flameGeometry, flameMaterial);
+            flame.position.set(-0.6, 1.5, 0.3);
+            group.add(flame);
+            
+            // Add glow to flame
+            const flameLight = new THREE.PointLight(0xff6600, 0.5, 3);
+            flameLight.position.set(-0.6, 1.5, 0.3);
+            group.add(flameLight);
+            
+            group.position.set(x, y, z);
+            group.userData.type = 'elijah';
+            group.userData.clickable = true;
+            gardenScene.add(group);
+        }
+
         function createMotherMaryStatue(x, y, z) {
             const group = new THREE.Group();
             
@@ -2843,20 +3489,32 @@
 
         // TREE CREATION FUNCTIONS
         function createOakTree(x, y, z) {
-            // Thick trunk
-            const trunkGeometry = new THREE.CylinderGeometry(0.4, 0.5, 4, 8);
-            const trunkMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
+            // Realistic bark texture
+            const trunkGeometry = new THREE.CylinderGeometry(0.4, 0.5, 4, 32);
+            const trunkMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0x6B4423,
+                roughness: 0.98,
+                metalness: 0.0,
+                envMapIntensity: 0.1
+            });
             const trunk = new THREE.Mesh(trunkGeometry, trunkMaterial);
             trunk.position.set(x, y + 2, z);
             trunk.castShadow = true;
+            trunk.receiveShadow = true;
             gardenScene.add(trunk);
             
-            // Large rounded canopy
-            const canopyGeometry = new THREE.SphereGeometry(2.5, 8, 8);
-            const canopyMaterial = new THREE.MeshStandardMaterial({ color: 0x228B22 });
+            // Realistic dense foliage with subsurface scattering look
+            const canopyGeometry = new THREE.SphereGeometry(2.5, 32, 32);
+            const canopyMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0x2d5016,
+                roughness: 0.85,
+                metalness: 0.0,
+                envMapIntensity: 0.5
+            });
             const canopy = new THREE.Mesh(canopyGeometry, canopyMaterial);
             canopy.position.set(x, y + 5.5, z);
             canopy.castShadow = true;
+            canopy.receiveShadow = true;
             gardenScene.add(canopy);
         }
 
@@ -2937,34 +3595,52 @@
         }
 
         function createFlower(x, y, z, color) {
-            // Stem
-            const stemGeometry = new THREE.CylinderGeometry(0.02, 0.02, 0.3, 8);
-            const stemMaterial = new THREE.MeshStandardMaterial({ color: 0x228B22 });
+            // Realistic stem
+            const stemGeometry = new THREE.CylinderGeometry(0.02, 0.02, 0.3, 16);
+            const stemMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0x228B22,
+                roughness: 0.8,
+                metalness: 0.0
+            });
             const stem = new THREE.Mesh(stemGeometry, stemMaterial);
             stem.position.set(x, y - 0.1, z);
+            stem.castShadow = true;
             gardenScene.add(stem);
             
-            // Flower head
-            const flowerGeometry = new THREE.SphereGeometry(0.08, 8, 8);
+            // Center of flower
+            const flowerGeometry = new THREE.SphereGeometry(0.08, 16, 16);
             const flowerMaterial = new THREE.MeshStandardMaterial({ 
                 color: color,
+                roughness: 0.4,
+                metalness: 0.0,
                 emissive: color,
-                emissiveIntensity: 0.2
+                emissiveIntensity: 0.15,
+                envMapIntensity: 0.6
             });
             const flower = new THREE.Mesh(flowerGeometry, flowerMaterial);
             flower.position.set(x, y, z);
+            flower.castShadow = true;
             gardenScene.add(flower);
             
-            // Petals
+            // Realistic petals with translucent appearance
             for (let i = 0; i < 5; i++) {
-                const petalGeometry = new THREE.SphereGeometry(0.06, 6, 6);
-                const petal = new THREE.Mesh(petalGeometry, flowerMaterial);
+                const petalGeometry = new THREE.SphereGeometry(0.06, 16, 16);
+                const petalMaterial = new THREE.MeshStandardMaterial({ 
+                    color: color,
+                    roughness: 0.3,
+                    metalness: 0.0,
+                    transparent: true,
+                    opacity: 0.9,
+                    envMapIntensity: 0.7
+                });
+                const petal = new THREE.Mesh(petalGeometry, petalMaterial);
                 const angle = (i / 5) * Math.PI * 2;
                 petal.position.set(
                     x + Math.cos(angle) * 0.08,
                     y,
                     z + Math.sin(angle) * 0.08
                 );
+                petal.castShadow = true;
                 gardenScene.add(petal);
             }
         }
@@ -3031,63 +3707,100 @@
         function createJesusModel() {
             const group = new THREE.Group();
             
-            // Body (white robe)
-            const bodyGeometry = new THREE.BoxGeometry(0.7, 0.9, 0.4);
+            // Body (pure white robe with soft glow)
+            const bodyGeometry = new THREE.CylinderGeometry(0.35, 0.45, 0.9, 32);
             const bodyMaterial = new THREE.MeshStandardMaterial({ 
                 color: 0xffffff,
+                roughness: 0.4,
+                metalness: 0.0,
                 emissive: 0xffffff,
-                emissiveIntensity: 0.2
+                emissiveIntensity: 0.15,
+                envMapIntensity: 0.8
             });
             const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
             body.position.y = 0.6;
+            body.castShadow = true;
+            body.receiveShadow = true;
             group.add(body);
             
-            // Head
-            const headGeometry = new THREE.BoxGeometry(0.4, 0.4, 0.4);
-            const headMaterial = new THREE.MeshStandardMaterial({ color: 0xf0c291 });
+            // Head (realistic skin)
+            const headGeometry = new THREE.SphereGeometry(0.22, 32, 32);
+            const headMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0xf0c291,
+                roughness: 0.5,
+                metalness: 0.0,
+                envMapIntensity: 0.4
+            });
             const head = new THREE.Mesh(headGeometry, headMaterial);
             head.position.y = 1.2;
+            head.castShadow = true;
+            head.receiveShadow = true;
             group.add(head);
             
-            // Hair and beard (brown)
-            const hairGeometry = new THREE.BoxGeometry(0.45, 0.3, 0.45);
-            const hairMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
+            // Hair and beard (flowing brown hair)
+            const hairGeometry = new THREE.SphereGeometry(0.24, 32, 32);
+            hairGeometry.scale(1, 1.2, 1);
+            const hairMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0x8B4513,
+                roughness: 0.95,
+                metalness: 0.0
+            });
             const hair = new THREE.Mesh(hairGeometry, hairMaterial);
-            hair.position.y = 1.35;
+            hair.position.y = 1.25;
+            hair.castShadow = true;
             group.add(hair);
             
-            // Halo (golden ring)
-            const haloGeometry = new THREE.TorusGeometry(0.35, 0.04, 8, 16);
+            // Halo (radiant golden ring with bloom effect)
+            const haloGeometry = new THREE.TorusGeometry(0.35, 0.04, 16, 64);
             const haloMaterial = new THREE.MeshStandardMaterial({ 
                 color: 0xffd700,
+                roughness: 0.2,
+                metalness: 0.8,
                 emissive: 0xffd700,
-                emissiveIntensity: 0.8
+                emissiveIntensity: 1.5
             });
             const halo = new THREE.Mesh(haloGeometry, haloMaterial);
             halo.position.y = 1.6;
             halo.rotation.x = Math.PI / 2;
             group.add(halo);
             
-            // Arms extended in welcome
-            const armGeometry = new THREE.BoxGeometry(0.15, 0.6, 0.15);
-            const armMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff });
+            // Add point light for halo glow
+            const haloLight = new THREE.PointLight(0xffd700, 0.8, 3);
+            haloLight.position.y = 1.6;
+            group.add(haloLight);
+            
+            // Arms extended in welcome (cylindrical for realism)
+            const armGeometry = new THREE.CylinderGeometry(0.06, 0.05, 0.6, 16);
+            const armMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0xffffff,
+                roughness: 0.4,
+                metalness: 0.0
+            });
             const leftArm = new THREE.Mesh(armGeometry, armMaterial);
             leftArm.position.set(-0.5, 0.7, 0);
             leftArm.rotation.z = Math.PI / 4;
+            leftArm.castShadow = true;
             group.add(leftArm);
             
             const rightArm = new THREE.Mesh(armGeometry, armMaterial);
             rightArm.position.set(0.5, 0.7, 0);
             rightArm.rotation.z = -Math.PI / 4;
+            rightArm.castShadow = true;
             group.add(rightArm);
             
             // Legs
-            const legGeometry = new THREE.BoxGeometry(0.2, 0.5, 0.2);
-            const legMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff });
+            const legGeometry = new THREE.CylinderGeometry(0.08, 0.07, 0.5, 16);
+            const legMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0xffffff,
+                roughness: 0.5,
+                metalness: 0.0
+            });
             const leftLeg = new THREE.Mesh(legGeometry, legMaterial);
             leftLeg.position.set(-0.15, 0.15, 0);
+            leftLeg.castShadow = true;
             const rightLeg = new THREE.Mesh(legGeometry, legMaterial);
             rightLeg.position.set(0.15, 0.15, 0);
+            rightLeg.castShadow = true;
             group.add(leftLeg);
             group.add(rightLeg);
             
@@ -3157,6 +3870,31 @@
             // Move camera with them
             gardenCamera.position.z -= dt * 0.8;
             gardenCamera.lookAt(0, 1, jesusModel.position.z - 7);
+            
+            // Check for nearby interactables (for mobile button) - ONLY IN GARDEN
+            if (isMobile && gameState === 'garden') {
+                nearestInteractable = null;
+                let closestDistance = 5; // Max interaction distance
+                
+                gardenScene.children.forEach(child => {
+                    if (child.userData && child.userData.clickable) {
+                        const distance = gardenCamera.position.distanceTo(child.position);
+                        if (distance < closestDistance) {
+                            closestDistance = distance;
+                            nearestInteractable = child.userData;
+                        }
+                    }
+                });
+                
+                // Show/hide interact button based on proximity
+                const interactBtn = document.getElementById('mobile-interact-btn');
+                if (nearestInteractable) {
+                    interactBtn.style.display = 'flex';
+                    interactBtn.textContent = nearestInteractable.type.toUpperCase();
+                } else {
+                    interactBtn.style.display = 'none';
+                }
+            }
             
             // After walking for 30 seconds, show final message
             if (gardenWalkProgress > 30) {
@@ -3268,13 +4006,40 @@
                         MOSES SPEAKS
                     </div>
                     <div style="color: #ecf0f1; font-size: 14px; line-height: 1.7; text-align: left; margin-bottom: 15px;">
-                        "The LORD your God will raise up for you a prophet like me from among you, from your fellow Israelites. You must listen to him. This is what you asked of the LORD your God at Horeb on the day of the assembly when you said, 'Let us not hear the voice of the LORD our God nor see this great fire anymore, or we will die.'"
+                        <strong>"Hear, O Israel: The LORD our God, the LORD is one. Love the LORD your God with all your heart and with all your soul and with all your strength."</strong>
                     </div>
-                    <div style="color: #95a5a6; font-size: 12px; line-height: 1.5; margin-bottom: 10px;">
-                        Moses, the great lawgiver and prophet, led the Israelites out of Egypt and received the Law from God on Mount Sinai. His prophecy pointed to the coming Messiah, Jesus Christ.
+                    <div style="color: #95a5a6; font-size: 11px; margin-bottom: 10px;">— Deuteronomy 6:4-5 (The Shema)</div>
+                    <div style="color: #ecf0f1; font-size: 13px; line-height: 1.7; text-align: left; margin-bottom: 15px;">
+                        "The LORD bless you and keep you; the LORD make his face shine on you and be gracious to you; the LORD turn his face toward you and give you peace."
                     </div>
-                    <div style="color: #f39c12; font-size: 12px; font-weight: bold;">
-                        — Deuteronomy 18:15-16
+                    <div style="color: #95a5a6; font-size: 11px; margin-bottom: 10px;">— Numbers 6:24-26 (Priestly Blessing)</div>
+                    <div style="color: #ecf0f1; font-size: 13px; line-height: 1.7; text-align: left; margin-bottom: 15px;">
+                        "I have set before you life and death, blessings and curses. Now choose life, so that you and your children may live and that you may love the LORD your God, listen to his voice, and hold fast to him."
+                    </div>
+                    <div style="color: #95a5a6; font-size: 11px; margin-bottom: 10px;">— Deuteronomy 30:19-20</div>
+                    <div style="color: #7f8c8d; font-size: 12px; line-height: 1.5; margin-top: 15px;">
+                        Moses, who saw the burning bush, parted the Red Sea, and received the Law on Mount Sinai, speaks these eternal words to guide God's people.
+                    </div>
+                `;
+            } else if (type === 'elijah') {
+                content = `
+                    <div style="color: #f1c40f; font-size: 22px; font-weight: bold; margin-bottom: 15px;">
+                        ELIJAH THE PROPHET SPEAKS
+                    </div>
+                    <div style="color: #ecf0f1; font-size: 14px; line-height: 1.7; text-align: left; margin-bottom: 15px;">
+                        <strong>"How long will you waver between two opinions? If the LORD is God, follow him; but if Baal is God, follow him."</strong>
+                    </div>
+                    <div style="color: #95a5a6; font-size: 11px; margin-bottom: 10px;">— 1 Kings 18:21 (Challenge at Mount Carmel)</div>
+                    <div style="color: #ecf0f1; font-size: 13px; line-height: 1.7; text-align: left; margin-bottom: 15px;">
+                        "Answer me, LORD, answer me, so these people will know that you, LORD, are God, and that you are turning their hearts back again." Then the fire of the LORD fell and burned up the sacrifice, the wood, the stones and the soil, and also licked up the water in the trench.
+                    </div>
+                    <div style="color: #95a5a6; font-size: 11px; margin-bottom: 10px;">— 1 Kings 18:37-38 (Fire from Heaven)</div>
+                    <div style="color: #ecf0f1; font-size: 13px; line-height: 1.7; text-align: left; margin-bottom: 15px;">
+                        The LORD said, "Go out and stand on the mountain in the presence of the LORD, for the LORD is about to pass by." A great and powerful wind tore the mountains apart, but the LORD was not in the wind. After the wind there was an earthquake, but the LORD was not in the earthquake. After the earthquake came a fire, but the LORD was not in the fire. And after the fire came a gentle whisper.
+                    </div>
+                    <div style="color: #95a5a6; font-size: 11px; margin-bottom: 10px;">— 1 Kings 19:11-12 (The Still Small Voice)</div>
+                    <div style="color: #7f8c8d; font-size: 12px; line-height: 1.5; margin-top: 15px;">
+                        Elijah, the fiery prophet who called down fire from heaven, defeated the prophets of Baal, and was taken to heaven in a whirlwind, reminds us to listen for God's gentle whisper.
                     </div>
                 `;
             } else if (type === 'mary') {
@@ -3332,64 +4097,26 @@
         }
 
         function showFinalMessage() {
-            gameState = 'final';
-            disableGardenInteraction();
+            // Automatically restart the garden walk - infinite peaceful loop
+            gameState = 'garden';
             
-            document.getElementById('quote-text').innerHTML = `
-                <div style="color: #2ecc71; font-size: 20px; font-weight: bold; margin-bottom: 15px;">
-                    ✨ Peace be with you ✨
-                </div>
-                <div style="color: #ecf0f1; font-size: 14px; line-height: 1.6; margin-bottom: 15px;">
-                    You have walked with Jesus through the Garden of Eden.<br>
-                    The victory over sin and death is complete.<br>
-                    May you always walk in His light.
-                </div>
-                <div style="color: #ecf0f1; font-size: 13px; font-style: italic; line-height: 1.5; margin-bottom: 10px;">
-                    "I have told you these things, so that in me you may have peace. 
-                    In this world you will have trouble. But take heart! I have overcome the world."
-                </div>
-                <div style="color: #f39c12; font-size: 12px; font-weight: bold;">
-                    — John 16:33
-                </div>
-            `;
-            document.getElementById('quote-author').textContent = '';
-            document.getElementById('quote-continue').textContent = 'New Game';
-            document.getElementById('quote-overlay').style.display = 'flex';
-            
-            const btn = document.getElementById('quote-continue');
-            const handler = () => {
-                document.getElementById('quote-overlay').style.display = 'none';
-                btn.removeEventListener('click', handler);
-                
-                // Reset game
-                dungeonLevel = 1;
-                defeatedSins.clear();
-                inventory.holyWater = 3;
-                inventory.rosaries = 2;
-                inventory.gold = 0;
-                inventory.atkBoost = 0;
-                inventory.defBoost = 0;
-                inventory.hpBoost = 0;
-                inventory.virtueItems = [];
-                
-                // Clean up garden scene
-                if (gardenScene) {
-                    while(gardenScene.children.length > 0) { 
-                        const obj = gardenScene.children[0];
-                        if (obj.geometry) obj.geometry.dispose();
-                        if (obj.material) obj.material.dispose();
-                        gardenScene.remove(obj);
-                    }
-                    gardenScene = null;
+            // Clean up current garden scene
+            if (gardenScene) {
+                while(gardenScene.children.length > 0) { 
+                    const obj = gardenScene.children[0];
+                    if (obj.geometry) obj.geometry.dispose();
+                    if (obj.material) obj.material.dispose();
+                    gardenScene.remove(obj);
                 }
-                
-                generateDungeon();
-                gameState = 'explore';
-            };
-            btn.addEventListener('click', handler);
+                gardenScene = null;
+            }
+            
+            // Recreate garden and restart the walk
+            createGardenOfEden();
         }
 
         function showOneRingVictory() {
+            // Show brief victory message, then automatically go to Garden of Eden
             document.getElementById('quote-text').innerHTML = `
                 <div style="color: #f1c40f; font-size: 22px; font-weight: bold; margin-bottom: 15px;">
                     ⚡ THE ONE RING TO RULE THEM ALL! ⚡
@@ -3405,24 +4132,11 @@
             document.getElementById('quote-author').textContent = '';
             document.getElementById('quote-overlay').style.display = 'flex';
             
-            const btn = document.getElementById('quote-continue');
-            btn.textContent = 'New Game';
-            const handler = () => {
+            // Auto-hide after 3 seconds and go straight to Garden of Eden
+            setTimeout(() => {
                 document.getElementById('quote-overlay').style.display = 'none';
-                btn.removeEventListener('click', handler);
-                dungeonLevel = 1;
-                defeatedSins.clear();
-                inventory.holyWater = 3;
-                inventory.rosaries = 2;
-                inventory.gold = 0;
-                inventory.atkBoost = 0;
-                inventory.defBoost = 0;
-                inventory.hpBoost = 0;
-                inventory.virtueItems = [];
-                generateDungeon();
-                gameState = 'explore';
-            };
-            btn.addEventListener('click', handler);
+                showGameVictory();
+            }, 3000);
         }
 
         // Event handlers
@@ -3500,6 +4214,12 @@
         // Game loop
         function update(dt) {
             if (gameState === 'explore') {
+                // Hide mobile interact button during dungeon exploration
+                if (isMobile) {
+                    const interactBtn = document.getElementById('mobile-interact-btn');
+                    if (interactBtn) interactBtn.style.display = 'none';
+                }
+                
                 // Movement - keyboard and touch
                 const moveSpeed = MOVE_SPEED * dt;
                 const forward = new THREE.Vector3();
@@ -3533,6 +4253,14 @@
                     desiredZ -= right.z * moveSpeed;
                 }
                 
+                // Mobile joystick movement
+                if (movementJoystick.active) {
+                    desiredX += right.x * movementJoystick.deltaX * moveSpeed;
+                    desiredZ += right.z * movementJoystick.deltaX * moveSpeed;
+                    desiredX -= forward.x * movementJoystick.deltaY * moveSpeed;
+                    desiredZ -= forward.z * movementJoystick.deltaY * moveSpeed;
+                }
+                
                 // Apply movement only if no wall collision
                 if (!checkWallCollision(desiredX, camera.position.z)) {
                     camera.position.x = desiredX;
@@ -3545,6 +4273,12 @@
                 const rotationDiff = targetRotationY - camera.rotation.y;
                 if (Math.abs(rotationDiff) > 0.01) {
                     camera.rotation.y += rotationDiff * 0.1; // Smooth interpolation
+                }
+                
+                // Mobile camera joystick (horizontal rotation only)
+                if (cameraJoystick.active) {
+                    targetRotationY -= cameraJoystick.deltaX * 0.05;
+                    // No vertical rotation - removed camera.rotation.x adjustment
                 }
                 
                 // Update light position
