@@ -2,7 +2,9 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <title>The Seven Heavenly Virtues - 3D</title>
     <style>
         body { 
@@ -10,11 +12,31 @@
             background: #000; 
             overflow: hidden;
             font-family: 'Courier New', monospace; 
-            color: #eee; 
+            color: #eee;
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            /* Support for dynamic viewport height on mobile */
+            height: 100vh;
+            height: -webkit-fill-available;
+        }
+        html {
+            height: -webkit-fill-available;
+        }
+        canvas {
+            display: block;
+            width: 100vw !important;
+            height: 100vh !important;
+            height: -webkit-fill-available !important;
+            position: absolute;
+            top: 0;
+            left: 0;
+            touch-action: none; /* Prevent default touch behaviors */
         }
         #canvas-container {
             width: 100vw;
             height: 100vh;
+            height: -webkit-fill-available;
             position: relative;
         }
         #hud {
@@ -856,56 +878,56 @@
                 minion: "Arrogance", 
                 color: 0x9b59b6, 
                 catechism: "Pride is excessive love of one's own excellence. It is contrary to the virtue of humility and was the sin of Lucifer. The Church teaches that pride is the beginning of all sin.", 
-                verse: "Pride goes before destruction, a haughty spirit before a fall.", 
-                reference: "Proverbs 16:18" 
+                verse: "Pride goes before destruction, a haughty spirit before a fall. Better to be lowly in spirit along with the oppressed than to share plunder with the proud. When pride comes, then comes disgrace, but with humility comes wisdom. The fear of the LORD teaches a man wisdom, and humility comes before honor.", 
+                reference: "Proverbs 16:18-19, 11:2, 15:33" 
             },
             { 
                 name: "Greed", 
                 minion: "Avarice", 
                 color: 0xf39c12, 
                 catechism: "Greed is the immoderate desire for earthly goods and the power they bring. The Catechism warns against making money an idol and teaches us to trust in God's providence.", 
-                verse: "The love of money is a root of all kinds of evil. Some people, eager for money, have wandered from the faith and pierced themselves with many griefs.", 
-                reference: "1 Timothy 6:10" 
+                verse: "The love of money is a root of all kinds of evil. Some people, eager for money, have wandered from the faith and pierced themselves with many griefs. No one can serve two masters. Either you will hate the one and love the other, or you will be devoted to the one and despise the other. You cannot serve both God and money. Keep your lives free from the love of money and be content with what you have, because God has said, 'Never will I leave you; never will I forsake you.'", 
+                reference: "1 Timothy 6:10, Matthew 6:24, Hebrews 13:5" 
             },
             { 
                 name: "Lust", 
                 minion: "Desire", 
                 color: 0xe91e63, 
                 catechism: "Lust is disordered desire for sexual pleasure isolated from its unitive and procreative purposes. The Church calls us to chastity and purity of heart.", 
-                verse: "Flee from sexual immorality. All other sins a person commits are outside the body, but whoever sins sexually, sins against their own body.", 
-                reference: "1 Corinthians 6:18" 
+                verse: "Flee from sexual immorality. All other sins a person commits are outside the body, but whoever sins sexually, sins against their own body. Do you not know that your bodies are temples of the Holy Spirit, who is in you, whom you have received from God? You are not your own; you were bought at a price. Therefore honor God with your bodies. But among you there must not be even a hint of sexual immorality, or of any kind of impurity, because these are improper for God's holy people.", 
+                reference: "1 Corinthians 6:18-20, Ephesians 5:3" 
             },
             { 
                 name: "Envy", 
                 minion: "Jealousy", 
                 color: 0x27ae60, 
                 catechism: "Envy is sadness at another's good fortune and the immoderate desire to acquire goods for oneself. It is contrary to the tenth commandment and leads to malice.", 
-                verse: "A heart at peace gives life to the body, but envy rots the bones.", 
-                reference: "Proverbs 14:30" 
+                verse: "A heart at peace gives life to the body, but envy rots the bones. Anger is cruel and fury overwhelming, but who can stand before jealousy? For where you have envy and selfish ambition, there you find disorder and every evil practice. Do not let your heart envy sinners, but always be zealous for the fear of the LORD.", 
+                reference: "Proverbs 14:30, 27:4, James 3:16, Proverbs 23:17" 
             },
             { 
                 name: "Gluttony", 
                 minion: "Excess", 
                 color: 0xe67e22, 
                 catechism: "Gluttony is the immoderate desire for the pleasure of eating and drinking. The Church teaches moderation and self-control as fruits of the Holy Spirit.", 
-                verse: "Do not join those who drink too much wine or gorge themselves on meat, for drunkards and gluttons become poor, and drowsiness clothes them in rags.", 
-                reference: "Proverbs 23:20-21" 
+                verse: "Do not join those who drink too much wine or gorge themselves on meat, for drunkards and gluttons become poor, and drowsiness clothes them in rags. Put a knife to your throat if you are given to gluttony. Their destiny is destruction, their god is their stomach, and their glory is in their shame. Their mind is set on earthly things. But our citizenship is in heaven.", 
+                reference: "Proverbs 23:20-21, 23:2, Philippians 3:19-20" 
             },
             { 
                 name: "Wrath", 
                 minion: "Rage", 
                 color: 0xc0392b, 
                 catechism: "Anger becomes the sin of wrath when it is disproportionate to the offense and when it seeks revenge rather than justice. We are called to forgive as Christ forgave us.", 
-                verse: "Get rid of all bitterness, rage and anger, brawling and slander, along with every form of malice.", 
-                reference: "Ephesians 4:31" 
+                verse: "Get rid of all bitterness, rage and anger, brawling and slander, along with every form of malice. Be kind and compassionate to one another, forgiving each other, just as in Christ God forgave you. My dear brothers and sisters, take note of this: Everyone should be quick to listen, slow to speak and slow to become angry, because human anger does not produce the righteousness that God desires. Do not take revenge, but leave room for God's wrath.", 
+                reference: "Ephesians 4:31-32, James 1:19-20, Romans 12:19" 
             },
             { 
                 name: "Sloth", 
                 minion: "Apathy", 
                 color: 0x95a5a6, 
                 catechism: "Sloth is spiritual laziness and neglect of divine grace. It shows itself in reluctance toward prayer, the sacraments, and works of charity.", 
-                verse: "The sluggard's craving will be the death of him, because his hands refuse to work.", 
-                reference: "Proverbs 21:25" 
+                verse: "The sluggard's craving will be the death of him, because his hands refuse to work. How long will you lie there, you sluggard? When will you get up from your sleep? A little sleep, a little slumber, a little folding of the hands to rest—and poverty will come on you like a thief. Never be lacking in zeal, but keep your spiritual fervor, serving the Lord. Whatever you do, work at it with all your heart, as working for the Lord, not for human masters.", 
+                reference: "Proverbs 21:25, 6:9-11, Romans 12:11, Colossians 3:23" 
             }
         ];
 
@@ -914,8 +936,8 @@
             minion: "Demon",
             color: 0x8B0000,
             catechism: "The Devil and demons are fallen angels who rejected God. Through Christ's victory on the cross, Satan's power is broken. We must resist the devil through prayer, the sacraments, and faithful obedience to God.",
-            verse: "The God of peace will soon crush Satan under your feet. The grace of our Lord Jesus be with you.",
-            reference: "Romans 16:20"
+            verse: "The God of peace will soon crush Satan under your feet. The grace of our Lord Jesus be with you. Be alert and of sober mind. Your enemy the devil prowls around like a roaring lion looking for someone to devour. Resist him, standing firm in the faith. Submit yourselves to God. Resist the devil, and he will flee from you. The reason the Son of God appeared was to destroy the devil's work.",
+            reference: "Romans 16:20, 1 Peter 5:8-9, James 4:7, 1 John 3:8"
         };
 
         const VIRTUE_ITEMS = {
@@ -929,7 +951,7 @@
         };
 
         // Game state
-        let scene, camera, renderer, raycaster, mouse;
+        let scene, camera, renderer, raycaster, mouse, playerModel;
         let dungeon = [];
         let enemies = [];
         let pickups = [];
@@ -1083,12 +1105,7 @@
             scene.fog = new THREE.FogExp2(0x87CEEB, 0.015); // Exponential fog for atmospheric depth
 
             camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.set(0, 2, 0);
-            
-            // Third-person view for New Game+ mode
-            if (newGamePlus) {
-                camera.position.set(0, 3, 2); // Behind and above for third-person view
-            }
+            camera.position.set(0, 3, 5); // Start further back for better initial view
 
             renderer = new THREE.WebGLRenderer({ 
                 antialias: true,
@@ -1151,6 +1168,9 @@
 
             // Event listeners
             window.addEventListener('resize', onWindowResize);
+            window.addEventListener('orientationchange', () => {
+                setTimeout(onWindowResize, 100); // Delay to ensure proper dimensions after orientation change
+            });
             document.addEventListener('keydown', onKeyDown);
             document.addEventListener('keyup', onKeyUp);
             document.addEventListener('mousemove', onMouseMove);
@@ -1365,10 +1385,54 @@
 
         function startGame() {
             document.getElementById('title-screen').style.display = 'none';
+            document.getElementById('hud').style.display = 'block'; // Show HUD
             gameState = 'explore';
+            createVisiblePlayerModel(); // Create third-person player model
             generateDungeon();
+            
+            // Position camera behind player model
+            if (playerModel) {
+                camera.position.set(
+                    playerModel.position.x,
+                    playerModel.position.y + 3,
+                    playerModel.position.z + 5
+                );
+                camera.lookAt(playerModel.position.x, playerModel.position.y + 1, playerModel.position.z);
+            }
+            
             targetRotationY = camera.rotation.y;
+            updateHUD(); // Update HUD with initial values
             startMusic(); // Start sacred music
+        }
+
+        function createVisiblePlayerModel() {
+            // Remove existing player model if it exists
+            if (playerModel) {
+                try {
+                    scene.remove(playerModel);
+                } catch (e) {
+                    console.log('Error removing old player model:', e);
+                }
+            }
+            
+            try {
+                // Use St. Vincent Ferrer in regular mode, Jesus in New Game+
+                if (newGamePlus) {
+                    playerModel = createJesusModel();
+                } else {
+                    playerModel = createStVincentModel();
+                }
+                
+                if (playerModel) {
+                    playerModel.position.set(0, 0, 0);
+                    playerModel.castShadow = true;
+                    playerModel.receiveShadow = true;
+                    scene.add(playerModel);
+                }
+            } catch (e) {
+                console.log('Error creating player model:', e);
+                playerModel = null;
+            }
         }
 
         function createPlayerModel() {
@@ -1622,73 +1686,102 @@
         function createStVincentModel() {
             const group = new THREE.Group();
             
-            // Body (black robe)
-            const bodyGeometry = new THREE.BoxGeometry(0.7, 0.7, 0.4);
-            const bodyMaterial = new THREE.MeshStandardMaterial({ color: 0x000000 });
-            const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
-            body.position.y = 0.5;
-            group.add(body);
+            // Black Dominican robe (main body)
+            const robeGeometry = new THREE.BoxGeometry(0.8, 1.3, 0.5);
+            const robeMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0x1a1a1a, 
+                roughness: 0.85,
+                metalness: 0.1
+            });
+            const robe = new THREE.Mesh(robeGeometry, robeMaterial);
+            robe.position.y = 0.75;
+            robe.castShadow = true;
+            group.add(robe);
             
-            // White inner robe
-            const innerRobeGeometry = new THREE.BoxGeometry(0.6, 0.6, 0.41);
-            const innerRobeMaterial = new THREE.MeshStandardMaterial({ color: 0xf5f5f5 });
-            const innerRobe = new THREE.Mesh(innerRobeGeometry, innerRobeMaterial);
-            innerRobe.position.y = 0.55;
-            group.add(innerRobe);
+            // White scapular (over robe)
+            const scapularGeometry = new THREE.BoxGeometry(0.6, 1.2, 0.52);
+            const scapularMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0xffffff, 
+                roughness: 0.9 
+            });
+            const scapular = new THREE.Mesh(scapularGeometry, scapularMaterial);
+            scapular.position.y = 0.75;
+            scapular.castShadow = true;
+            group.add(scapular);
+            
+            // Hood
+            const hoodGeometry = new THREE.ConeGeometry(0.3, 0.4, 8);
+            const hoodMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0x1a1a1a,
+                roughness: 0.85
+            });
+            const hood = new THREE.Mesh(hoodGeometry, hoodMaterial);
+            hood.position.y = 1.8;
+            hood.rotation.x = Math.PI;
+            group.add(hood);
             
             // Head
-            const headGeometry = new THREE.BoxGeometry(0.4, 0.4, 0.4);
+            const headGeometry = new THREE.SphereGeometry(0.25, 16, 16);
             const headMaterial = new THREE.MeshStandardMaterial({ color: 0xf0c291 });
             const head = new THREE.Mesh(headGeometry, headMaterial);
-            head.position.y = 1.0;
+            head.position.y = 1.6;
+            head.castShadow = true;
             group.add(head);
             
-            // Hair (dark brown)
-            const hairGeometry = new THREE.BoxGeometry(0.4, 0.1, 0.4);
-            const hairMaterial = new THREE.MeshStandardMaterial({ color: 0x5D4037 });
-            const hair = new THREE.Mesh(hairGeometry, hairMaterial);
-            hair.position.y = 1.25;
-            group.add(hair);
+            // GLOWING HALO
+            const haloGeometry = new THREE.TorusGeometry(0.35, 0.05, 8, 32);
+            const haloMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0xffeb3b,
+                emissive: 0xffeb3b,
+                emissiveIntensity: 1.5,
+                metalness: 0.5,
+                roughness: 0.3
+            });
+            const halo = new THREE.Mesh(haloGeometry, haloMaterial);
+            halo.position.y = 2;
+            halo.rotation.x = Math.PI / 2;
+            group.add(halo);
             
-            // Side hair pieces
-            const sideHairGeometry = new THREE.BoxGeometry(0.1, 0.2, 0.4);
-            const leftHair = new THREE.Mesh(sideHairGeometry, hairMaterial);
-            leftHair.position.set(-0.2, 1.1, 0);
-            const rightHair = new THREE.Mesh(sideHairGeometry, hairMaterial);
-            rightHair.position.set(0.2, 1.1, 0);
-            group.add(leftHair);
-            group.add(rightHair);
+            // Halo light
+            const haloLight = new THREE.PointLight(0xffeb3b, 0.5, 3);
+            haloLight.position.set(0, 2, 0);
+            group.add(haloLight);
             
-            // Eyes
-            const eyeGeometry = new THREE.BoxGeometry(0.08, 0.08, 0.05);
-            const eyeMaterial = new THREE.MeshStandardMaterial({ color: 0x000000 });
-            const leftEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
-            leftEye.position.set(-0.1, 1.0, 0.2);
-            const rightEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
-            rightEye.position.set(0.1, 1.0, 0.2);
-            group.add(leftEye);
-            group.add(rightEye);
+            // Cross necklace
+            const crossVertical = new THREE.BoxGeometry(0.05, 0.2, 0.05);
+            const crossHorizontal = new THREE.BoxGeometry(0.15, 0.05, 0.05);
+            const crossMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0xd4af37,
+                metalness: 0.8,
+                roughness: 0.2
+            });
+            const crossV = new THREE.Mesh(crossVertical, crossMaterial);
+            crossV.position.set(0, 1.2, 0.3);
+            const crossH = new THREE.Mesh(crossHorizontal, crossMaterial);
+            crossH.position.set(0, 1.25, 0.3);
+            group.add(crossV);
+            group.add(crossH);
             
-            // Staff (brown wooden staff)
-            const staffGeometry = new THREE.CylinderGeometry(0.05, 0.05, 1.2, 8);
-            const staffMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
-            const staff = new THREE.Mesh(staffGeometry, staffMaterial);
-            staff.position.set(-0.5, 0.7, 0);
-            group.add(staff);
+            // Rope belt
+            const beltGeometry = new THREE.TorusGeometry(0.35, 0.03, 8, 16);
+            const beltMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
+            const belt = new THREE.Mesh(beltGeometry, beltMaterial);
+            belt.position.y = 0.5;
+            belt.rotation.x = Math.PI / 2;
+            group.add(belt);
             
-            // Staff top (wider)
-            const staffTopGeometry = new THREE.BoxGeometry(0.2, 0.1, 0.05);
-            const staffTop = new THREE.Mesh(staffTopGeometry, staffMaterial);
-            staffTop.position.set(-0.5, 1.3, 0);
-            group.add(staffTop);
-            
-            // Legs (brown)
-            const legGeometry = new THREE.BoxGeometry(0.2, 0.4, 0.2);
-            const legMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
+            // Legs/feet
+            const legGeometry = new THREE.CylinderGeometry(0.12, 0.10, 0.5, 16);
+            const legMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0x1a1a1a,
+                roughness: 0.85
+            });
             const leftLeg = new THREE.Mesh(legGeometry, legMaterial);
-            leftLeg.position.set(-0.15, 0.1, 0);
+            leftLeg.position.set(-0.2, 0.15, 0);
+            leftLeg.castShadow = true;
             const rightLeg = new THREE.Mesh(legGeometry, legMaterial);
-            rightLeg.position.set(0.15, 0.1, 0);
+            rightLeg.position.set(0.2, 0.15, 0);
+            rightLeg.castShadow = true;
             group.add(leftLeg);
             group.add(rightLeg);
             
@@ -1961,30 +2054,6 @@
             head.castShadow = true;
             group.add(head);
             
-            // ANGEL WINGS - The key feature
-            const wingGeometry = new THREE.BoxGeometry(1.5, 2, 0.2);
-            const wingMaterial = new THREE.MeshStandardMaterial({ 
-                color: 0xffffff,
-                roughness: 0.4,
-                metalness: 0.3,
-                emissive: 0xffffcc,
-                emissiveIntensity: 0.3
-            });
-            
-            const leftWing = new THREE.Mesh(wingGeometry, wingMaterial);
-            leftWing.position.set(-1.2, 1, -0.3);
-            leftWing.rotation.y = Math.PI / 4;
-            leftWing.rotation.z = Math.PI / 8;
-            leftWing.castShadow = true;
-            group.add(leftWing);
-            
-            const rightWing = new THREE.Mesh(wingGeometry, wingMaterial);
-            rightWing.position.set(1.2, 1, -0.3);
-            rightWing.rotation.y = -Math.PI / 4;
-            rightWing.rotation.z = -Math.PI / 8;
-            rightWing.castShadow = true;
-            group.add(rightWing);
-            
             // Glowing halo
             const haloGeometry = new THREE.TorusGeometry(0.35, 0.05, 8, 32);
             const haloMaterial = new THREE.MeshStandardMaterial({ 
@@ -2078,10 +2147,14 @@
             }
 
             // Re-add bright lights
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+            const ambientLight = new THREE.AmbientLight(0xffffff, 1.0); // Increased from 0.8
             scene.add(ambientLight);
             
-            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.6);
+            // Add hemisphere light for better overall illumination
+            const hemisphereLight = new THREE.HemisphereLight(0xffffbb, 0x080820, 0.6);
+            scene.add(hemisphereLight);
+            
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8); // Increased from 0.6
             directionalLight.position.set(10, 20, 10);
             directionalLight.castShadow = true;
             directionalLight.shadow.camera.left = -50;
@@ -2090,7 +2163,7 @@
             directionalLight.shadow.camera.bottom = -50;
             scene.add(directionalLight);
             
-            const pointLight = new THREE.PointLight(0xffffff, 0.5, 30);
+            const pointLight = new THREE.PointLight(0xffffff, 1.5, 50); // Increased from 0.5, 30
             pointLight.position.copy(camera.position);
             pointLight.castShadow = true;
             scene.add(pointLight);
@@ -2151,22 +2224,21 @@
             const ceilingGeometry = new THREE.BoxGeometry(CELL_SIZE, 0.2, CELL_SIZE);
             
             const wallMaterial = new THREE.MeshStandardMaterial({ 
-                color: 0x8B7355,
-                roughness: 0.95,
-                metalness: 0.0,
-                envMapIntensity: 0.2
-            });
-            const floorMaterial = new THREE.MeshStandardMaterial({ 
-                color: 0xD2B48C,
+                color: 0xA0826D, // Lighter brown for better visibility
                 roughness: 0.9,
                 metalness: 0.0,
-                envMapIntensity: 0.15
+                emissive: 0x3a2a1a, // Subtle glow
+                emissiveIntensity: 0.1
+            });
+            const floorMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0xE5C29F, // Lighter tan for better visibility
+                roughness: 0.85,
+                metalness: 0.0
             });
             const ceilingMaterial = new THREE.MeshStandardMaterial({ 
-                color: 0xF5DEB3,
-                roughness: 0.85,
-                metalness: 0.0,
-                envMapIntensity: 0.2
+                color: 0xFFE4B5, // Lighter cream for better visibility
+                roughness: 0.8,
+                metalness: 0.0
             });
 
             for (let y = 0; y < MAP_SIZE; y++) {
@@ -2199,11 +2271,15 @@
 
             // Position player in first room
             const startRoom = rooms[0];
-            camera.position.set(
-                (startRoom.x + startRoom.w / 2 - MAP_SIZE / 2) * CELL_SIZE,
-                2,
-                (startRoom.y + startRoom.h / 2 - MAP_SIZE / 2) * CELL_SIZE
-            );
+            const startX = (startRoom.x + startRoom.w / 2 - MAP_SIZE / 2) * CELL_SIZE;
+            const startZ = (startRoom.y + startRoom.h / 2 - MAP_SIZE / 2) * CELL_SIZE;
+            
+            camera.position.set(startX, 2, startZ);
+            
+            // Position player model at same location
+            if (playerModel) {
+                playerModel.position.set(startX, 0, startZ);
+            }
 
             // Spawn enemies and pickups
             enemies = [];
@@ -2479,6 +2555,14 @@
                 minionHp = 30 + dungeonLevel * 8;
                 viceAtk = 15 + dungeonLevel * 2;
                 minionAtk = 10 + dungeonLevel * 1;
+            }
+            
+            // New Game+ mode: Enemies are 200x stronger!
+            if (newGamePlus) {
+                viceHp *= 200;
+                minionHp *= 200;
+                viceAtk *= 200;
+                minionAtk *= 200;
             }
             
             battle.enemies = [
@@ -3205,8 +3289,14 @@
                 if (aliveHeroes.length > 0) {
                     const target = aliveHeroes[Math.floor(Math.random() * aliveHeroes.length)];
                     const damage = Math.max(1, enemy.atk - target.def + Math.floor(Math.random() * 5));
-                    target.hp -= damage;
-                    battle.log.push(`${enemy.name} attacks ${target.name} for ${damage} damage!`);
+                    
+                    // Jesus (first hero in divine party) is invincible in New Game+ mode
+                    if (newGamePlus && target.name === "Jesus Christ") {
+                        battle.log.push(`${enemy.name} attacks ${target.name} but the attack has no effect! Jesus is invincible!`);
+                    } else {
+                        target.hp -= damage;
+                        battle.log.push(`${enemy.name} attacks ${target.name} for ${damage} damage!`);
+                    }
                 }
             });
             
@@ -3388,6 +3478,7 @@
         let gardenScene = null;
         let gardenCamera = null;
         let jesusModel = null;
+        let gardenPlayerModel = null;
         let gardenWalkProgress = 0;
 
         function createGardenOfEden() {
@@ -3398,13 +3489,31 @@
             document.getElementById('battle-status').style.display = 'none';
             document.getElementById('enemy-status').style.display = 'none';
             
+            // Hide dungeon UI elements
+            document.getElementById('hud').style.display = 'none';
+            document.getElementById('crosshair').style.display = 'none';
+            
+            // Clear and hide the dungeon scene
+            if (scene) {
+                // Hide the dungeon player model if it exists
+                if (playerModel && scene.children.includes(playerModel)) {
+                    playerModel.visible = false;
+                }
+                // Hide all dungeon elements
+                scene.traverse((object) => {
+                    if (object.isMesh) {
+                        object.visible = false;
+                    }
+                });
+            }
+            
             // Create garden scene with cinematic atmosphere
             gardenScene = new THREE.Scene();
             gardenScene.background = new THREE.Color(0xffd4a3); // Golden sky
             gardenScene.fog = new THREE.FogExp2(0xffd4a3, 0.008); // Atmospheric depth
             
-            // Ground - photorealistic lush green grass
-            const groundGeometry = new THREE.PlaneGeometry(150, 150, 100, 100);
+            // Ground - photorealistic lush green grass (reduced for compact Garden)
+            const groundGeometry = new THREE.PlaneGeometry(60, 60, 50, 50);
             const groundMaterial = new THREE.MeshStandardMaterial({ 
                 color: 0x2d5016,
                 roughness: 0.95,
@@ -3416,8 +3525,8 @@
             ground.receiveShadow = true;
             gardenScene.add(ground);
             
-            // Path with realistic dirt/stone texture
-            const pathGeometry = new THREE.PlaneGeometry(5, 150, 50, 50);
+            // Path with realistic dirt/stone texture (reduced for compact Garden)
+            const pathGeometry = new THREE.PlaneGeometry(5, 60, 25, 25);
             const pathMaterial = new THREE.MeshStandardMaterial({ 
                 color: 0xD2B48C,
                 roughness: 0.92,
@@ -3430,61 +3539,56 @@
             path.receiveShadow = true;
             gardenScene.add(path);
             
-            // ENTRANCE - Beatitudes Plaque
+            // ENTRANCE - Beatitudes Plaque at start
             createBeatitudesPlaque();
             
-            // STATION 1 - Ten Commandments (distance: 15)
-            createTenCommandments(0, 0, -15);
+            // LEFT SIDE - Biblical Artifacts
+            createTenCommandments(-5, 0, -8);  // Ten Commandments
+            createStaffOfAaron(-5, 0, -14);    // Staff of Aaron
+            createManna(-5, 0, -20);           // Manna from Heaven (NEW)
+            createArkOfCovenant(-5, 0, -26);   // Ark of the Covenant
             
-            // STATION 2 - Staff of Aaron (distance: 30)
-            createStaffOfAaron(0, 0, -30);
+            // RIGHT SIDE - Biblical Figures
+            createMosesStatue(5, 0, -8);       // Moses
+            createElijahStatue(5, 0, -14);     // Elijah
+            createMotherMaryStatue(5, 0, -20); // Mother Mary
+            createAbrahamStatue(5, 0, -26);    // Abraham
             
-            // STATION 3 - Ark of the Covenant (distance: 45)
-            createArkOfCovenant(0, 0, -45);
+            // CENTER - Nine Orders of Angels (NEW) - Row of 9 angels
+            createAngelsRow(0, 0, -34);
             
-            // STATION 4 - Moses (distance: 60)
-            createMosesStatue(-4, 0, -60);
+            // END - Tree of Life and Cherubim Guardian
+            createTreeOfLife(0, 0, -38);       // Tree of Life (biblically accurate)
+            createCherubimStatue(0, 0, -42);   // Cherubim with Flaming Sword at the end
             
-            // STATION 5 - Elijah (distance: 68)
-            createElijahStatue(4, 0, -68);
+            // Four Rivers of Eden (biblically accurate from Genesis 2:10-14)
+            createRiver(-15, 0, -20, "Pishon");
+            createRiver(15, 0, -20, "Gihon");
+            createRiver(-15, 0, -10, "Tigris");
+            createRiver(15, 0, -10, "Euphrates");
             
-            // STATION 6 - Mother Mary (distance: 75)
-            createMotherMaryStatue(-4, 0, -75);
+            // Remove Bible passage stands to keep it simpler and more compact
             
-            // STATION 7 - Cherubim with Flaming Sword (distance: 88 - at the end)
-            createCherubimStatue(0, 0, -88);
-            
-            // STATION 8 - Open Bible (distance: 82)
-            createOpenBible(3, 0, -82);
-            
-            // STATION 9 - Bible Passage Stands (various locations)
-            createBiblePassageStand(-5, 0, -20, "The Lord's Prayer", "Our Father who art in heaven, hallowed be thy name. Thy kingdom come. Thy will be done on earth as it is in heaven. Give us this day our daily bread, and forgive us our trespasses, as we forgive those who trespass against us, and lead us not into temptation, but deliver us from evil.", "Matthew 6:9-13");
-            createBiblePassageStand(5, 0, -35, "The Greatest Commandment", "You shall love the Lord your God with all your heart, with all your soul, and with all your mind. This is the greatest and first commandment. And the second is like it: You shall love your neighbor as yourself.", "Matthew 22:37-39");
-            createBiblePassageStand(-5, 0, -50, "Psalm 23", "The Lord is my shepherd, I shall not want. He makes me lie down in green pastures; he leads me beside still waters; he restores my soul. He leads me in right paths for his name's sake. Even though I walk through the darkest valley, I fear no evil; for you are with me; your rod and your staff they comfort me.", "Psalm 23:1-4");
-            createBiblePassageStand(5, 0, -55, "Love Chapter", "Love is patient; love is kind; love is not envious or boastful or arrogant or rude. It does not insist on its own way; it is not irritable or resentful; it does not rejoice in wrongdoing, but rejoices in the truth. It bears all things, believes all things, hopes all things, endures all things. Love never ends.", "1 Corinthians 13:4-8");
-            createBiblePassageStand(-5, 0, -82, "Faith and Works", "What good is it, my brothers and sisters, if you say you have faith but do not have works? Can faith save you? If a brother or sister is naked and lacks daily food, and one of you says to them, 'Go in peace; keep warm and eat your fill,' and yet you do not supply their bodily needs, what is the good of that? So faith by itself, if it has no works, is dead.", "James 2:14-17");
-            createBiblePassageStand(5, 0, -85, "The Armor of God", "Put on the full armor of God, so that you can take your stand against the devil's schemes. For our struggle is not against flesh and blood, but against the rulers, against the authorities, against the powers of this dark world and against the spiritual forces of evil in the heavenly realms.", "Ephesians 6:11-12");
-            
-            // DIVERSE TREE TYPES
-            // Oak trees
-            for (let i = 0; i < 12; i++) {
-                createOakTree(-8 + (i % 2) * 16, 0, -10 - i * 7);
-            }
-            
-            // Palm trees
+            // Reduced vegetation for 5-minute exploration
+            // Oak trees - fewer but strategic placement
             for (let i = 0; i < 8; i++) {
-                createPalmTree(-12 + (i % 2) * 24, 0, -15 - i * 10);
+                createOakTree(-10 + (i % 2) * 20, 0, -5 - i * 5);
             }
             
-            // Cypress trees
-            for (let i = 0; i < 10; i++) {
-                createCypressTree(10 + (i % 2) * -20, 0, -12 - i * 8);
+            // Palm trees - tropical beauty (reduced)
+            for (let i = 0; i < 6; i++) {
+                createPalmTree(-12 + (i % 2) * 24, 0, -10 - i * 6);
             }
             
-            // Fruit trees (apple, olive)
-            for (let i = 0; i < 15; i++) {
-                const x = -15 + (i % 3) * 15;
-                const z = -5 - i * 6;
+            // Cypress trees - tall and elegant (reduced)
+            for (let i = 0; i < 6; i++) {
+                createCypressTree(10 + (i % 2) * -20, 0, -8 - i * 6);
+            }
+            
+            // Fruit trees (apple, olive) - modest garden (reduced)
+            for (let i = 0; i < 12; i++) {
+                const x = -12 + (i % 3) * 12;
+                const z = -5 - i * 3;
                 if (i % 2 === 0) {
                     createFruitTree(x, 0, z, 0xFF0000); // Red apples
                 } else {
@@ -3492,7 +3596,7 @@
                 }
             }
             
-            // DIVERSE FLOWERS - hundreds of them
+            // Beautiful flowers - modest Paradise garden (reduced from 400 to 100)
             const flowerTypes = [
                 { color: 0xFF69B4, name: 'Rose' },
                 { color: 0xFFFF00, name: 'Sunflower' },
@@ -3505,29 +3609,29 @@
                 { color: 0xFF1493, name: 'Carnation' }
             ];
             
-            for (let i = 0; i < 200; i++) {
+            for (let i = 0; i < 100; i++) {
                 const flowerType = flowerTypes[Math.floor(Math.random() * flowerTypes.length)];
                 createFlower(
-                    -25 + Math.random() * 50,
+                    -20 + Math.random() * 40,
                     0.15,
-                    -5 + Math.random() * -90,
+                    -2 + Math.random() * -40,
                     flowerType.color
                 );
             }
             
-            // BUSHES AND SHRUBS
-            for (let i = 0; i < 40; i++) {
-                createBush(-20 + Math.random() * 40, 0, -5 - Math.random() * 90);
+            // Bushes and shrubs - reduced
+            for (let i = 0; i < 25; i++) {
+                createBush(-18 + Math.random() * 36, 0, -2 - Math.random() * 40);
             }
             
-            // FLOWERING VINES
-            for (let i = 0; i < 10; i++) {
-                createVine(-15 + (i % 2) * 30, 0, -10 - i * 8);
+            // Flowering vines - reduced
+            for (let i = 0; i < 8; i++) {
+                createVine(-12 + (i % 2) * 24, 0, -6 - i * 5);
             }
             
-            // GARDEN ROCKS
-            for (let i = 0; i < 30; i++) {
-                createRock(-20 + Math.random() * 40, 0, -5 - Math.random() * 90);
+            // Garden rocks - reduced
+            for (let i = 0; i < 20; i++) {
+                createRock(-18 + Math.random() * 36, 0, -2 - Math.random() * 40);
             }
             
             // Lighting - Photorealistic golden hour lighting
@@ -3570,10 +3674,10 @@
             gardenScene.add(jesusModel);
             
             // Create player model
-            const playerModel = createPlayerModel();
-            playerModel.position.set(0, 0, 5);
-            playerModel.rotation.y = Math.PI;
-            gardenScene.add(playerModel);
+            gardenPlayerModel = createPlayerModel();
+            gardenPlayerModel.position.set(0, 0, 5);
+            gardenPlayerModel.rotation.y = Math.PI;
+            gardenScene.add(gardenPlayerModel);
             
             // Camera setup
             gardenCamera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -3879,6 +3983,51 @@
             gardenScene.add(group);
         }
 
+        function createAbrahamStatue(x, y, z) {
+            const group = new THREE.Group();
+            
+            // Ancient robes - earth tones
+            const robeGeometry = new THREE.BoxGeometry(1, 1.8, 0.8);
+            const robeMaterial = new THREE.MeshStandardMaterial({ color: 0x8B7355 });
+            const robe = new THREE.Mesh(robeGeometry, robeMaterial);
+            robe.position.y = 1;
+            group.add(robe);
+            
+            // Head
+            const headGeometry = new THREE.BoxGeometry(0.6, 0.6, 0.6);
+            const headMaterial = new THREE.MeshStandardMaterial({ color: 0xf0c291 });
+            const head = new THREE.Mesh(headGeometry, headMaterial);
+            head.position.y = 2.1;
+            group.add(head);
+            
+            // Long white beard (father of faith)
+            const beardGeometry = new THREE.BoxGeometry(0.6, 0.9, 0.4);
+            const beardMaterial = new THREE.MeshStandardMaterial({ color: 0xF5F5F5 });
+            const beard = new THREE.Mesh(beardGeometry, beardMaterial);
+            beard.position.y = 1.5;
+            beard.position.z = 0.3;
+            group.add(beard);
+            
+            // Walking staff
+            const staffGeometry = new THREE.CylinderGeometry(0.05, 0.05, 2.5, 8);
+            const staffMaterial = new THREE.MeshStandardMaterial({ color: 0x654321 });
+            const staff = new THREE.Mesh(staffGeometry, staffMaterial);
+            staff.position.set(0.6, 1.5, 0);
+            group.add(staff);
+            
+            // Turban/head covering
+            const turbanGeometry = new THREE.CylinderGeometry(0.35, 0.35, 0.3, 8);
+            const turbanMaterial = new THREE.MeshStandardMaterial({ color: 0xDEB887 });
+            const turban = new THREE.Mesh(turbanGeometry, turbanMaterial);
+            turban.position.y = 2.45;
+            group.add(turban);
+            
+            group.position.set(x, y, z);
+            group.userData.type = 'abraham';
+            group.userData.clickable = true;
+            gardenScene.add(group);
+        }
+
         function createBiblePassageStand(x, y, z, title, text, reference) {
             // Wooden stand
             const standGeometry = new THREE.BoxGeometry(2, 1.5, 0.2);
@@ -3999,6 +4148,210 @@
             group.userData.type = 'cherubim';
             group.userData.clickable = true;
             gardenScene.add(group);
+        }
+
+        function createManna(x, y, z) {
+            const group = new THREE.Group();
+            
+            // Golden jar/pot for manna
+            const jarGeometry = new THREE.CylinderGeometry(0.4, 0.5, 0.8, 16);
+            const jarMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0xDAA520,
+                metalness: 0.8,
+                roughness: 0.3,
+                emissive: 0xDAA520,
+                emissiveIntensity: 0.3
+            });
+            const jar = new THREE.Mesh(jarGeometry, jarMaterial);
+            jar.position.y = 1.2;
+            group.add(jar);
+            
+            // Lid
+            const lidGeometry = new THREE.CylinderGeometry(0.45, 0.45, 0.2, 16);
+            const lid = new THREE.Mesh(lidGeometry, jarMaterial);
+            lid.position.y = 1.7;
+            group.add(lid);
+            
+            // Pedestal
+            const pedestalGeometry = new THREE.CylinderGeometry(0.6, 0.7, 0.8, 8);
+            const pedestalMaterial = new THREE.MeshStandardMaterial({ color: 0x8B7355 });
+            const pedestal = new THREE.Mesh(pedestalGeometry, pedestalMaterial);
+            pedestal.position.y = 0.4;
+            group.add(pedestal);
+            
+            // Glowing particles above jar (representing manna)
+            for (let i = 0; i < 10; i++) {
+                const particleGeometry = new THREE.SphereGeometry(0.05, 8, 8);
+                const particleMaterial = new THREE.MeshStandardMaterial({ 
+                    color: 0xFFFFE0,
+                    emissive: 0xFFFFE0,
+                    emissiveIntensity: 1.0
+                });
+                const particle = new THREE.Mesh(particleGeometry, particleMaterial);
+                particle.position.set(
+                    Math.random() * 0.6 - 0.3,
+                    1.8 + Math.random() * 0.5,
+                    Math.random() * 0.6 - 0.3
+                );
+                group.add(particle);
+            }
+            
+            // Soft glow
+            const glowLight = new THREE.PointLight(0xFFFFE0, 1, 3);
+            glowLight.position.y = 1.8;
+            group.add(glowLight);
+            
+            group.position.set(x, y, z);
+            group.userData.type = 'manna';
+            group.userData.clickable = true;
+            gardenScene.add(group);
+        }
+
+        function createTreeOfLife(x, y, z) {
+            const group = new THREE.Group();
+            
+            // Large trunk
+            const trunkGeometry = new THREE.CylinderGeometry(0.8, 1.2, 5, 12);
+            const trunkMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0x8B4513,
+                roughness: 0.95
+            });
+            const trunk = new THREE.Mesh(trunkGeometry, trunkMaterial);
+            trunk.position.y = 2.5;
+            group.add(trunk);
+            
+            // Golden glowing canopy
+            const canopyGeometry = new THREE.SphereGeometry(3, 16, 16);
+            const canopyMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0x90EE90,
+                emissive: 0xFFD700,
+                emissiveIntensity: 0.5,
+                transparent: true,
+                opacity: 0.9
+            });
+            const canopy = new THREE.Mesh(canopyGeometry, canopyMaterial);
+            canopy.position.y = 6;
+            group.add(canopy);
+            
+            // Glowing fruit (12 fruits for 12 months - Revelation 22:2)
+            for (let i = 0; i < 12; i++) {
+                const angle = (i / 12) * Math.PI * 2;
+                const fruitGeometry = new THREE.SphereGeometry(0.3, 8, 8);
+                const fruitMaterial = new THREE.MeshStandardMaterial({ 
+                    color: 0xFFD700,
+                    emissive: 0xFFD700,
+                    emissiveIntensity: 1.0
+                });
+                const fruit = new THREE.Mesh(fruitGeometry, fruitMaterial);
+                fruit.position.set(
+                    Math.cos(angle) * 2.5,
+                    5 + Math.sin(i * 0.5) * 1,
+                    Math.sin(angle) * 2.5
+                );
+                group.add(fruit);
+            }
+            
+            // Radiant light from the tree
+            const treeLight = new THREE.PointLight(0xFFD700, 3, 15);
+            treeLight.position.y = 6;
+            group.add(treeLight);
+            
+            group.position.set(x, y, z);
+            group.userData.type = 'tree_of_life';
+            group.userData.clickable = true;
+            gardenScene.add(group);
+        }
+
+        function createAngelsRow(x, y, z) {
+            // Create 9 angel statues representing the 9 orders of angels
+            const spacing = 3;
+            const startX = x - 12; // Center the row
+            
+            const angelNames = ['Seraphim', 'Cherubim', 'Thrones', 'Dominions', 'Virtues', 'Powers', 'Principalities', 'Archangels', 'Angels'];
+            
+            for (let i = 0; i < 9; i++) {
+                const angelX = startX + i * spacing;
+                createAngelStatue(angelX, y, z, angelNames[i]);
+            }
+        }
+
+        function createAngelStatue(x, y, z, orderName) {
+            const group = new THREE.Group();
+            
+            // Angelic robes - white/cream
+            const robeGeometry = new THREE.CylinderGeometry(0.3, 0.4, 1.5, 8);
+            const robeMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0xFFFAFA,
+                emissive: 0xFFFFFF,
+                emissiveIntensity: 0.2
+            });
+            const robe = new THREE.Mesh(robeGeometry, robeMaterial);
+            robe.position.y = 0.8;
+            group.add(robe);
+            
+            // Head
+            const headGeometry = new THREE.SphereGeometry(0.2, 12, 12);
+            const head = new THREE.Mesh(headGeometry, robeMaterial);
+            head.position.y = 1.7;
+            group.add(head);
+            
+            // Golden halo
+            const haloGeometry = new THREE.TorusGeometry(0.25, 0.04, 8, 16);
+            const haloMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0xFFD700,
+                emissive: 0xFFD700,
+                emissiveIntensity: 1.0
+            });
+            const halo = new THREE.Mesh(haloGeometry, haloMaterial);
+            halo.position.y = 2.0;
+            halo.rotation.x = Math.PI / 2;
+            group.add(halo);
+            
+            // Wings
+            const wingGeometry = new THREE.BoxGeometry(0.8, 1.0, 0.05);
+            const wingMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0xFFFFFF,
+                emissive: 0xFFFFFF,
+                emissiveIntensity: 0.3,
+                transparent: true,
+                opacity: 0.9
+            });
+            const leftWing = new THREE.Mesh(wingGeometry, wingMaterial);
+            leftWing.position.set(-0.6, 1.2, 0);
+            leftWing.rotation.y = Math.PI / 6;
+            group.add(leftWing);
+            
+            const rightWing = new THREE.Mesh(wingGeometry, wingMaterial);
+            rightWing.position.set(0.6, 1.2, 0);
+            rightWing.rotation.y = -Math.PI / 6;
+            group.add(rightWing);
+            
+            group.position.set(x, y, z);
+            group.userData.type = 'angels';
+            group.userData.orderName = orderName;
+            group.userData.clickable = true;
+            gardenScene.add(group);
+        }
+
+        function createRiver(x, y, z, riverName) {
+            // Create flowing water representation
+            const riverGeometry = new THREE.PlaneGeometry(2, 8);
+            const riverMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0x4169E1,
+                transparent: true,
+                opacity: 0.7,
+                emissive: 0x87CEEB,
+                emissiveIntensity: 0.3,
+                roughness: 0.1,
+                metalness: 0.5
+            });
+            const river = new THREE.Mesh(riverGeometry, riverMaterial);
+            river.rotation.x = -Math.PI / 2;
+            river.position.set(x, y + 0.02, z);
+            river.userData.type = 'river';
+            river.userData.riverName = riverName;
+            river.userData.clickable = true;
+            gardenScene.add(river);
         }
 
         function createOpenBible(x, y, z) {
@@ -4388,7 +4741,7 @@
                     Light triumphs over darkness!
                 </div>
                 <div style="color: #ecf0f1; font-size: 14px; margin-bottom: 15px;">
-                    Jesus welcomes you to walk with Him through the Garden of Eden
+                    You may now explore the Garden of Eden freely
                 </div>
                 <div style="color: #ecf0f1; font-size: 13px; font-style: italic; line-height: 1.5; margin-bottom: 10px;">
                     "For I am convinced that neither death nor life, neither angels nor demons, 
@@ -4400,16 +4753,13 @@
                 </div>
             `;
             document.getElementById('quote-author').textContent = '';
-            document.getElementById('quote-continue').textContent = 'Walk with Jesus';
             document.getElementById('quote-overlay').style.display = 'flex';
             
-            const btn = document.getElementById('quote-continue');
-            const handler = () => {
+            // Auto-hide after 4 seconds and start free roam
+            setTimeout(() => {
                 document.getElementById('quote-overlay').style.display = 'none';
-                btn.removeEventListener('click', handler);
                 startGardenWalk();
-            };
-            btn.addEventListener('click', handler);
+            }, 4000);
         }
 
         function startGardenWalk() {
@@ -4419,37 +4769,92 @@
         }
 
         function updateGardenWalk(dt) {
-            if (gameState !== 'garden' || !gardenScene) return;
+            if (gameState !== 'garden' || !gardenScene || !gardenCamera) return;
             
-            // Gentle walk forward
-            gardenWalkProgress += dt * 0.5;
+            // Use the stored garden player model
+            if (!gardenPlayerModel) return;
             
-            // Move Jesus slowly forward
-            if (jesusModel) {
-                jesusModel.position.z -= dt * 0.8;
-                jesusModel.rotation.x = Math.sin(gardenWalkProgress * 3) * 0.05;
+            // FREE ROAM MOVEMENT - WASD controls
+            const moveSpeed = 0.1;
+            const forward = new THREE.Vector3();
+            const right = new THREE.Vector3();
+            
+            gardenCamera.getWorldDirection(forward);
+            forward.y = 0;
+            forward.normalize();
+            
+            right.crossVectors(gardenCamera.up, forward).normalize();
+            
+            let hasMoved = false;
+            
+            // Keyboard movement
+            if (keys['w']) {
+                gardenPlayerModel.position.x += forward.x * moveSpeed;
+                gardenPlayerModel.position.z += forward.z * moveSpeed;
+                hasMoved = true;
+            }
+            if (keys['s']) {
+                gardenPlayerModel.position.x -= forward.x * moveSpeed;
+                gardenPlayerModel.position.z -= forward.z * moveSpeed;
+                hasMoved = true;
+            }
+            if (keys['a']) {
+                gardenPlayerModel.position.x += right.x * moveSpeed;
+                gardenPlayerModel.position.z += right.z * moveSpeed;
+                hasMoved = true;
+            }
+            if (keys['d']) {
+                gardenPlayerModel.position.x -= right.x * moveSpeed;
+                gardenPlayerModel.position.z -= right.z * moveSpeed;
+                hasMoved = true;
             }
             
-            // Find and move player model
-            gardenScene.children.forEach(child => {
-                if (child !== jesusModel && child.position && child.position.y === 0 && child.position.z > 4) {
-                    child.position.z -= dt * 0.8;
-                    child.rotation.x = Math.sin(gardenWalkProgress * 3 + 1) * 0.05;
-                }
-            });
+            // Mobile joystick movement
+            if (movementJoystick.active) {
+                gardenPlayerModel.position.x += right.x * movementJoystick.deltaX * moveSpeed;
+                gardenPlayerModel.position.z += right.z * movementJoystick.deltaX * moveSpeed;
+                gardenPlayerModel.position.x -= forward.x * movementJoystick.deltaY * moveSpeed;
+                gardenPlayerModel.position.z -= forward.z * movementJoystick.deltaY * moveSpeed;
+                hasMoved = true;
+            }
             
-            // Move camera with them
-            gardenCamera.position.z -= dt * 0.8;
-            gardenCamera.lookAt(0, 1, jesusModel.position.z - 7);
+            // Rotate player to face movement direction
+            if (hasMoved) {
+                const moveDir = new THREE.Vector3(forward.x, 0, forward.z);
+                if (keys['s']) moveDir.multiplyScalar(-1);
+                gardenPlayerModel.rotation.y = Math.atan2(moveDir.x, moveDir.z);
+            }
             
-            // Check for nearby interactables (for mobile button) - ONLY IN GARDEN
-            if (isMobile && gameState === 'garden') {
+            // Keep Jesus model in place if it exists
+            if (jesusModel) {
+                jesusModel.position.set(0, 0, -5);
+                jesusModel.rotation.y = Math.PI;
+            }
+            
+            // Camera follows player in third-person
+            const cameraDistance = 4;
+            const cameraHeight = 3;
+            const targetCameraX = gardenPlayerModel.position.x - Math.sin(gardenCamera.rotation.y) * cameraDistance;
+            const targetCameraZ = gardenPlayerModel.position.z - Math.cos(gardenCamera.rotation.y) * cameraDistance;
+            
+            gardenCamera.position.x = targetCameraX;
+            gardenCamera.position.y = gardenPlayerModel.position.y + cameraHeight;
+            gardenCamera.position.z = targetCameraZ;
+            gardenCamera.lookAt(gardenPlayerModel.position.x, gardenPlayerModel.position.y + 1, gardenPlayerModel.position.z);
+            
+            // Mobile camera rotation
+            if (cameraJoystick.active) {
+                gardenCamera.rotation.y -= cameraJoystick.deltaX * 0.05;
+            }
+            
+            // Check for nearby interactables (for interact button - works for both desktop and mobile)
+            if (gameState === 'garden') {
                 nearestInteractable = null;
                 let closestDistance = 5; // Max interaction distance
                 
                 gardenScene.children.forEach(child => {
                     if (child.userData && child.userData.clickable) {
-                        const distance = gardenCamera.position.distanceTo(child.position);
+                        const distance = gardenPlayerModel.position.distanceTo(child.position);
                         if (distance < closestDistance) {
                             closestDistance = distance;
                             nearestInteractable = child.userData;
@@ -4461,15 +4866,10 @@
                 const interactBtn = document.getElementById('mobile-interact-btn');
                 if (nearestInteractable) {
                     interactBtn.style.display = 'flex';
-                    interactBtn.textContent = nearestInteractable.type.toUpperCase();
+                    interactBtn.textContent = 'INTERACT';
                 } else {
                     interactBtn.style.display = 'none';
                 }
-            }
-            
-            // After walking for 30 seconds, show final message
-            if (gardenWalkProgress > 30) {
-                showFinalMessage();
             }
         }
 
@@ -4618,17 +5018,41 @@
                     <div style="color: #f1c40f; font-size: 22px; font-weight: bold; margin-bottom: 15px;">
                         MOTHER MARY SPEAKS
                     </div>
-                    <div style="color: #4169E1; font-size: 16px; font-weight: bold; line-height: 1.7; text-align: center; margin-bottom: 15px;">
+                    <div style="color: #ecf0f1; font-size: 14px; line-height: 1.7; text-align: left; margin-bottom: 15px;">
+                        <strong>"I am the Lord's servant. May your word to me be fulfilled."</strong>
+                    </div>
+                    <div style="color: #95a5a6; font-size: 11px; margin-bottom: 10px;">— Luke 1:38 (The Annunciation)</div>
+                    <div style="color: #ecf0f1; font-size: 13px; line-height: 1.7; text-align: left; margin-bottom: 15px;">
+                        "My soul glorifies the Lord and my spirit rejoices in God my Savior, for he has been mindful of the humble state of his servant. From now on all generations will call me blessed, for the Mighty One has done great things for me—holy is his name."
+                    </div>
+                    <div style="color: #95a5a6; font-size: 11px; margin-bottom: 10px;">— Luke 1:46-49 (The Magnificat)</div>
+                    <div style="color: #ecf0f1; font-size: 13px; line-height: 1.7; text-align: left; margin-bottom: 15px;">
                         "Do whatever He tells you."
                     </div>
+                    <div style="color: #95a5a6; font-size: 11px; margin-bottom: 10px;">— John 2:5 (Wedding at Cana)</div>
+                    <div style="color: #7f8c8d; font-size: 12px; line-height: 1.5; margin-top: 15px;">
+                        Mary, the Mother of God, whose "yes" to the angel Gabriel brought our Savior into the world, always points us to her Son and says: "Do whatever He tells you."
+                    </div>
+                `;
+            } else if (type === 'abraham') {
+                content = `
+                    <div style="color: #f1c40f; font-size: 22px; font-weight: bold; margin-bottom: 15px;">
+                        ABRAHAM, FATHER OF FAITH, SPEAKS
+                    </div>
+                    <div style="color: #ecf0f1; font-size: 14px; line-height: 1.7; text-align: left; margin-bottom: 15px;">
+                        <strong>"I will make you into a great nation, and I will bless you; I will make your name great, and you will be a blessing. I will bless those who bless you, and whoever curses you I will curse; and all peoples on earth will be blessed through you."</strong>
+                    </div>
+                    <div style="color: #95a5a6; font-size: 11px; margin-bottom: 10px;">— Genesis 12:2-3 (God's Covenant with Abraham)</div>
                     <div style="color: #ecf0f1; font-size: 13px; line-height: 1.7; text-align: left; margin-bottom: 15px;">
-                        On the third day a wedding took place at Cana in Galilee. Jesus' mother was there, and Jesus and his disciples had also been invited to the wedding. When the wine was gone, Jesus' mother said to him, "They have no more wine." His mother said to the servants, "Do whatever he tells you."
+                        "Do not lay a hand on the boy," the angel said. "Do not do anything to him. Now I know that you fear God, because you have not withheld from me your son, your only son." Through your offspring all nations on earth will be blessed, because you have obeyed me.
                     </div>
-                    <div style="color: #95a5a6; font-size: 12px; line-height: 1.5; margin-bottom: 10px;">
-                        Mary's words at the Wedding of Cana remain her message to all believers: listen to Jesus and obey Him. She always points us to her Son.
+                    <div style="color: #95a5a6; font-size: 11px; margin-bottom: 10px;">— Genesis 22:12, 18 (The Sacrifice of Isaac)</div>
+                    <div style="color: #ecf0f1; font-size: 13px; line-height: 1.7; text-align: left; margin-bottom: 15px;">
+                        Against all hope, Abraham in hope believed and so became the father of many nations. Without weakening in his faith, he faced the fact that his body was as good as dead. Yet he did not waver through unbelief regarding the promise of God, but was strengthened in his faith and gave glory to God.
                     </div>
-                    <div style="color: #f39c12; font-size: 12px; font-weight: bold;">
-                        — John 2:1-5
+                    <div style="color: #95a5a6; font-size: 11px; margin-bottom: 10px;">— Romans 4:18-20 (Abraham's Faith)</div>
+                    <div style="color: #7f8c8d; font-size: 12px; line-height: 1.5; margin-top: 15px;">
+                        Abraham, who left his homeland by faith, believed God's impossible promises, and was willing to sacrifice his beloved son Isaac, stands as the father of all who believe.
                     </div>
                 `;
             } else if (type === 'cherubim') {
@@ -4704,6 +5128,7 @@
                         }
                         gardenScene = null;
                     }
+                    gardenPlayerModel = null; // Reset garden player reference
                     
                     // Reset divine heroes
                     heroes.forEach(hero => {
@@ -4711,11 +5136,25 @@
                         hero.mp = hero.maxMp;
                     });
                     
+                    // Create Jesus player model for New Game+
+                    createVisiblePlayerModel();
+                    
                     // Generate dungeon with divine party
                     generateDungeon();
                     gameState = 'explore';
                     document.getElementById('title-screen').style.display = 'none';
                     document.getElementById('hud').style.display = 'block';
+                    document.getElementById('crosshair').style.display = 'block';
+                    
+                    // Restore dungeon scene visibility
+                    if (scene) {
+                        scene.traverse((object) => {
+                            if (object.isMesh) {
+                                object.visible = true;
+                            }
+                        });
+                    }
+                    
                     startMusic(); // Start sacred music
                 });
                 
@@ -4757,6 +5196,86 @@
                         — ${data.reference}
                     </div>
                 `;
+            } else if (type === 'manna') {
+                content = `
+                    <div style="color: #f1c40f; font-size: 22px; font-weight: bold; margin-bottom: 15px;">
+                        🍞 MANNA FROM HEAVEN 🍞
+                    </div>
+                    <div style="color: #ecf0f1; font-size: 14px; line-height: 1.7; text-align: left; margin-bottom: 15px;">
+                        <strong>"Then the LORD said to Moses, 'I will rain down bread from heaven for you. The people are to go out each day and gather enough for that day.'"</strong>
+                    </div>
+                    <div style="color: #95a5a6; font-size: 11px; margin-bottom: 10px;">— Exodus 16:4</div>
+                    <div style="color: #ecf0f1; font-size: 13px; line-height: 1.7; text-align: left; margin-bottom: 15px;">
+                        "The Israelites ate manna forty years, until they came to a land that was settled; they ate manna until they reached the border of Canaan. Your ancestors ate the manna in the wilderness, yet they died. But here is the bread that comes down from heaven, which anyone may eat and not die. I am the living bread that came down from heaven."
+                    </div>
+                    <div style="color: #95a5a6; font-size: 11px; margin-bottom: 10px;">— Exodus 16:35, John 6:49-51</div>
+                    <div style="color: #7f8c8d; font-size: 12px; line-height: 1.5; margin-top: 15px;">
+                        The manna that sustained Israel in the wilderness points to Jesus, the true Bread of Life who came down from heaven to give us eternal life.
+                    </div>
+                `;
+            } else if (type === 'tree_of_life') {
+                content = `
+                    <div style="color: #f1c40f; font-size: 22px; font-weight: bold; margin-bottom: 15px;">
+                        🌳 THE TREE OF LIFE 🌳
+                    </div>
+                    <div style="color: #ecf0f1; font-size: 14px; line-height: 1.7; text-align: left; margin-bottom: 15px;">
+                        <strong>"The LORD God made all kinds of trees grow out of the ground—trees that were pleasing to the eye and good for food. In the middle of the garden were the tree of life and the tree of the knowledge of good and evil."</strong>
+                    </div>
+                    <div style="color: #95a5a6; font-size: 11px; margin-bottom: 10px;">— Genesis 2:9</div>
+                    <div style="color: #ecf0f1; font-size: 13px; line-height: 1.7; text-align: left; margin-bottom: 15px;">
+                        "Then the angel showed me the river of the water of life, as clear as crystal, flowing from the throne of God and of the Lamb down the middle of the great street of the city. On each side of the river stood the tree of life, bearing twelve crops of fruit, yielding its fruit every month. And the leaves of the tree are for the healing of the nations."
+                    </div>
+                    <div style="color: #95a5a6; font-size: 11px; margin-bottom: 10px;">— Revelation 22:1-2</div>
+                    <div style="color: #ecf0f1; font-size: 13px; line-height: 1.7; text-align: left; margin-bottom: 15px;">
+                        "Blessed are those who wash their robes, that they may have the right to the tree of life and may go through the gates into the city."
+                    </div>
+                    <div style="color: #95a5a6; font-size: 11px; margin-bottom: 10px;">— Revelation 22:14</div>
+                    <div style="color: #7f8c8d; font-size: 12px; line-height: 1.5; margin-top: 15px;">
+                        The Tree of Life, forbidden since the Fall, will be restored in the New Jerusalem where the redeemed will eat from it forever.
+                    </div>
+                `;
+            } else if (type === 'angels') {
+                content = `
+                    <div style="color: #f1c40f; font-size: 22px; font-weight: bold; margin-bottom: 15px;">
+                        👼 THE NINE ORDERS OF ANGELS 👼
+                    </div>
+                    <div style="color: #ecf0f1; font-size: 14px; line-height: 1.7; text-align: left; margin-bottom: 15px;">
+                        The angelic order consists of:
+                    </div>
+                    <div style="color: #FFD700; font-size: 13px; line-height: 1.7; text-align: left; margin-bottom: 10px;">
+                        <strong>Highest Orders</strong> which contemplate and adore God directly:<br>
+                        • Seraphim • Cherubim • Thrones
+                    </div>
+                    <div style="color: #87CEEB; font-size: 13px; line-height: 1.7; text-align: left; margin-bottom: 10px;">
+                        <strong>Middle Orders</strong> which fulfill God's plan in the universe:<br>
+                        • Dominions • Virtues • Powers
+                    </div>
+                    <div style="color: #98FB98; font-size: 13px; line-height: 1.7; text-align: left; margin-bottom: 15px;">
+                        <strong>Lowest Orders</strong> which interact and serve humanity closely:<br>
+                        • Principalities • Archangels • Angels
+                    </div>
+                    <div style="color: #ecf0f1; font-size: 13px; line-height: 1.7; text-align: left; margin-bottom: 15px;">
+                        All Angels are far superior in power to the devil because the lowest of Angels is twice as powerful. Psalm 23 and 91 greatly demonstrate the power of having a good relationship with both God and our Guardian Angel/Angels.
+                    </div>
+                    <div style="color: #ecf0f1; font-size: 13px; line-height: 1.7; text-align: left; margin-bottom: 15px;">
+                        St Padre Pio was known for having a close relationship with not only his own guardian angel but the guardian angels of others. Jesus can call upon a thousand of them at will.
+                    </div>
+                    <div style="color: #95a5a6; font-size: 11px; margin-bottom: 10px;">— Based on Catholic Theology (St. Thomas Aquinas, Pseudo-Dionysius)</div>
+                `;
+            } else if (type === 'river') {
+                const riverName = data.riverName || 'River';
+                content = `
+                    <div style="color: #f1c40f; font-size: 22px; font-weight: bold; margin-bottom: 15px;">
+                        💧 THE ${riverName.toUpperCase()} 💧
+                    </div>
+                    <div style="color: #ecf0f1; font-size: 14px; line-height: 1.7; text-align: left; margin-bottom: 15px;">
+                        <strong>"A river watering the garden flowed from Eden; from there it was separated into four headwaters. The name of the first is the Pishon... The name of the second river is the Gihon... The name of the third river is the Tigris... And the fourth river is the Euphrates."</strong>
+                    </div>
+                    <div style="color: #95a5a6; font-size: 11px; margin-bottom: 10px;">— Genesis 2:10-14</div>
+                    <div style="color: #ecf0f1; font-size: 13px; line-height: 1.7; text-align: left; margin-bottom: 15px;">
+                        These four rivers watered the Garden of Eden, bringing life to Paradise. They represent God's abundant provision flowing from His presence to sustain all creation.
+                    </div>
+                `;
             }
             
             document.getElementById('quote-text').innerHTML = content;
@@ -4795,33 +5314,15 @@
                 }
                 gardenScene = null;
             }
+            gardenPlayerModel = null; // Reset garden player reference
             
             // Recreate garden and restart the walk
             createGardenOfEden();
         }
 
         function showOneRingVictory() {
-            // Show brief victory message, then automatically go to Garden of Eden
-            document.getElementById('quote-text').innerHTML = `
-                <div style="color: #f1c40f; font-size: 22px; font-weight: bold; margin-bottom: 15px;">
-                    ⚡ THE ONE RING TO RULE THEM ALL! ⚡
-                </div>
-                <div style="color: #2ecc71; font-size: 16px; margin-bottom: 15px;">
-                    Jesus Christ wields all seven virtues!<br>
-                    Divine power destroys all evil instantly!
-                </div>
-                <div style="color: #e74c3c; font-size: 14px; margin-bottom: 15px;">
-                    The Devil and all demons are vanquished!
-                </div>
-            `;
-            document.getElementById('quote-author').textContent = '';
-            document.getElementById('quote-overlay').style.display = 'flex';
-            
-            // Auto-hide after 3 seconds and go straight to Garden of Eden
-            setTimeout(() => {
-                document.getElementById('quote-overlay').style.display = 'none';
-                showGameVictory();
-            }, 3000);
+            // Instantly transport to Garden of Eden - no delay
+            showGameVictory();
         }
 
         // Event handlers
@@ -4842,22 +5343,37 @@
 
         function onClick(e) {
             if (gameState === 'explore') {
-                // Click-to-rotate camera
+                // Click-to-rotate camera around player
                 const rect = renderer.domElement.getBoundingClientRect();
                 const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-                const y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
                 
                 // Calculate target rotation based on click position
                 // Left side = rotate left, right side = rotate right
                 const rotationAmount = x * Math.PI / 4; // Max 45 degrees per click
-                targetRotationY = camera.rotation.y - rotationAmount;
+                targetRotationY -= rotationAmount; // Subtract to rotate correctly
             }
         }
 
         function onWindowResize() {
-            camera.aspect = window.innerWidth / window.innerHeight;
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            
+            camera.aspect = width / height;
             camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setSize(width, height);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Limit pixel ratio for performance
+            
+            // Update garden camera if it exists
+            if (gardenCamera) {
+                gardenCamera.aspect = width / height;
+                gardenCamera.updateProjectionMatrix();
+            }
+            
+            // Update battle camera if it exists
+            if (battleCamera) {
+                battleCamera.aspect = width / height;
+                battleCamera.updateProjectionMatrix();
+            }
         }
 
         function checkWallCollision(x, z, radius = 0.5) {
@@ -4905,7 +5421,19 @@
                     if (interactBtn) interactBtn.style.display = 'none';
                 }
                 
-                // Movement - keyboard and touch
+                // Safety check: return early if player model not created yet
+                if (!playerModel) {
+                    // If we're in explore mode but playerModel doesn't exist, create it
+                    try {
+                        createVisiblePlayerModel();
+                    } catch (e) {
+                        // If creation fails, just return and try again next frame
+                        return;
+                    }
+                    if (!playerModel) return;
+                }
+                
+                // Movement - keyboard and touch (moves player model)
                 const moveSpeed = MOVE_SPEED * dt;
                 const forward = new THREE.Vector3();
                 const right = new THREE.Vector3();
@@ -4916,64 +5444,94 @@
                 
                 right.crossVectors(camera.up, forward).normalize();
                 
-                // Calculate desired position
-                let desiredX = camera.position.x;
-                let desiredZ = camera.position.z;
+                // Calculate desired player position
+                let desiredX = playerModel.position.x;
+                let desiredZ = playerModel.position.z;
+                let hasMoved = false;
                 
                 // Keyboard movement
                 if (keys['w']) {
                     desiredX += forward.x * moveSpeed;
                     desiredZ += forward.z * moveSpeed;
+                    hasMoved = true;
                 }
                 if (keys['s']) {
                     desiredX -= forward.x * moveSpeed;
                     desiredZ -= forward.z * moveSpeed;
+                    hasMoved = true;
                 }
                 if (keys['a']) {
                     desiredX += right.x * moveSpeed;
                     desiredZ += right.z * moveSpeed;
+                    hasMoved = true;
                 }
                 if (keys['d']) {
                     desiredX -= right.x * moveSpeed;
                     desiredZ -= right.z * moveSpeed;
+                    hasMoved = true;
                 }
                 
-                // Mobile joystick movement
+                // Mobile joystick movement (fixed directions - no inversion)
                 if (movementJoystick.active) {
-                    desiredX += right.x * movementJoystick.deltaX * moveSpeed;
-                    desiredZ += right.z * movementJoystick.deltaX * moveSpeed;
+                    desiredX -= right.x * movementJoystick.deltaX * moveSpeed;
+                    desiredZ -= right.z * movementJoystick.deltaX * moveSpeed;
                     desiredX -= forward.x * movementJoystick.deltaY * moveSpeed;
                     desiredZ -= forward.z * movementJoystick.deltaY * moveSpeed;
+                    hasMoved = true;
                 }
                 
-                // Apply movement only if no wall collision
-                if (!checkWallCollision(desiredX, camera.position.z)) {
-                    camera.position.x = desiredX;
+                // Apply movement to player model only if no wall collision
+                if (!checkWallCollision(desiredX, playerModel.position.z)) {
+                    playerModel.position.x = desiredX;
                 }
-                if (!checkWallCollision(camera.position.x, desiredZ)) {
-                    camera.position.z = desiredZ;
+                if (!checkWallCollision(playerModel.position.x, desiredZ)) {
+                    playerModel.position.z = desiredZ;
                 }
                 
-                // Smooth camera rotation towards target
-                const rotationDiff = targetRotationY - camera.rotation.y;
-                if (Math.abs(rotationDiff) > 0.01) {
-                    camera.rotation.y += rotationDiff * 0.1; // Smooth interpolation
+                // Rotate player model to face movement direction
+                if (hasMoved) {
+                    const moveDirection = new THREE.Vector2(
+                        desiredX - playerModel.position.x,
+                        desiredZ - playerModel.position.z
+                    );
+                    if (moveDirection.length() > 0.01) {
+                        playerModel.rotation.y = Math.atan2(moveDirection.x, moveDirection.y);
+                    }
                 }
                 
                 // Mobile camera joystick (horizontal rotation only)
                 if (cameraJoystick.active) {
                     targetRotationY -= cameraJoystick.deltaX * 0.05;
-                    // No vertical rotation - removed camera.rotation.x adjustment
                 }
                 
-                // Update light position
+                // Camera follows player in third-person
+                const cameraDistance = 5;
+                const cameraHeight = 3;
+                
+                // Calculate camera position based on targetRotationY
+                const targetCameraX = playerModel.position.x - Math.sin(targetRotationY) * cameraDistance;
+                const targetCameraZ = playerModel.position.z - Math.cos(targetRotationY) * cameraDistance;
+                
+                // Smoothly move camera to target position
+                camera.position.x += (targetCameraX - camera.position.x) * 0.15;
+                camera.position.y = playerModel.position.y + cameraHeight;
+                camera.position.z += (targetCameraZ - camera.position.z) * 0.15;
+                
+                // Make camera look at player
+                camera.lookAt(playerModel.position.x, playerModel.position.y + 1, playerModel.position.z);
+                
+                // Update light position to follow player
                 if (camera.userData.light) {
-                    camera.userData.light.position.copy(camera.position);
+                    camera.userData.light.position.set(
+                        playerModel.position.x,
+                        playerModel.position.y + 5,
+                        playerModel.position.z
+                    );
                 }
                 
                 // Check for enemy proximity (RPG-style encounter)
                 for (let enemy of enemies) {
-                    const distance = camera.position.distanceTo(enemy.mesh.position);
+                    const distance = playerModel.position.distanceTo(enemy.mesh.position);
                     if (distance < 3) {
                         startBattle(enemy);
                         break;
@@ -4981,7 +5539,7 @@
                 }
                 for (let i = pickups.length - 1; i >= 0; i--) {
                     const pickup = pickups[i];
-                    const distance = camera.position.distanceTo(pickup.mesh.position);
+                    const distance = playerModel.position.distanceTo(pickup.mesh.position);
                     
                     if (distance < 2) {
                         scene.remove(pickup.mesh);
@@ -5042,6 +5600,7 @@
 
         // Initialize
         init3D();
+        onWindowResize(); // Ensure proper initial sizing
         animate();
     </script>
 </body>
