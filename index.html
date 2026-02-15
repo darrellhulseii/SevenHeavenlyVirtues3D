@@ -950,6 +950,148 @@
             "Sloth": { name: "Gauntlets of Diligence", effect: "ATK +5", atkBoost: 5 }
         };
 
+        // Mythical Creatures - One unique creature per dungeon level (stats scale with level)
+        const MYTHICAL_CREATURES = {
+            1: {
+                name: "Vampire",
+                description: "An undead bloodsucker that haunts the night",
+                color: 0x8B0000,
+                baseHp: 80,
+                baseAtk: 20,
+                verse: "For the life of a creature is in the blood, and I have given it to you to make atonement for yourselves on the altar; it is the blood that makes atonement for one's life.",
+                reference: "Leviticus 17:11"
+            },
+            2: {
+                name: "Werewolf",
+                description: "A cursed human that transforms into a beast",
+                color: 0x654321,
+                baseHp: 100,
+                baseAtk: 25,
+                verse: "Be alert and of sober mind. Your enemy the devil prowls around like a roaring lion looking for someone to devour. Resist him, standing firm in the faith.",
+                reference: "1 Peter 5:8-9"
+            },
+            3: {
+                name: "Ghost",
+                description: "A tormented spirit that cannot rest",
+                color: 0xE0E0E0,
+                baseHp: 70,
+                baseAtk: 18,
+                verse: "For our struggle is not against flesh and blood, but against the rulers, against the authorities, against the powers of this dark world and against the spiritual forces of evil in the heavenly realms.",
+                reference: "Ephesians 6:12"
+            },
+            4: {
+                name: "Succubus",
+                description: "A seductive demon that tempts the faithful",
+                color: 0xFF1493,
+                baseHp: 85,
+                baseAtk: 22,
+                verse: "Flee from sexual immorality. But among you there must not be even a hint of sexual immorality, or of any kind of impurity, or of greed, because these are improper for God's holy people.",
+                reference: "1 Corinthians 6:18, Ephesians 5:3"
+            },
+            5: {
+                name: "Sasquatch",
+                description: "A mysterious wild beast of the forest",
+                color: 0x8B4513,
+                baseHp: 120,
+                baseAtk: 28,
+                verse: "Look at Behemoth, which I made along with you and which feeds on grass like an ox. What strength it has in its loins, what power in the muscles of its belly!",
+                reference: "Job 40:15-16"
+            },
+            6: {
+                name: "Yeti",
+                description: "An abominable snowman from frozen peaks",
+                color: 0xF0F8FF,
+                baseHp: 110,
+                baseAtk: 26,
+                verse: "He spreads the snow like wool and scatters the frost like ashes. He hurls down his hail like pebbles. Who can withstand his icy blast?",
+                reference: "Psalm 147:16-17"
+            },
+            7: {
+                name: "Ogre",
+                description: "A brutal giant that crushes its enemies",
+                color: 0x556B2F,
+                baseHp: 150,
+                baseAtk: 35,
+                verse: "The wicked freely strut about when what is vile is honored by the human race. There were giants on the earth in those days, and also afterward, when the sons of God came in to the daughters of men and they bore children to them.",
+                reference: "Psalm 12:8, Genesis 6:4"
+            }
+        };
+
+        // Special human evil - appears on Devil level
+        const EPSTEIN_ENCOUNTER = {
+            name: "Jeffrey Epstein",
+            companion: "Ghislaine Maxwell",
+            description: "A trafficker of innocence and embodiment of exploitation",
+            color: 0xDC143C,
+            auraColor: 0xFF0000,
+            baseHp: 180,
+            baseAtk: 40,
+            companionHp: 140,
+            companionAtk: 32,
+            verse: "But whoso shall offend one of these little ones which believe in me, it were better for him that a millstone were hanged about his neck, and that he were drowned in the depth of the sea. Woe unto the world because of offences! If your hand or foot causes you to stumble, cut it off and throw it away. It is better for you to enter life maimed or crippled than to have two hands or two feet and be thrown into eternal fire.",
+            reference: "Matthew 18:6-8"
+        };
+
+        // Dungeon Themes - Different visual style for each level
+        const DUNGEON_THEMES = {
+            1: { 
+                name: "Blood Crypt",
+                wallColor: 0x8B0000, 
+                floorColor: 0x4B0000, 
+                ceilingColor: 0x2B0000,
+                ambientColor: 0xFF0000,
+                decoration: 'torches'
+            },
+            2: { 
+                name: "Beast's Lair",
+                wallColor: 0x654321, 
+                floorColor: 0x3E2723, 
+                ceilingColor: 0x4E342E,
+                ambientColor: 0xD2691E,
+                decoration: 'torches'
+            },
+            3: { 
+                name: "Haunted Halls",
+                wallColor: 0x708090, 
+                floorColor: 0x2F4F4F, 
+                ceilingColor: 0x778899,
+                ambientColor: 0xE0E0E0,
+                decoration: 'crystals'
+            },
+            4: { 
+                name: "Temptation Chamber",
+                wallColor: 0x8B008B, 
+                floorColor: 0x4B0049, 
+                ceilingColor: 0x6B0063,
+                ambientColor: 0xFF1493,
+                decoration: 'crystals'
+            },
+            5: { 
+                name: "Primeval Forest",
+                wallColor: 0x556B2F, 
+                floorColor: 0x3D5229, 
+                ceilingColor: 0x6B8E23,
+                ambientColor: 0x9ACD32,
+                decoration: 'crystals'
+            },
+            6: { 
+                name: "Frozen Depths",
+                wallColor: 0x4682B4, 
+                floorColor: 0x1E3A5F, 
+                ceilingColor: 0x5F9EA0,
+                ambientColor: 0x87CEEB,
+                decoration: 'crystals'
+            },
+            7: { 
+                name: "Infernal Throne",
+                wallColor: 0xFF4500, 
+                floorColor: 0x8B0000, 
+                ceilingColor: 0xDC143C,
+                ambientColor: 0xFF6347,
+                decoration: 'torches'
+            }
+        };
+
         // Game state
         let scene, camera, renderer, raycaster, mouse, playerModel;
         let dungeon = [];
@@ -2146,15 +2288,18 @@
                 scene.remove(obj);
             }
 
-            // Re-add bright lights
-            const ambientLight = new THREE.AmbientLight(0xffffff, 1.0); // Increased from 0.8
+            // Get theme for current dungeon level
+            const theme = DUNGEON_THEMES[dungeonLevel] || DUNGEON_THEMES[7];
+
+            // Theme-based lighting
+            const ambientLight = new THREE.AmbientLight(theme.ambientColor, 0.4);
             scene.add(ambientLight);
             
-            // Add hemisphere light for better overall illumination
-            const hemisphereLight = new THREE.HemisphereLight(0xffffbb, 0x080820, 0.6);
+            // Add hemisphere light with theme colors
+            const hemisphereLight = new THREE.HemisphereLight(theme.ambientColor, 0x080820, 0.5);
             scene.add(hemisphereLight);
             
-            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8); // Increased from 0.6
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.6);
             directionalLight.position.set(10, 20, 10);
             directionalLight.castShadow = true;
             directionalLight.shadow.camera.left = -50;
@@ -2163,7 +2308,7 @@
             directionalLight.shadow.camera.bottom = -50;
             scene.add(directionalLight);
             
-            const pointLight = new THREE.PointLight(0xffffff, 1.5, 50); // Increased from 0.5, 30
+            const pointLight = new THREE.PointLight(0xffffff, 1.0, 50);
             pointLight.position.copy(camera.position);
             pointLight.castShadow = true;
             scene.add(pointLight);
@@ -2218,25 +2363,25 @@
                 }
             }
 
-            // Build 3D dungeon with bright colors
+            // Build 3D dungeon with theme colors
             const wallGeometry = new THREE.BoxGeometry(CELL_SIZE, 4, CELL_SIZE);
             const floorGeometry = new THREE.BoxGeometry(CELL_SIZE, 0.2, CELL_SIZE);
             const ceilingGeometry = new THREE.BoxGeometry(CELL_SIZE, 0.2, CELL_SIZE);
             
             const wallMaterial = new THREE.MeshStandardMaterial({ 
-                color: 0xA0826D, // Lighter brown for better visibility
+                color: theme.wallColor,
                 roughness: 0.9,
                 metalness: 0.0,
-                emissive: 0x3a2a1a, // Subtle glow
+                emissive: theme.wallColor,
                 emissiveIntensity: 0.1
             });
             const floorMaterial = new THREE.MeshStandardMaterial({ 
-                color: 0xE5C29F, // Lighter tan for better visibility
+                color: theme.floorColor,
                 roughness: 0.85,
                 metalness: 0.0
             });
             const ceilingMaterial = new THREE.MeshStandardMaterial({ 
-                color: 0xFFE4B5, // Lighter cream for better visibility
+                color: theme.ceilingColor,
                 roughness: 0.8,
                 metalness: 0.0
             });
@@ -2494,7 +2639,584 @@
                 }
             }
 
+            // Add theme-based decorations to rooms
+            rooms.forEach((room, index) => {
+                if (index > 0) { // Skip first room (player spawn)
+                    const decorCount = 2 + Math.floor(Math.random() * 3);
+                    for (let i = 0; i < decorCount; i++) {
+                        const dx = (room.x + 1 + Math.random() * (room.w - 2) - MAP_SIZE / 2) * CELL_SIZE;
+                        const dz = (room.y + 1 + Math.random() * (room.h - 2) - MAP_SIZE / 2) * CELL_SIZE;
+                        
+                        if (theme.decoration === 'torches') {
+                            createTorch(dx, dz, theme.ambientColor);
+                        } else {
+                            createCrystal(dx, dz, theme.ambientColor);
+                        }
+                    }
+                }
+            });
+
+            // Spawn mythical creature for levels 1-7
+            if (dungeonLevel >= 1 && dungeonLevel <= 7 && !spawnDevilBoss) {
+                const creature = MYTHICAL_CREATURES[dungeonLevel];
+                if (creature && rooms.length > 2) {
+                    // Spawn in a random room (not first or last)
+                    const creatureRoom = rooms[Math.floor(Math.random() * (rooms.length - 2)) + 1];
+                    const cx = (creatureRoom.x + Math.floor(creatureRoom.w / 2) - MAP_SIZE / 2) * CELL_SIZE;
+                    const cz = (creatureRoom.y + Math.floor(creatureRoom.h / 2) - MAP_SIZE / 2) * CELL_SIZE;
+                    
+                    const creatureMesh = createMythicalCreatureModel(creature, dungeonLevel);
+                    creatureMesh.position.set(cx, 0, cz);
+                    creatureMesh.castShadow = true;
+                    scene.add(creatureMesh);
+                    
+                    // Add name label above creature
+                    const canvas = document.createElement('canvas');
+                    const context = canvas.getContext('2d');
+                    canvas.width = 256;
+                    canvas.height = 64;
+                    context.fillStyle = 'rgba(0, 0, 0, 0.8)';
+                    context.fillRect(0, 0, 256, 64);
+                    context.font = 'bold 32px Arial';
+                    context.fillStyle = '#ffd700';
+                    context.textAlign = 'center';
+                    context.fillText(creature.name.toUpperCase(), 128, 42);
+                    
+                    const texture = new THREE.CanvasTexture(canvas);
+                    const spriteMaterial = new THREE.SpriteMaterial({ map: texture });
+                    const sprite = new THREE.Sprite(spriteMaterial);
+                    sprite.position.set(0, 2.5, 0);
+                    sprite.scale.set(2, 0.5, 1);
+                    creatureMesh.add(sprite);
+                    
+                    enemies.push({ 
+                        mesh: creatureMesh, 
+                        vice: {
+                            name: creature.name,
+                            minion: creature.name + " Shade",
+                            color: creature.color,
+                            catechism: creature.description,
+                            verse: creature.verse,
+                            reference: creature.reference
+                        },
+                        position: { x: cx, z: cz },
+                        isMythical: true,
+                        level: dungeonLevel
+                    });
+                }
+            }
+
+            // Spawn Jeffrey Epstein encounter on Devil level
+            if (spawnDevilBoss && rooms.length > 3) {
+                const epsteinRoom = rooms[Math.floor(Math.random() * (rooms.length - 3)) + 2];
+                const ex = (epsteinRoom.x + Math.floor(epsteinRoom.w / 2) - MAP_SIZE / 2) * CELL_SIZE;
+                const ez = (epsteinRoom.y + Math.floor(epsteinRoom.h / 2) - MAP_SIZE / 2) * CELL_SIZE;
+                
+                const epsteinMesh = createEpsteinModel();
+                epsteinMesh.position.set(ex, 0, ez);
+                epsteinMesh.castShadow = true;
+                scene.add(epsteinMesh);
+                
+                // Red evil aura around Epstein
+                const auraGeometry = new THREE.CylinderGeometry(1.5, 1.5, 0.1, 32);
+                const auraMaterial = new THREE.MeshBasicMaterial({ 
+                    color: EPSTEIN_ENCOUNTER.auraColor,
+                    transparent: true,
+                    opacity: 0.3
+                });
+                const aura = new THREE.Mesh(auraGeometry, auraMaterial);
+                aura.position.set(ex, 0.05, ez);
+                scene.add(aura);
+                
+                // Red glow
+                const epsteinLight = new THREE.PointLight(EPSTEIN_ENCOUNTER.auraColor, 3, 10);
+                epsteinLight.position.set(ex, 1, ez);
+                scene.add(epsteinLight);
+                
+                // Name label
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+                canvas.width = 256;
+                canvas.height = 64;
+                context.fillStyle = 'rgba(139, 0, 0, 0.9)';
+                context.fillRect(0, 0, 256, 64);
+                context.font = 'bold 28px Arial';
+                context.fillStyle = '#ff0000';
+                context.textAlign = 'center';
+                context.fillText(EPSTEIN_ENCOUNTER.name.toUpperCase(), 128, 42);
+                
+                const texture = new THREE.CanvasTexture(canvas);
+                const spriteMaterial = new THREE.SpriteMaterial({ map: texture });
+                const sprite = new THREE.Sprite(spriteMaterial);
+                sprite.position.set(0, 2.5, 0);
+                sprite.scale.set(2.5, 0.6, 1);
+                epsteinMesh.add(sprite);
+                
+                enemies.push({ 
+                    mesh: epsteinMesh, 
+                    vice: {
+                        name: EPSTEIN_ENCOUNTER.name,
+                        minion: EPSTEIN_ENCOUNTER.companion,
+                        color: EPSTEIN_ENCOUNTER.color,
+                        catechism: EPSTEIN_ENCOUNTER.description,
+                        verse: EPSTEIN_ENCOUNTER.verse,
+                        reference: EPSTEIN_ENCOUNTER.reference
+                    },
+                    position: { x: ex, z: ez },
+                    isEpstein: true,
+                    level: 7
+                });
+            }
+
             updateHUD();
+        }
+
+        function createTorch(x, z, color) {
+            const group = new THREE.Group();
+            
+            // Torch post
+            const postGeometry = new THREE.CylinderGeometry(0.1, 0.1, 2, 8);
+            const postMaterial = new THREE.MeshStandardMaterial({ color: 0x3E2723 });
+            const post = new THREE.Mesh(postGeometry, postMaterial);
+            post.position.y = 1;
+            group.add(post);
+            
+            // Flame
+            const flameGeometry = new THREE.ConeGeometry(0.3, 0.6, 8);
+            const flameMaterial = new THREE.MeshBasicMaterial({ 
+                color: color,
+                emissive: color,
+                emissiveIntensity: 1
+            });
+            const flame = new THREE.Mesh(flameGeometry, flameMaterial);
+            flame.position.y = 2.3;
+            group.add(flame);
+            
+            // Point light for torch
+            const light = new THREE.PointLight(color, 1.5, 10);
+            light.position.y = 2.3;
+            group.add(light);
+            
+            group.position.set(x, 0, z);
+            scene.add(group);
+        }
+
+        function createCrystal(x, z, color) {
+            const group = new THREE.Group();
+            
+            // Crystal formation
+            const crystalGeometry = new THREE.ConeGeometry(0.3, 1.5, 6);
+            const crystalMaterial = new THREE.MeshStandardMaterial({ 
+                color: color,
+                emissive: color,
+                emissiveIntensity: 0.8,
+                metalness: 0.5,
+                roughness: 0.2,
+                transparent: true,
+                opacity: 0.9
+            });
+            
+            // Multiple crystal shards
+            for (let i = 0; i < 3; i++) {
+                const crystal = new THREE.Mesh(crystalGeometry, crystalMaterial);
+                const angle = (i / 3) * Math.PI * 2;
+                crystal.position.set(Math.cos(angle) * 0.3, 0.75, Math.sin(angle) * 0.3);
+                crystal.rotation.z = Math.PI;
+                crystal.rotation.y = angle;
+                group.add(crystal);
+            }
+            
+            // Glowing light from crystals
+            const light = new THREE.PointLight(color, 2, 8);
+            light.position.y = 1;
+            group.add(light);
+            
+            group.position.set(x, 0, z);
+            scene.add(group);
+        }
+
+        function createMythicalCreatureModel(creature) {
+            const group = new THREE.Group();
+            
+            if (creature.name === "Vampire") {
+                // Vampire - humanoid with cape
+                const bodyGeometry = new THREE.CylinderGeometry(0.3, 0.4, 1.5, 8);
+                const bodyMaterial = new THREE.MeshStandardMaterial({ color: 0x1a1a1a });
+                const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+                body.position.y = 0.75;
+                group.add(body);
+                
+                // Head - pale
+                const headGeometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
+                const headMaterial = new THREE.MeshStandardMaterial({ color: 0xE8D5C9 });
+                const head = new THREE.Mesh(headGeometry, headMaterial);
+                head.position.y = 1.7;
+                group.add(head);
+                
+                // Red eyes
+                const eyeGeometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
+                const eyeMaterial = new THREE.MeshBasicMaterial({ color: 0xFF0000, emissive: 0xFF0000 });
+                const leftEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+                leftEye.position.set(-0.15, 1.75, 0.25);
+                group.add(leftEye);
+                const rightEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+                rightEye.position.set(0.15, 1.75, 0.25);
+                group.add(rightEye);
+                
+                // Cape
+                const capeGeometry = new THREE.ConeGeometry(0.8, 1.5, 8);
+                const capeMaterial = new THREE.MeshStandardMaterial({ color: 0x8B0000 });
+                const cape = new THREE.Mesh(capeGeometry, capeMaterial);
+                cape.position.set(0, 0.75, -0.3);
+                cape.rotation.x = Math.PI;
+                group.add(cape);
+                
+            } else if (creature.name === "Werewolf") {
+                // Werewolf - beast-like
+                const bodyGeometry = new THREE.BoxGeometry(0.8, 1.2, 0.6);
+                const bodyMaterial = new THREE.MeshStandardMaterial({ color: 0x654321 });
+                const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+                body.position.y = 0.8;
+                group.add(body);
+                
+                // Wolf head
+                const headGeometry = new THREE.BoxGeometry(0.6, 0.6, 0.8);
+                const head = new THREE.Mesh(headGeometry, bodyMaterial);
+                head.position.y = 1.7;
+                group.add(head);
+                
+                // Snout
+                const snoutGeometry = new THREE.BoxGeometry(0.4, 0.3, 0.5);
+                const snout = new THREE.Mesh(snoutGeometry, bodyMaterial);
+                snout.position.set(0, 1.7, 0.5);
+                group.add(snout);
+                
+                // Yellow glowing eyes
+                const eyeGeometry = new THREE.SphereGeometry(0.1, 8, 8);
+                const eyeMaterial = new THREE.MeshBasicMaterial({ color: 0xFFFF00, emissive: 0xFFFF00 });
+                const leftEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+                leftEye.position.set(-0.2, 1.8, 0.4);
+                group.add(leftEye);
+                const rightEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+                rightEye.position.set(0.2, 1.8, 0.4);
+                group.add(rightEye);
+                
+                // Claws
+                for (let i = 0; i < 2; i++) {
+                    const clawGeometry = new THREE.BoxGeometry(0.3, 0.1, 0.5);
+                    const clawMaterial = new THREE.MeshStandardMaterial({ color: 0x2F2F2F });
+                    const claw = new THREE.Mesh(clawGeometry, clawMaterial);
+                    claw.position.set(i === 0 ? -0.5 : 0.5, 0.2, 0.5);
+                    group.add(claw);
+                }
+                
+            } else if (creature.name === "Ghost") {
+                // Ghost - floating translucent form
+                const ghostGeometry = new THREE.SphereGeometry(0.6, 16, 16);
+                const ghostMaterial = new THREE.MeshStandardMaterial({ 
+                    color: 0xE0E0E0,
+                    emissive: 0xFFFFFF,
+                    emissiveIntensity: 0.5,
+                    transparent: true,
+                    opacity: 0.6
+                });
+                const ghost = new THREE.Mesh(ghostGeometry, ghostMaterial);
+                ghost.position.y = 1.5;
+                ghost.scale.set(1, 1.5, 1);
+                group.add(ghost);
+                
+                // Wispy tail
+                const tailGeometry = new THREE.ConeGeometry(0.5, 1, 8);
+                const tail = new THREE.Mesh(tailGeometry, ghostMaterial);
+                tail.position.y = 0.5;
+                tail.rotation.x = Math.PI;
+                group.add(tail);
+                
+                // Dark hollow eyes
+                const eyeGeometry = new THREE.SphereGeometry(0.1, 8, 8);
+                const eyeMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
+                const leftEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+                leftEye.position.set(-0.2, 1.6, 0.5);
+                group.add(leftEye);
+                const rightEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+                rightEye.position.set(0.2, 1.6, 0.5);
+                group.add(rightEye);
+                
+                // Ethereal glow
+                const glowLight = new THREE.PointLight(0xE0E0E0, 2, 5);
+                glowLight.position.y = 1.5;
+                group.add(glowLight);
+                
+            } else if (creature.name === "Succubus") {
+                // Succubus - seductive demon
+                const bodyGeometry = new THREE.CylinderGeometry(0.3, 0.4, 1.5, 8);
+                const bodyMaterial = new THREE.MeshStandardMaterial({ color: 0xFF1493 });
+                const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+                body.position.y = 0.75;
+                group.add(body);
+                
+                // Head
+                const headGeometry = new THREE.SphereGeometry(0.3, 16, 16);
+                const headMaterial = new THREE.MeshStandardMaterial({ color: 0xFFB6C1 });
+                const head = new THREE.Mesh(headGeometry, headMaterial);
+                head.position.y = 1.7;
+                group.add(head);
+                
+                // Horns
+                const hornGeometry = new THREE.ConeGeometry(0.1, 0.5, 8);
+                const hornMaterial = new THREE.MeshStandardMaterial({ color: 0x8B0000 });
+                const leftHorn = new THREE.Mesh(hornGeometry, hornMaterial);
+                leftHorn.position.set(-0.25, 2.1, 0);
+                leftHorn.rotation.z = -Math.PI / 6;
+                group.add(leftHorn);
+                const rightHorn = new THREE.Mesh(hornGeometry, hornMaterial);
+                rightHorn.position.set(0.25, 2.1, 0);
+                rightHorn.rotation.z = Math.PI / 6;
+                group.add(rightHorn);
+                
+                // Wings
+                const wingGeometry = new THREE.BoxGeometry(0.8, 1.2, 0.05);
+                const wingMaterial = new THREE.MeshStandardMaterial({ 
+                    color: 0x8B0000,
+                    transparent: true,
+                    opacity: 0.8
+                });
+                const leftWing = new THREE.Mesh(wingGeometry, wingMaterial);
+                leftWing.position.set(-0.7, 1.2, -0.2);
+                leftWing.rotation.y = Math.PI / 4;
+                group.add(leftWing);
+                const rightWing = new THREE.Mesh(wingGeometry, wingMaterial);
+                rightWing.position.set(0.7, 1.2, -0.2);
+                rightWing.rotation.y = -Math.PI / 4;
+                group.add(rightWing);
+                
+            } else if (creature.name === "Sasquatch") {
+                // Sasquatch - large hairy beast
+                const bodyGeometry = new THREE.BoxGeometry(1, 1.5, 0.8);
+                const bodyMaterial = new THREE.MeshStandardMaterial({ color: 0x4E342E });
+                const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+                body.position.y = 0.75;
+                group.add(body);
+                
+                // Large head
+                const headGeometry = new THREE.BoxGeometry(0.8, 0.8, 0.8);
+                const head = new THREE.Mesh(headGeometry, bodyMaterial);
+                head.position.y = 1.9;
+                group.add(head);
+                
+                // Small eyes
+                const eyeGeometry = new THREE.SphereGeometry(0.08, 8, 8);
+                const eyeMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
+                const leftEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+                leftEye.position.set(-0.25, 1.95, 0.4);
+                group.add(leftEye);
+                const rightEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+                rightEye.position.set(0.25, 1.95, 0.4);
+                group.add(rightEye);
+                
+                // Long arms
+                const armGeometry = new THREE.CylinderGeometry(0.2, 0.15, 1.2, 8);
+                const leftArm = new THREE.Mesh(armGeometry, bodyMaterial);
+                leftArm.position.set(-0.6, 0.7, 0);
+                leftArm.rotation.z = Math.PI / 6;
+                group.add(leftArm);
+                const rightArm = new THREE.Mesh(armGeometry, bodyMaterial);
+                rightArm.position.set(0.6, 0.7, 0);
+                rightArm.rotation.z = -Math.PI / 6;
+                group.add(rightArm);
+                
+            } else if (creature.name === "Yeti") {
+                // Yeti - white furred snow beast
+                const bodyGeometry = new THREE.BoxGeometry(1, 1.5, 0.8);
+                const bodyMaterial = new THREE.MeshStandardMaterial({ 
+                    color: 0xF0F8FF,
+                    emissive: 0xE0FFFF,
+                    emissiveIntensity: 0.2
+                });
+                const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+                body.position.y = 0.75;
+                group.add(body);
+                
+                // Head
+                const headGeometry = new THREE.BoxGeometry(0.8, 0.8, 0.8);
+                const head = new THREE.Mesh(headGeometry, bodyMaterial);
+                head.position.y = 1.9;
+                group.add(head);
+                
+                // Blue glowing eyes
+                const eyeGeometry = new THREE.SphereGeometry(0.1, 8, 8);
+                const eyeMaterial = new THREE.MeshBasicMaterial({ 
+                    color: 0x00BFFF,
+                    emissive: 0x00BFFF,
+                    emissiveIntensity: 1
+                });
+                const leftEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+                leftEye.position.set(-0.25, 1.95, 0.4);
+                group.add(leftEye);
+                const rightEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+                rightEye.position.set(0.25, 1.95, 0.4);
+                group.add(rightEye);
+                
+                // Large arms
+                const armGeometry = new THREE.CylinderGeometry(0.25, 0.2, 1.2, 8);
+                const leftArm = new THREE.Mesh(armGeometry, bodyMaterial);
+                leftArm.position.set(-0.65, 0.7, 0);
+                leftArm.rotation.z = Math.PI / 6;
+                group.add(leftArm);
+                const rightArm = new THREE.Mesh(armGeometry, bodyMaterial);
+                rightArm.position.set(0.65, 0.7, 0);
+                rightArm.rotation.z = -Math.PI / 6;
+                group.add(rightArm);
+                
+                // Icy aura
+                const auraLight = new THREE.PointLight(0x87CEEB, 1.5, 5);
+                auraLight.position.y = 1;
+                group.add(auraLight);
+            } else if (creature.name === "Ogre") {
+                // Ogre - massive brutal giant
+                const bodyGeometry = new THREE.BoxGeometry(1.2, 2, 1);
+                const bodyMaterial = new THREE.MeshStandardMaterial({ 
+                    color: 0x556B2F,
+                    roughness: 0.95
+                });
+                const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+                body.position.y = 1;
+                group.add(body);
+                
+                // Large brutish head
+                const headGeometry = new THREE.BoxGeometry(0.9, 0.9, 0.9);
+                const head = new THREE.Mesh(headGeometry, bodyMaterial);
+                head.position.y = 2.4;
+                group.add(head);
+                
+                // Tusks
+                const tuskGeometry = new THREE.ConeGeometry(0.08, 0.4, 8);
+                const tuskMaterial = new THREE.MeshStandardMaterial({ color: 0xFFFACD });
+                const leftTusk = new THREE.Mesh(tuskGeometry, tuskMaterial);
+                leftTusk.position.set(-0.25, 2.2, 0.45);
+                leftTusk.rotation.x = Math.PI;
+                group.add(leftTusk);
+                const rightTusk = new THREE.Mesh(tuskGeometry, tuskMaterial);
+                rightTusk.position.set(0.25, 2.2, 0.45);
+                rightTusk.rotation.x = Math.PI;
+                group.add(rightTusk);
+                
+                // Red glowing eyes
+                const eyeGeometry = new THREE.SphereGeometry(0.12, 8, 8);
+                const eyeMaterial = new THREE.MeshBasicMaterial({ 
+                    color: 0xFF0000,
+                    emissive: 0xFF0000,
+                    emissiveIntensity: 1
+                });
+                const leftEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+                leftEye.position.set(-0.3, 2.5, 0.45);
+                group.add(leftEye);
+                const rightEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+                rightEye.position.set(0.3, 2.5, 0.45);
+                group.add(rightEye);
+                
+                // Massive arms with clubs
+                const armGeometry = new THREE.CylinderGeometry(0.3, 0.25, 1.5, 8);
+                const leftArm = new THREE.Mesh(armGeometry, bodyMaterial);
+                leftArm.position.set(-0.75, 1, 0);
+                leftArm.rotation.z = Math.PI / 4;
+                group.add(leftArm);
+                const rightArm = new THREE.Mesh(armGeometry, bodyMaterial);
+                rightArm.position.set(0.75, 1, 0);
+                rightArm.rotation.z = -Math.PI / 4;
+                group.add(rightArm);
+                
+                // Wooden club in right hand
+                const clubGeometry = new THREE.CylinderGeometry(0.15, 0.25, 1, 8);
+                const clubMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
+                const club = new THREE.Mesh(clubGeometry, clubMaterial);
+                club.position.set(1.2, 0.3, 0);
+                club.rotation.z = -Math.PI / 3;
+                group.add(club);
+            }
+            
+            return group;
+        }
+
+        function createEpsteinModel() {
+            const group = new THREE.Group();
+            
+            // Human figure - business suit
+            const bodyGeometry = new THREE.BoxGeometry(0.6, 1.2, 0.4);
+            const suitMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0x1a1a1a,  // Black suit
+                roughness: 0.7,
+                metalness: 0.1
+            });
+            const body = new THREE.Mesh(bodyGeometry, suitMaterial);
+            body.position.y = 0.8;
+            group.add(body);
+            
+            // Head - pale complexion
+            const headGeometry = new THREE.BoxGeometry(0.4, 0.5, 0.4);
+            const skinMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0xE8D5C9,
+                roughness: 0.8
+            });
+            const head = new THREE.Mesh(headGeometry, skinMaterial);
+            head.position.y = 1.65;
+            group.add(head);
+            
+            // Dark eyes
+            const eyeGeometry = new THREE.BoxGeometry(0.08, 0.08, 0.08);
+            const eyeMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
+            const leftEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+            leftEye.position.set(-0.12, 1.7, 0.2);
+            group.add(leftEye);
+            const rightEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+            rightEye.position.set(0.12, 1.7, 0.2);
+            group.add(rightEye);
+            
+            // Sinister smile (red line)
+            const smileGeometry = new THREE.BoxGeometry(0.25, 0.03, 0.03);
+            const smileMaterial = new THREE.MeshBasicMaterial({ 
+                color: 0x8B0000,
+                emissive: 0xFF0000,
+                emissiveIntensity: 0.5
+            });
+            const smile = new THREE.Mesh(smileGeometry, smileMaterial);
+            smile.position.set(0, 1.5, 0.2);
+            group.add(smile);
+            
+            // Arms
+            const armGeometry = new THREE.CylinderGeometry(0.12, 0.12, 1, 8);
+            const leftArm = new THREE.Mesh(armGeometry, suitMaterial);
+            leftArm.position.set(-0.4, 0.7, 0);
+            leftArm.rotation.z = Math.PI / 8;
+            group.add(leftArm);
+            const rightArm = new THREE.Mesh(armGeometry, suitMaterial);
+            rightArm.position.set(0.4, 0.7, 0);
+            rightArm.rotation.z = -Math.PI / 8;
+            group.add(rightArm);
+            
+            // Legs
+            const legGeometry = new THREE.CylinderGeometry(0.12, 0.12, 0.8, 8);
+            const legMaterial = new THREE.MeshStandardMaterial({ color: 0x2a2a2a });
+            const leftLeg = new THREE.Mesh(legGeometry, legMaterial);
+            leftLeg.position.set(-0.15, 0.1, 0);
+            group.add(leftLeg);
+            const rightLeg = new THREE.Mesh(legGeometry, legMaterial);
+            rightLeg.position.set(0.15, 0.1, 0);
+            group.add(rightLeg);
+            
+            // Evil red aura around him
+            const auraGeometry = new THREE.SphereGeometry(1.2, 16, 16);
+            const auraMaterial = new THREE.MeshBasicMaterial({ 
+                color: 0xFF0000,
+                transparent: true,
+                opacity: 0.15,
+                side: THREE.BackSide
+            });
+            const aura = new THREE.Mesh(auraGeometry, auraMaterial);
+            aura.position.y = 1;
+            group.add(aura);
+            
+            return group;
         }
 
         function updateHUD() {
@@ -2545,16 +3267,41 @@
             
             // Setup enemies
             let viceHp, minionHp, viceAtk, minionAtk;
-            if (isFinalBoss) {
-                viceHp = 200;
-                minionHp = 100;
-                viceAtk = 30;
-                minionAtk = 20;
+            
+            // Check if this is Jeffrey Epstein
+            if (enemy.isEpstein) {
+                const levelMultiplier = 1 + (dungeonLevel - 1) * 0.5;
+                viceHp = Math.floor(EPSTEIN_ENCOUNTER.baseHp * levelMultiplier);
+                minionHp = Math.floor(EPSTEIN_ENCOUNTER.companionHp * levelMultiplier);
+                viceAtk = Math.floor(EPSTEIN_ENCOUNTER.baseAtk * levelMultiplier);
+                minionAtk = Math.floor(EPSTEIN_ENCOUNTER.companionAtk * levelMultiplier);
+            }
+            // Check if this is a mythical creature
+            else if (enemy.isMythical) {
+                const creature = MYTHICAL_CREATURES[enemy.level || dungeonLevel];
+                // Scale mythical creature stats based on dungeon level (they get stronger as you progress)
+                const levelMultiplier = 1 + (dungeonLevel - 1) * 0.5; // 1x at level 1, 1.5x at level 2, 2x at level 3, etc.
+                viceHp = Math.floor(creature.baseHp * levelMultiplier);
+                minionHp = Math.floor(creature.baseHp * 0.6 * levelMultiplier);
+                viceAtk = Math.floor(creature.baseAtk * levelMultiplier);
+                minionAtk = Math.floor(creature.baseAtk * 0.7 * levelMultiplier);
+            } else if (isFinalBoss) {
+                // Devil scales massively with defeated sins
+                const sinMultiplier = 1 + (defeatedSins.size * 0.3); // Gets stronger with each sin defeated
+                viceHp = Math.floor(200 * sinMultiplier);
+                minionHp = Math.floor(100 * sinMultiplier);
+                viceAtk = Math.floor(30 * sinMultiplier);
+                minionAtk = Math.floor(20 * sinMultiplier);
             } else {
-                viceHp = 50 + dungeonLevel * 10;
-                minionHp = 30 + dungeonLevel * 8;
-                viceAtk = 15 + dungeonLevel * 2;
-                minionAtk = 10 + dungeonLevel * 1;
+                // Deadly Sins scale aggressively with level (exponential growth)
+                const baseHp = 50;
+                const baseAtk = 15;
+                const levelMultiplier = Math.pow(1.4, dungeonLevel - 1); // 1x, 1.4x, 1.96x, 2.74x, 3.84x, 5.38x, 7.53x
+                
+                viceHp = Math.floor(baseHp * levelMultiplier);
+                minionHp = Math.floor(30 * levelMultiplier);
+                viceAtk = Math.floor(baseAtk * levelMultiplier);
+                minionAtk = Math.floor(10 * levelMultiplier);
             }
             
             // New Game+ mode: Enemies are 200x stronger!
@@ -2576,7 +3323,7 @@
             battle.log = [`Facing ${enemy.vice.name}!`];
             
             // Create 3D battle scene
-            createBattleScene(enemy.vice);
+            createBattleScene(enemy.vice, enemy.isEpstein);
             
             updateBattleUI();
             document.getElementById('battle-ui').style.display = 'block';
@@ -2590,7 +3337,7 @@
         let battleHeroModels = [];
         let battleEnemyModels = [];
 
-        function createBattleScene(vice) {
+        function createBattleScene(vice, isEpstein = false) {
             // Clear any existing battle scene
             if (battleScene) {
                 while(battleScene.children.length > 0) { 
@@ -2603,35 +3350,158 @@
             
             battleScene = new THREE.Scene();
             
-            // Battle background color (grass/desert/dungeon based on level)
-            const bgColors = [0x87CEEB, 0xFFE4B5, 0x4a4a6a];
-            const bgIndex = Math.min(Math.floor((dungeonLevel - 1) / 3), 2);
-            battleScene.background = new THREE.Color(bgColors[bgIndex]);
-            
-            // Ground plane
-            const groundColors = [0x5D8C3E, 0xE6C89E, 0x3a3a4e];
-            const groundGeometry = new THREE.PlaneGeometry(20, 20);
-            const groundMaterial = new THREE.MeshStandardMaterial({ color: groundColors[bgIndex] });
-            const ground = new THREE.Mesh(groundGeometry, groundMaterial);
-            ground.rotation.x = -Math.PI / 2;
-            ground.receiveShadow = true;
-            battleScene.add(ground);
-            
-            // Add some environment elements (rocks/trees)
-            for (let i = 0; i < 5; i++) {
-                const envGeo = new THREE.CylinderGeometry(0.3, 0.4, 1.5, 6);
-                const envMat = new THREE.MeshStandardMaterial({ 
-                    color: bgIndex === 0 ? 0x2d5016 : bgIndex === 1 ? 0x8B7355 : 0x4a4a5a
+            // Special island scene for Epstein
+            if (isEpstein) {
+                // Sky - bright blue
+                battleScene.background = new THREE.Color(0x87CEEB);
+                
+                // Ocean floor
+                const oceanGeometry = new THREE.PlaneGeometry(50, 50);
+                const oceanMaterial = new THREE.MeshStandardMaterial({ 
+                    color: 0x1E90FF,
+                    roughness: 0.3,
+                    metalness: 0.5
                 });
-                const env = new THREE.Mesh(envGeo, envMat);
-                env.position.set(
-                    -8 + Math.random() * 16,
-                    0.75,
-                    -8 + Math.random() * 16
-                );
-                env.receiveShadow = true;
-                env.castShadow = true;
-                battleScene.add(env);
+                const ocean = new THREE.Mesh(oceanGeometry, oceanMaterial);
+                ocean.rotation.x = -Math.PI / 2;
+                ocean.position.y = -0.5;
+                ocean.receiveShadow = true;
+                battleScene.add(ocean);
+                
+                // Island - sandy ground
+                const islandGeometry = new THREE.CircleGeometry(12, 32);
+                const sandMaterial = new THREE.MeshStandardMaterial({ 
+                    color: 0xF4E4C1,
+                    roughness: 0.95
+                });
+                const island = new THREE.Mesh(islandGeometry, sandMaterial);
+                island.rotation.x = -Math.PI / 2;
+                island.receiveShadow = true;
+                battleScene.add(island);
+                
+                // Blue and white building in background (like Little St. James temple)
+                const buildingGroup = new THREE.Group();
+                
+                // Main structure - blue and white striped dome
+                const domeGeometry = new THREE.SphereGeometry(2, 16, 16, 0, Math.PI * 2, 0, Math.PI / 2);
+                const domeMaterial = new THREE.MeshStandardMaterial({ 
+                    color: 0x4169E1,
+                    emissive: 0x1E3A8A,
+                    emissiveIntensity: 0.2
+                });
+                const dome = new THREE.Mesh(domeGeometry, domeMaterial);
+                dome.position.y = 3;
+                buildingGroup.add(dome);
+                
+                // White base
+                const baseGeometry = new THREE.CylinderGeometry(2.2, 2.5, 2, 8);
+                const whiteMaterial = new THREE.MeshStandardMaterial({ 
+                    color: 0xFFFAFA,
+                    roughness: 0.4
+                });
+                const base = new THREE.Mesh(baseGeometry, whiteMaterial);
+                base.position.y = 1;
+                buildingGroup.add(base);
+                
+                // White columns
+                for (let i = 0; i < 8; i++) {
+                    const angle = (i / 8) * Math.PI * 2;
+                    const columnGeometry = new THREE.CylinderGeometry(0.15, 0.15, 2.5, 8);
+                    const column = new THREE.Mesh(columnGeometry, whiteMaterial);
+                    column.position.set(
+                        Math.cos(angle) * 2.3,
+                        1.25,
+                        Math.sin(angle) * 2.3
+                    );
+                    buildingGroup.add(column);
+                }
+                
+                // Gold top ornament
+                const ornamentGeometry = new THREE.SphereGeometry(0.4, 16, 16);
+                const goldMaterial = new THREE.MeshStandardMaterial({ 
+                    color: 0xFFD700,
+                    metalness: 0.9,
+                    roughness: 0.1,
+                    emissive: 0xFFD700,
+                    emissiveIntensity: 0.3
+                });
+                const ornament = new THREE.Mesh(ornamentGeometry, goldMaterial);
+                ornament.position.y = 5;
+                buildingGroup.add(ornament);
+                
+                buildingGroup.position.set(0, 0, -10);
+                buildingGroup.castShadow = true;
+                battleScene.add(buildingGroup);
+                
+                // Palm trees on island
+                for (let i = 0; i < 4; i++) {
+                    const angle = (i / 4) * Math.PI * 2;
+                    const palmGroup = new THREE.Group();
+                    
+                    // Trunk
+                    const trunkGeometry = new THREE.CylinderGeometry(0.2, 0.25, 3, 8);
+                    const trunkMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
+                    const trunk = new THREE.Mesh(trunkGeometry, trunkMaterial);
+                    trunk.position.y = 1.5;
+                    palmGroup.add(trunk);
+                    
+                    // Leaves
+                    for (let j = 0; j < 6; j++) {
+                        const leafAngle = (j / 6) * Math.PI * 2;
+                        const leafGeometry = new THREE.BoxGeometry(0.3, 2, 0.1);
+                        const leafMaterial = new THREE.MeshStandardMaterial({ color: 0x228B22 });
+                        const leaf = new THREE.Mesh(leafGeometry, leafMaterial);
+                        leaf.position.set(
+                            Math.cos(leafAngle) * 0.5,
+                            3.5,
+                            Math.sin(leafAngle) * 0.5
+                        );
+                        leaf.rotation.z = Math.cos(leafAngle) * Math.PI / 4;
+                        leaf.rotation.x = Math.sin(leafAngle) * Math.PI / 4;
+                        palmGroup.add(leaf);
+                    }
+                    
+                    palmGroup.position.set(
+                        Math.cos(angle) * 8,
+                        0,
+                        Math.sin(angle) * 8
+                    );
+                    palmGroup.castShadow = true;
+                    battleScene.add(palmGroup);
+                }
+                
+            } else {
+                // Normal battle background
+                // Battle background color (grass/desert/dungeon based on level)
+                const bgColors = [0x87CEEB, 0xFFE4B5, 0x4a4a6a];
+                const bgIndex = Math.min(Math.floor((dungeonLevel - 1) / 3), 2);
+                battleScene.background = new THREE.Color(bgColors[bgIndex]);
+                
+                // Ground plane
+                const groundColors = [0x5D8C3E, 0xE6C89E, 0x3a3a4e];
+                const groundGeometry = new THREE.PlaneGeometry(20, 20);
+                const groundMaterial = new THREE.MeshStandardMaterial({ color: groundColors[bgIndex] });
+                const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+                ground.rotation.x = -Math.PI / 2;
+                ground.receiveShadow = true;
+                battleScene.add(ground);
+                
+                // Add some environment elements (rocks/trees)
+                for (let i = 0; i < 5; i++) {
+                    const envGeo = new THREE.CylinderGeometry(0.3, 0.4, 1.5, 6);
+                    const envMat = new THREE.MeshStandardMaterial({ 
+                        color: bgIndex === 0 ? 0x2d5016 : bgIndex === 1 ? 0x8B7355 : 0x4a4a5a
+                    });
+                    const env = new THREE.Mesh(envGeo, envMat);
+                    env.position.set(
+                        -8 + Math.random() * 16,
+                        0.75,
+                        -8 + Math.random() * 16
+                    );
+                    env.receiveShadow = true;
+                    env.castShadow = true;
+                    battleScene.add(env);
+                }
             }
             
             // Lighting for battle
@@ -2681,13 +3551,33 @@
             // Position enemies on the right side
             battleEnemyModels = [];
             for (let i = 0; i < 2; i++) {
-                const enemyModel = createViceModel(vice);
+                let enemyModel;
+                // Check if this is Epstein
+                if (isEpstein && vice.name === EPSTEIN_ENCOUNTER.name) {
+                    if (i === 0) {
+                        enemyModel = createEpsteinModel();
+                    } else {
+                        // Ghislaine - similar but female
+                        enemyModel = createEpsteinModel(); // Reuse model, will scale/modify
+                        enemyModel.scale.set(0.85, 0.85, 0.85); // Smaller for Ghislaine
+                    }
+                }
+                // Check if this is a mythical creature
+                else {
+                    const creatureData = MYTHICAL_CREATURES[dungeonLevel];
+                    if (creatureData && vice.name === creatureData.name) {
+                        enemyModel = createMythicalCreatureModel(creatureData, dungeonLevel);
+                    } else {
+                        enemyModel = createViceModel(vice);
+                    }
+                }
+                
                 enemyModel.position.set(5, 0, -1 + i * 2);
                 enemyModel.rotation.y = -Math.PI / 6; // Face left slightly
                 enemyModel.castShadow = true;
                 
-                // Scale down minion slightly
-                if (i === 1) {
+                // Scale down minion slightly (if not already scaled for Ghislaine)
+                if (i === 1 && !isEpstein) {
                     enemyModel.scale.set(0.7, 0.7, 0.7);
                 }
                 
@@ -3343,7 +4233,10 @@
                     enemies = enemies.filter(e => e !== enemyToRemove);
                 }
                 
-                // Award virtue item
+                // Check if this was a mythical creature or Epstein
+                const isMythicalCreature = enemyToRemove && (enemyToRemove.isMythical || enemyToRemove.isEpstein);
+                
+                // Award virtue item for deadly sins
                 if (DEADLY_SINS.includes(viceName) && !inventory.virtueItems.includes(viceName)) {
                     const virtueItem = VIRTUE_ITEMS[viceName];
                     inventory.virtueItems.push(viceName);
@@ -3363,6 +4256,20 @@
                     return;
                 }
                 
+                // Mythical creatures give rewards but don't progress the level
+                if (isMythicalCreature) {
+                    // Give gold reward for defeating mythical creature
+                    const goldReward = 50 + dungeonLevel * 10;
+                    inventory.gold += goldReward;
+                    
+                    showViceTeaching(battle.enemies[0].vice, () => {
+                        showMessage(`Victory! Earned ${goldReward} gold from ${viceName}!`, 3000);
+                        gameState = 'explore';
+                    });
+                    return;
+                }
+                
+                // Only deadly sins progress the level
                 if (DEADLY_SINS.includes(viceName)) {
                     defeatedSins.add(viceName);
                     
@@ -3378,11 +4285,9 @@
                         });
                         return;
                     }
-                }
-                
-                dungeonLevel++;
-                
-                if (DEADLY_SINS.includes(viceName)) {
+                    
+                    dungeonLevel++;
+                    
                     const virtueItem = VIRTUE_ITEMS[viceName];
                     showVirtueItemReceived(virtueItem, () => {
                         showViceTeaching(battle.enemies[0].vice, () => {
@@ -3392,9 +4297,9 @@
                         });
                     });
                 } else {
+                    // Other enemies (if any) don't progress the level
                     showViceTeaching(battle.enemies[0].vice, () => {
-                        showMessage(`Victory! Level ${dungeonLevel}`, 3000);
-                        generateDungeon();
+                        showMessage(`Victory! Continuing level ${dungeonLevel}...`, 3000);
                         gameState = 'explore';
                     });
                 }
