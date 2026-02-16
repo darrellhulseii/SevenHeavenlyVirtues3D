@@ -117,32 +117,49 @@
             z-index: 100;
         }
         
-        /* FF-Style Stat Bars - Ultra Minimal */
+        #fps-counter {
+            position: fixed;
+            top: 5px;
+            left: 5px;
+            background: rgba(0, 0, 0, 0.5);
+            color: #2ecc71;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 10px;
+            font-family: 'Courier New', monospace;
+            z-index: 200;
+            pointer-events: none;
+        }
+        
+        /* FF-Style Stat Bars - Small but Visible */
         .stat-bar-container {
-            display: flex;
+            display: inline-flex;
             align-items: center;
-            gap: 4px;
+            gap: 3px;
         }
         
         .stat-label {
-            font-size: clamp(8px, 1.2vw, 9px);
-            color: #bdc3c7;
-            min-width: 18px;
+            font-size: 8px;
+            color: #ecf0f1;
+            min-width: 14px;
             font-weight: bold;
             text-shadow: 1px 1px 2px rgba(0, 0, 0, 1);
         }
         
         .stat-bar {
-            flex: 1;
-            height: clamp(8px, 1.5vh, 10px);
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            display: inline-block;
+            width: 40px;
+            height: 6px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.3);
             border-radius: 2px;
             overflow: hidden;
             position: relative;
+            vertical-align: middle;
         }
         
         .stat-bar-fill {
+            display: block;
             height: 100%;
             transition: width 0.4s ease;
             position: relative;
@@ -155,7 +172,7 @@
             left: 0;
             right: 0;
             height: 50%;
-            background: linear-gradient(to bottom, rgba(255, 255, 255, 0.3), transparent);
+            background: linear-gradient(to bottom, rgba(255, 255, 255, 0.4), transparent);
         }
         
         .hp-bar .stat-bar-fill {
@@ -167,12 +184,12 @@
         }
         
         .stat-value {
-            font-size: clamp(8px, 1.2vw, 9px);
+            font-size: 8px;
             color: #ecf0f1;
             font-weight: bold;
-            min-width: 50px;
+            min-width: 35px;
             text-align: right;
-            text-shadow: 2px 2px 3px rgba(0, 0, 0, 1);
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 1);
         }
         
         .enemy-hp-bar {
@@ -183,60 +200,57 @@
             display: none;
         }
         
-        /* Battle Log & Actions - Ultra Minimal */
+        /* Battle Log & Actions - Small but Visible */
         #battle-log {
             display: none;
         }
         
         #battle-actions {
-            display: flex;
-            flex-direction: column;
-            gap: 1px;
-            padding: clamp(4px, 1vw, 6px);
-            background: rgba(0, 0, 0, 0.05);
+            display: inline-flex;
+            flex-direction: row;
+            gap: 4px;
+            padding: 3px;
+            background: rgba(0, 0, 0, 0.15);
         }
         
         .battle-btn {
-            background: linear-gradient(135deg, rgba(52, 73, 94, 0.3) 0%, rgba(44, 62, 80, 0.3) 100%);
+            background: rgba(52, 73, 94, 0.25);
             color: #ecf0f1;
-            border: 1px solid rgba(149, 165, 166, 0.2);
-            border-left: 2px solid rgba(52, 152, 219, 0.3);
-            padding: clamp(4px, 1vw, 6px) clamp(6px, 1.5vw, 10px);
-            font-size: clamp(9px, 1.3vw, 11px);
+            border: 1px solid rgba(149, 165, 166, 0.3);
+            border-bottom: 2px solid rgba(52, 152, 219, 0.4);
+            padding: 3px 8px;
+            font-size: 9px;
             font-weight: bold;
-            border-radius: 2px;
+            border-radius: 3px;
             cursor: pointer;
             font-family: 'Courier New', monospace;
             transition: all 0.2s;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 1);
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 1);
             position: relative;
-            text-align: left;
+            text-align: center;
             letter-spacing: 0.3px;
+            white-space: nowrap;
         }
         
         .battle-btn:hover {
-            background: linear-gradient(135deg, rgba(52, 152, 219, 0.4) 0%, rgba(41, 128, 185, 0.4) 100%);
-            border-left-color: rgba(52, 152, 219, 0.6);
-            transform: translateX(2px);
+            background: rgba(52, 152, 219, 0.35);
+            border-bottom-color: rgba(52, 152, 219, 0.7);
+            transform: translateY(-2px);
         }
         
         .battle-btn:active {
-            transform: translateX(1px);
+            transform: translateY(0);
         }
         
         .battle-btn.selected {
-            background: linear-gradient(135deg, rgba(243, 156, 18, 0.4) 0%, rgba(211, 84, 0, 0.4) 100%);
-            border-left-color: rgba(243, 156, 18, 0.8);
-            border-left-width: 3px;
-            transform: translateX(3px);
+            background: rgba(243, 156, 18, 0.4);
+            border-bottom-color: rgba(243, 156, 18, 0.8);
+            border-bottom-width: 2px;
+            color: #f39c12;
         }
         
         .battle-btn.selected::before {
-            content: '▸ ';
-            position: absolute;
-            left: -12px;
-            color: #f39c12;
-            animation: pulse 0.8s ease-in-out infinite;
+            content: '';
         }
         
         @keyframes pulse {
@@ -529,84 +543,89 @@
         }
         #battle-ui {
             position: fixed;
-            bottom: 10px;
-            left: 10px;
-            width: min(180px, 22vw);
-            max-height: 20vh;
-            background: linear-gradient(135deg, rgba(20, 20, 60, 0.05) 0%, rgba(10, 10, 40, 0.05) 100%);
-            backdrop-filter: blur(2px);
-            padding: 0;
+            bottom: 5px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: auto;
+            max-width: 450px;
+            background: rgba(20, 20, 60, 0.3); /* More visible - 70% transparent */
+            backdrop-filter: blur(4px);
+            padding: 4px 8px;
             display: none;
             z-index: 150;
-            border: 1px solid rgba(243, 156, 18, 0.3);
-            border-radius: 6px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(243, 156, 18, 0.5);
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
             font-family: 'Courier New', monospace;
-            font-size: clamp(9px, 1.3vw, 11px);
+            font-size: 10px;
             box-sizing: border-box;
         }
         
         @media (max-width: 768px) {
             #battle-ui {
-                width: calc(100% - 20px);
-                max-height: 20vh;
+                width: auto;
+                max-width: 90vw;
+                font-size: 9px;
             }
         }
         
         #battle-status {
             position: fixed;
-            top: 10px;
-            right: 10px;
-            width: min(160px, 20vw);
-            max-height: 50vh;
-            background: linear-gradient(135deg, rgba(20, 20, 60, 0.05) 0%, rgba(10, 10, 40, 0.05) 100%);
-            backdrop-filter: blur(2px);
-            padding: 0;
+            bottom: 35px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: auto;
+            max-width: 650px;
+            background: rgba(20, 20, 60, 0.3); /* More visible - 70% transparent */
+            backdrop-filter: blur(4px);
+            padding: 5px 10px;
             display: none;
             z-index: 150;
-            border: 1px solid rgba(46, 204, 113, 0.3);
-            border-radius: 6px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(46, 204, 113, 0.5);
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
             font-family: 'Courier New', monospace;
-            font-size: clamp(8px, 1.2vw, 10px);
+            font-size: 9px;
             box-sizing: border-box;
-            overflow-y: auto;
         }
         
         @media (max-width: 768px) {
             #battle-status {
-                width: calc(100% - 20px);
-                top: 10px;
-                right: 10px;
-                left: 10px;
-                max-height: 20vh;
+                width: auto;
+                max-width: 90vw;
+                bottom: 30px;
+                font-size: 8px;
             }
         }
         
         .hero-status {
-            display: flex;
-            flex-direction: column;
-            padding: clamp(4px, 0.8vw, 6px);
-            background: rgba(0, 0, 0, 0.05);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: inline-flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 5px;
+            padding: 3px 6px;
+            background: rgba(0, 0, 0, 0.2);
+            border-right: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 2px;
         }
         
         .hero-status:last-child {
-            border-bottom: none;
+            border-right: none;
         }
         
         .hero-status.active {
-            background: rgba(243, 156, 18, 0.1);
-            border-left: 2px solid #f39c12;
+            background: rgba(243, 156, 18, 0.25);
+            border: 1px solid rgba(243, 156, 18, 0.6);
+            border-radius: 3px;
         }
         
         .hero-name {
             font-weight: bold;
             color: #ecf0f1;
-            font-size: clamp(10px, 1.5vw, 11px);
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 1);
-            margin-bottom: 3px;
-            letter-spacing: 0.5px;
+            font-size: 9px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 1);
+            margin-right: 4px;
+            letter-spacing: 0.2px;
         }
         
         .hero-status.active .hero-name {
@@ -614,8 +633,8 @@
         }
         
         .hero-stats {
-            display: flex;
-            flex-direction: column;
+            display: inline-flex;
+            flex-direction: row;
             gap: 2px;
         }
         
@@ -917,6 +936,7 @@
     </script>
 </head>
 <body>
+    <div id="fps-counter">FPS: 0</div>
     <div id="loading">Loading 3D World...</div>
     
     <div id="title-screen">
@@ -1309,7 +1329,7 @@
                 def: 8,
                 specialAttack: "Rosary Throw",
                 specialCost: 15,
-                specialDamage: 40
+                specialDamage: 70  // Enhanced from 40
             },
             { 
                 name: "St. Michael", 
@@ -1321,7 +1341,7 @@
                 def: 6,
                 specialAttack: "Heavenly Host",
                 specialCost: 20,
-                specialDamage: 50
+                specialDamage: 90  // Enhanced from 50
             },
             { 
                 name: "St. Joan", 
@@ -1333,7 +1353,7 @@
                 def: 10,
                 specialAttack: "Divine Charge",
                 specialCost: 15,
-                specialDamage: 45
+                specialDamage: 80  // Enhanced from 45
             }
         ];
         
@@ -3913,34 +3933,47 @@
                 }
             });
             
-            // Update hero status display (bottom right - FF style)
+            // Update hero status display (visible horizontal strip at bottom)
             const heroStatusEl = document.getElementById('battle-status');
             heroStatusEl.innerHTML = '';
-            heroStatusEl.style.display = 'block';
+            heroStatusEl.style.display = 'flex';
+            heroStatusEl.style.flexDirection = 'row';
+            heroStatusEl.style.gap = '6px';
             
             heroes.forEach((hero, i) => {
                 const statusDiv = document.createElement('div');
                 statusDiv.className = 'hero-status' + (i === battle.currentHeroIndex && battle.phase !== 'enemyTurn' ? ' active' : '');
                 const hpPercent = Math.max(0, (hero.hp / (hero.maxHp + inventory.hpBoost)) * 100);
                 const mpPercent = Math.max(0, (hero.mp / hero.maxMp) * 100);
+                
                 statusDiv.innerHTML = `
-                    <div class="hero-name">${hero.name}</div>
-                    <div class="hero-stats">
-                        <div class="stat-bar-container hp-bar">
-                            <span class="stat-label">HP</span>
-                            <div class="stat-bar">
-                                <div class="stat-bar-fill" style="width: ${hpPercent}%;"></div>
-                            </div>
-                            <span class="stat-value">${Math.max(0, hero.hp)}/${hero.maxHp + inventory.hpBoost}</span>
-                        </div>
-                        <div class="stat-bar-container mp-bar">
-                            <span class="stat-label">MP</span>
-                            <div class="stat-bar">
-                                <div class="stat-bar-fill" style="width: ${mpPercent}%;"></div>
-                            </div>
-                            <span class="stat-value">${hero.mp}/${hero.maxMp}</span>
-                        </div>
-                    </div>
+                    <span class="hero-name">${hero.name}</span>
+                    <span class="stat-bar-container hp-bar">
+                        <span class="stat-label">HP</span>
+                        <span class="stat-bar">
+                            <span class="stat-bar-fill" style="width: ${hpPercent}%;"></span>
+                        </span>
+                        <span class="stat-value">${Math.max(0, Math.floor(hero.hp))}/${hero.maxHp + inventory.hpBoost}</span>
+                    </span>
+                    <span class="stat-bar-container mp-bar">
+                        <span class="stat-label">MP</span>
+                        <span class="stat-bar">
+                            <span class="stat-bar-fill" style="width: ${mpPercent}%;"></span>
+                        </span>
+                        <span class="stat-value">${hero.mp}/${hero.maxMp}</span>
+                    </span>
+                `;
+                heroStatusEl.appendChild(statusDiv);
+            });
+                        <span class="stat-value">${Math.max(0, hero.hp)}/${hero.maxHp + inventory.hpBoost}</span>
+                    </span>
+                    <span class="stat-bar-container mp-bar">
+                        <span class="stat-label">MP</span>
+                        <span class="stat-bar">
+                            <span class="stat-bar-fill" style="width: ${mpPercent}%;"></span>
+                        </span>
+                        <span class="stat-value">${hero.mp}/${hero.maxMp}</span>
+                    </span>
                 `;
                 heroStatusEl.appendChild(statusDiv);
             });
@@ -3951,32 +3984,38 @@
             const actionsEl = document.getElementById('battle-actions');
             if (battle.phase === 'menu') {
                 const hero = heroes[battle.currentHeroIndex];
+                // Shorten attack names for compact display
+                let specialShort = hero.specialAttack;
+                if (specialShort === "Rosary Throw") specialShort = "Rosary";
+                else if (specialShort === "Heavenly Host") specialShort = "Angels";
+                else if (specialShort === "Divine Charge") specialShort = "Charge";
+                
                 actionsEl.innerHTML = `
-                    <button class="battle-btn selected" onclick="selectBattleAction('attack')">Attack</button>
-                    <button class="battle-btn" onclick="selectBattleAction('special')">${hero.specialAttack} (${hero.specialCost} MP)</button>
-                    <button class="battle-btn" onclick="selectBattleAction('prayer')">Call Saints (10 MP)</button>
-                    <button class="battle-btn" onclick="selectBattleAction('item')">Item</button>
-                    <button class="battle-btn" onclick="selectBattleAction('flee')">Flee</button>
+                    <button class="battle-btn selected" onclick="selectBattleAction('attack')">Atk</button>
+                    <button class="battle-btn" onclick="selectBattleAction('special')">${specialShort} (${hero.specialCost})</button>
+                    <button class="battle-btn" onclick="selectBattleAction('prayer')">Litany (10)</button>
+                    <button class="battle-btn" onclick="selectBattleAction('item')">Itm</button>
+                    <button class="battle-btn" onclick="selectBattleAction('flee')">Run</button>
                 `;
             } else if (battle.phase === 'target') {
                 const targetEnemy = battle.enemies[battle.targetIndex];
                 const enemyName = targetEnemy ? targetEnemy.name : 'Enemy';
                 actionsEl.innerHTML = `
-                    <div style="padding: 6px; background: rgba(231, 76, 60, 0.2); border: 1px solid rgba(231, 76, 60, 0.4); border-radius: 3px; margin-bottom: 4px; text-align: center;">
-                        <div style="font-weight: bold; color: #e74c3c; text-shadow: 2px 2px 4px rgba(0, 0, 0, 1);">TARGET:</div>
-                        <div style="font-weight: bold; color: #ecf0f1; text-shadow: 2px 2px 4px rgba(0, 0, 0, 1); font-size: clamp(10px, 1.5vw, 12px);">${enemyName}</div>
+                    <div style="padding: 2px 4px; background: rgba(231, 76, 60, 0.1); border: 0.5px solid rgba(231, 76, 60, 0.3); border-radius: 2px; margin-bottom: 1px; text-align: center; display: inline-block;">
+                        <span style="font-weight: bold; color: #e74c3c; text-shadow: 1px 1px 2px rgba(0, 0, 0, 1); font-size: 5px;">TARGET: </span>
+                        <span style="font-weight: bold; color: #ecf0f1; text-shadow: 1px 1px 2px rgba(0, 0, 0, 1); font-size: 5px;">${enemyName}</span>
                     </div>
-                    <button class="battle-btn" onclick="changeTarget(-1)">◀ Prev</button>
-                    <button class="battle-btn selected" onclick="confirmTarget()">Confirm</button>
-                    <button class="battle-btn" onclick="changeTarget(1)">Next ▶</button>
-                    <button class="battle-btn" onclick="cancelTarget()">Back</button>
+                    <button class="battle-btn" onclick="changeTarget(-1)">◀</button>
+                    <button class="battle-btn selected" onclick="confirmTarget()">✓</button>
+                    <button class="battle-btn" onclick="changeTarget(1)">▶</button>
+                    <button class="battle-btn" onclick="cancelTarget()">✕</button>
                 `;
             } else if (battle.phase === 'item') {
                 actionsEl.innerHTML = `
-                    <button class="battle-btn" onclick="useItem('holyWater')">Holy Water (${inventory.holyWater})</button>
-                    <button class="battle-btn" onclick="useItem('rosary')">Rosary (${inventory.rosaries})</button>
-                    <button class="battle-btn" onclick="useItem('divineElixir')">Divine Elixir (${inventory.divineElixirs})</button>
-                    <button class="battle-btn selected" onclick="battle.phase='menu'; updateBattleUI();">Back</button>
+                    <button class="battle-btn" onclick="useItem('holyWater')">H2O (${inventory.holyWater})</button>
+                    <button class="battle-btn" onclick="useItem('rosary')">Ros (${inventory.rosaries})</button>
+                    <button class="battle-btn" onclick="useItem('divineElixir')">Elx (${inventory.divineElixirs})</button>
+                    <button class="battle-btn selected" onclick="battle.phase='menu'; updateBattleUI();">✕</button>
                 `;
             }
             
@@ -4013,7 +4052,7 @@
             const hero = heroes[battle.currentHeroIndex];
             
             if (hero.mp >= 10) {
-                const damage = 20 + Math.floor(Math.random() * 10);
+                const damage = 40 + Math.floor(Math.random() * 20); // Enhanced from 20-30 to 40-60
                 let enemiesHit = 0;
                 
                 battle.enemies.forEach((enemy, i) => {
@@ -4056,7 +4095,7 @@
                 });
                 
                 hero.mp -= 10;
-                battle.log.push(`${hero.name} calls upon the Saints! ${damage} holy damage to all foes!`);
+                battle.log.push(`${hero.name} prays the Litany of the Saints! ${damage} holy damage to all foes!`);
                 
                 // All heroes glow
                 battleHeroModels.forEach(heroModel => {
@@ -4727,6 +4766,153 @@
         let jesusModel = null;
         let gardenPlayerModel = null;
         let gardenWalkProgress = 0;
+        
+        // Advanced Animation System (2010+ techniques)
+        const AnimationSystem = {
+            particles: [],
+            tweens: [],
+            
+            // Particle System for visual effects
+            createParticleEffect(position, color, count = 20, type = 'burst') {
+                if (!battleScene) return; // Safety check
+                
+                for (let i = 0; i < count; i++) {
+                    const particle = {
+                        mesh: new THREE.Mesh(
+                            new THREE.SphereGeometry(0.1, 8, 8),
+                            new THREE.MeshStandardMaterial({
+                                color: color,
+                                emissive: color,
+                                emissiveIntensity: 1,
+                                transparent: true,
+                                opacity: 1
+                            })
+                        ),
+                        velocity: type === 'burst' ? 
+                            new THREE.Vector3(
+                                (Math.random() - 0.5) * 0.3,
+                                Math.random() * 0.3,
+                                (Math.random() - 0.5) * 0.3
+                            ) :
+                            new THREE.Vector3(0, Math.random() * 0.2, 0),
+                        life: 1.0,
+                        decay: 0.02
+                    };
+                    particle.mesh.position.copy(position);
+                    battleScene.add(particle.mesh);
+                    this.particles.push(particle);
+                }
+            },
+            
+            // Smooth tween animation (easing functions)
+            tween(object, targetProps, duration, easing = 'easeOutQuad') {
+                if (!object || !targetProps) return null; // Safety check
+                
+                const startProps = {};
+                const deltaProps = {};
+                
+                for (let prop in targetProps) {
+                    if (object[prop] === undefined) continue; // Skip undefined properties
+                    startProps[prop] = object[prop];
+                    deltaProps[prop] = targetProps[prop] - startProps[prop];
+                }
+                
+                const tween = {
+                    object,
+                    startProps,
+                    deltaProps,
+                    duration,
+                    elapsed: 0,
+                    easing,
+                    completed: false
+                };
+                
+                this.tweens.push(tween);
+                return tween;
+            },
+            
+            // Update all animations
+            update(dt) {
+                try {
+                    // Update particles
+                    for (let i = this.particles.length - 1; i >= 0; i--) {
+                        const p = this.particles[i];
+                        if (!p || !p.mesh) continue; // Safety check
+                        
+                        p.mesh.position.add(p.velocity);
+                        p.velocity.y -= 0.01; // Gravity
+                        p.life -= p.decay;
+                        
+                        if (p.mesh.material) {
+                            p.mesh.material.opacity = p.life;
+                        }
+                        
+                        if (p.life <= 0) {
+                            if (battleScene && p.mesh) {
+                                battleScene.remove(p.mesh);
+                                // Dispose geometry and material
+                                if (p.mesh.geometry) p.mesh.geometry.dispose();
+                                if (p.mesh.material) p.mesh.material.dispose();
+                            }
+                            this.particles.splice(i, 1);
+                        }
+                    }
+                    
+                    // Update tweens
+                    for (let i = this.tweens.length - 1; i >= 0; i--) {
+                        const t = this.tweens[i];
+                        if (!t || !t.object) continue; // Safety check
+                        
+                        t.elapsed += dt;
+                        
+                        const progress = Math.min(t.elapsed / t.duration, 1);
+                        const easedProgress = this.ease(progress, t.easing);
+                        
+                        for (let prop in t.deltaProps) {
+                            if (t.object[prop] !== undefined) {
+                                t.object[prop] = t.startProps[prop] + t.deltaProps[prop] * easedProgress;
+                            }
+                        }
+                        
+                        if (progress >= 1) {
+                            t.completed = true;
+                            this.tweens.splice(i, 1);
+                        }
+                    }
+                } catch (error) {
+                    console.error("AnimationSystem update error:", error);
+                    // Don't let animation errors break the game
+                }
+            },
+            
+            // Easing functions
+            ease(t, type) {
+                switch(type) {
+                    case 'easeInQuad': return t * t;
+                    case 'easeOutQuad': return t * (2 - t);
+                    case 'easeInOutQuad': return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+                    case 'easeInCubic': return t * t * t;
+                    case 'easeOutCubic': return (--t) * t * t + 1;
+                    case 'easeInOutCubic': return t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1;
+                    case 'easeInElastic': return Math.sin(13 * Math.PI / 2 * t) * Math.pow(2, 10 * (t - 1));
+                    case 'easeOutElastic': return Math.sin(-13 * Math.PI / 2 * (t + 1)) * Math.pow(2, -10 * t) + 1;
+                    case 'easeOutBounce': 
+                        if (t < 1 / 2.75) return 7.5625 * t * t;
+                        else if (t < 2 / 2.75) return 7.5625 * (t -= 1.5 / 2.75) * t + 0.75;
+                        else if (t < 2.5 / 2.75) return 7.5625 * (t -= 2.25 / 2.75) * t + 0.9375;
+                        else return 7.5625 * (t -= 2.625 / 2.75) * t + 0.984375;
+                    default: return t; // Linear
+                }
+            },
+            
+            clear() {
+                this.particles.forEach(p => {
+                    if (battleScene) battleScene.remove(p.mesh);
+                });
+                this.particles = [];
+                this.tweens = [];
+            }
+        };
 
         function createGardenOfEden() {
             try {
@@ -4758,7 +4944,7 @@
                 // Create garden scene with cinematic atmosphere
                 gardenScene = new THREE.Scene();
                 gardenScene.background = new THREE.Color(0xffd4a3); // Golden sky
-                gardenScene.fog = new THREE.FogExp2(0xffd4a3, 0.008); // Atmospheric depth
+                gardenScene.fog = new THREE.FogExp2(0xffd4a3, 0.003); // Reduced fog for better visibility
                 
                 // Ground - photorealistic lush green grass (reduced for compact Garden)
                 const groundGeometry = new THREE.PlaneGeometry(60, 60, 50, 50);
@@ -4819,128 +5005,145 @@
                 
                 console.log("Artifacts added, adding vegetation...");
                 
-            // Remove Bible passage stands to keep it simpler and more compact
-            
-            // Reduced vegetation for 5-minute exploration
-            // Oak trees - fewer but strategic placement
-            for (let i = 0; i < 8; i++) {
-                createOakTree(-10 + (i % 2) * 20, 0, -5 - i * 5);
-            }
-            
-            // Palm trees - tropical beauty (reduced)
-            for (let i = 0; i < 6; i++) {
-                createPalmTree(-12 + (i % 2) * 24, 0, -10 - i * 6);
-            }
-            
-            // Cypress trees - tall and elegant (reduced)
-            for (let i = 0; i < 6; i++) {
-                createCypressTree(10 + (i % 2) * -20, 0, -8 - i * 6);
-            }
-            
-            // Fruit trees (apple, olive) - modest garden (reduced)
-            for (let i = 0; i < 12; i++) {
-                const x = -12 + (i % 3) * 12;
-                const z = -5 - i * 3;
-                if (i % 2 === 0) {
-                    createFruitTree(x, 0, z, 0xFF0000); // Red apples
-                } else {
-                    createFruitTree(x, 0, z, 0x808000); // Olive
+                // Remove Bible passage stands to keep it simpler and more compact
+                
+                // Reduced vegetation for 5-minute exploration
+                // Oak trees - fewer but strategic placement
+                for (let i = 0; i < 8; i++) {
+                    createOakTree(-10 + (i % 2) * 20, 0, -5 - i * 5);
                 }
-            }
-            
-            // Beautiful flowers - modest Paradise garden (reduced from 400 to 100)
-            const flowerTypes = [
-                { color: 0xFF69B4, name: 'Rose' },
-                { color: 0xFFFF00, name: 'Sunflower' },
-                { color: 0xFF0000, name: 'Poppy' },
-                { color: 0xFF00FF, name: 'Orchid' },
-                { color: 0xFFA500, name: 'Marigold' },
-                { color: 0x9370DB, name: 'Lavender' },
-                { color: 0xFFFFFF, name: 'Lily' },
-                { color: 0x0000FF, name: 'Bluebell' },
-                { color: 0xFF1493, name: 'Carnation' }
-            ];
-            
-            for (let i = 0; i < 100; i++) {
-                const flowerType = flowerTypes[Math.floor(Math.random() * flowerTypes.length)];
-                createFlower(
-                    -20 + Math.random() * 40,
-                    0.15,
-                    -2 + Math.random() * -40,
-                    flowerType.color
+                
+                // Palm trees - tropical beauty (reduced)
+                for (let i = 0; i < 6; i++) {
+                    createPalmTree(-12 + (i % 2) * 24, 0, -10 - i * 6);
+                }
+                
+                // Cypress trees - tall and elegant (reduced)
+                for (let i = 0; i < 6; i++) {
+                    createCypressTree(10 + (i % 2) * -20, 0, -8 - i * 6);
+                }
+                
+                // Fruit trees (apple, olive) - modest garden (reduced)
+                for (let i = 0; i < 12; i++) {
+                    const x = -12 + (i % 3) * 12;
+                    const z = -5 - i * 3;
+                    if (i % 2 === 0) {
+                        createFruitTree(x, 0, z, 0xFF0000); // Red apples
+                    } else {
+                        createFruitTree(x, 0, z, 0x808000); // Olive
+                    }
+                }
+                
+                // Beautiful flowers - modest Paradise garden (reduced from 400 to 100)
+                const flowerTypes = [
+                    { color: 0xFF69B4, name: 'Rose' },
+                    { color: 0xFFFF00, name: 'Sunflower' },
+                    { color: 0xFF0000, name: 'Poppy' },
+                    { color: 0xFF00FF, name: 'Orchid' },
+                    { color: 0xFFA500, name: 'Marigold' },
+                    { color: 0x9370DB, name: 'Lavender' },
+                    { color: 0xFFFFFF, name: 'Lily' },
+                    { color: 0x0000FF, name: 'Bluebell' },
+                    { color: 0xFF1493, name: 'Carnation' }
+                ];
+                
+                for (let i = 0; i < 100; i++) {
+                    const flowerType = flowerTypes[Math.floor(Math.random() * flowerTypes.length)];
+                    createFlower(
+                        -20 + Math.random() * 40,
+                        0.15,
+                        -2 + Math.random() * -40,
+                        flowerType.color
+                    );
+                }
+                
+                // Bushes and shrubs - reduced
+                for (let i = 0; i < 25; i++) {
+                    createBush(-18 + Math.random() * 36, 0, -2 - Math.random() * 40);
+                }
+                
+                // Flowering vines - reduced
+                for (let i = 0; i < 8; i++) {
+                    createVine(-12 + (i % 2) * 24, 0, -6 - i * 5);
+                }
+                
+                // Garden rocks - reduced
+                for (let i = 0; i < 20; i++) {
+                    createRock(-18 + Math.random() * 36, 0, -2 - Math.random() * 40);
+                }
+                
+                console.log("Vegetation added, adding lighting...");
+                
+                // Lighting - Photorealistic golden hour lighting
+                const ambientLight = new THREE.AmbientLight(0xffffee, 0.5);
+                gardenScene.add(ambientLight);
+                
+                // Main sun with realistic color temperature
+                const sunLight = new THREE.DirectionalLight(0xfff5e6, 3.0);
+                sunLight.position.set(15, 30, 10);
+                sunLight.castShadow = true;
+                sunLight.shadow.mapSize.width = 4096;
+                sunLight.shadow.mapSize.height = 4096;
+                sunLight.shadow.camera.left = -80;
+                sunLight.shadow.camera.right = 80;
+                sunLight.shadow.camera.top = 80;
+                sunLight.shadow.camera.bottom = -80;
+                sunLight.shadow.camera.near = 0.5;
+                sunLight.shadow.camera.far = 200;
+                sunLight.shadow.bias = -0.00001;
+                gardenScene.add(sunLight);
+                
+                // Hemisphere light for realistic sky/ground bounce lighting
+                const hemisphereLight = new THREE.HemisphereLight(0x87CEEB, 0x5D8C3E, 1.0);
+                gardenScene.add(hemisphereLight);
+                
+                // Warm fill light (simulating bounced sunlight)
+                const fillLight = new THREE.DirectionalLight(0xffe4b5, 0.8);
+                fillLight.position.set(-10, 20, -10);
+                gardenScene.add(fillLight);
+                
+                // Subtle rim light for depth
+                const rimLight = new THREE.DirectionalLight(0xffd700, 0.4);
+                rimLight.position.set(10, 10, -20);
+                gardenScene.add(rimLight);
+                
+                console.log("Lighting added, creating models...");
+                
+                // Create Jesus model at the end of the path
+                jesusModel = createJesusModel();
+                jesusModel.position.set(0, 0, -95);
+                jesusModel.rotation.y = Math.PI;
+                gardenScene.add(jesusModel);
+                
+                // Create player model
+                gardenPlayerModel = createPlayerModel();
+                gardenPlayerModel.position.set(0, 0, 5);
+                gardenPlayerModel.rotation.y = Math.PI;
+                gardenScene.add(gardenPlayerModel);
+                
+                // Camera setup
+                gardenCamera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+                gardenCamera.position.set(0, 2.5, 10);
+                gardenCamera.lookAt(0, 1, 5);
+                
+                // TEST: Add a bright sphere to verify garden is rendering
+                const testSphere = new THREE.Mesh(
+                    new THREE.SphereGeometry(2, 32, 32),
+                    new THREE.MeshStandardMaterial({ 
+                        color: 0xFF0000, 
+                        emissive: 0xFF0000,
+                        emissiveIntensity: 1
+                    })
                 );
-            }
-            
-            // Bushes and shrubs - reduced
-            for (let i = 0; i < 25; i++) {
-                createBush(-18 + Math.random() * 36, 0, -2 - Math.random() * 40);
-            }
-            
-            // Flowering vines - reduced
-            for (let i = 0; i < 8; i++) {
-                createVine(-12 + (i % 2) * 24, 0, -6 - i * 5);
-            }
-            
-            // Garden rocks - reduced
-            for (let i = 0; i < 20; i++) {
-                createRock(-18 + Math.random() * 36, 0, -2 - Math.random() * 40);
-            }
-            
-            // Lighting - Photorealistic golden hour lighting
-            const ambientLight = new THREE.AmbientLight(0xffffee, 0.5);
-            gardenScene.add(ambientLight);
-            
-            // Main sun with realistic color temperature
-            const sunLight = new THREE.DirectionalLight(0xfff5e6, 3.0);
-            sunLight.position.set(15, 30, 10);
-            sunLight.castShadow = true;
-            sunLight.shadow.mapSize.width = 4096;
-            sunLight.shadow.mapSize.height = 4096;
-            sunLight.shadow.camera.left = -80;
-            sunLight.shadow.camera.right = 80;
-            sunLight.shadow.camera.top = 80;
-            sunLight.shadow.camera.bottom = -80;
-            sunLight.shadow.camera.near = 0.5;
-            sunLight.shadow.camera.far = 200;
-            sunLight.shadow.bias = -0.00001;
-            gardenScene.add(sunLight);
-            
-            // Hemisphere light for realistic sky/ground bounce lighting
-            const hemisphereLight = new THREE.HemisphereLight(0x87CEEB, 0x5D8C3E, 1.0);
-            gardenScene.add(hemisphereLight);
-            
-            // Warm fill light (simulating bounced sunlight)
-            const fillLight = new THREE.DirectionalLight(0xffe4b5, 0.8);
-            fillLight.position.set(-10, 20, -10);
-            gardenScene.add(fillLight);
-            
-            // Subtle rim light for depth
-            const rimLight = new THREE.DirectionalLight(0xffd700, 0.4);
-            rimLight.position.set(10, 10, -20);
-            gardenScene.add(rimLight);
-            
-            // Create Jesus model at the end of the path
-            jesusModel = createJesusModel();
-            jesusModel.position.set(0, 0, -95);
-            jesusModel.rotation.y = Math.PI;
-            gardenScene.add(jesusModel);
-            
-            // Create player model
-            gardenPlayerModel = createPlayerModel();
-            gardenPlayerModel.position.set(0, 0, 5);
-            gardenPlayerModel.rotation.y = Math.PI;
-            gardenScene.add(gardenPlayerModel);
-            
-            // Camera setup
-            gardenCamera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-            gardenCamera.position.set(0, 2.5, 10);
-            gardenCamera.lookAt(0, 1, 5);
-            
-            console.log("Garden of Eden created successfully!");
-            console.log("Garden scene children count:", gardenScene.children.length);
-            
-            // Show victory message
-            showVictoryMessage();
+                testSphere.position.set(0, 2, 0);
+                gardenScene.add(testSphere);
+                console.log("Added bright red test sphere at (0, 2, 0)");
+                
+                console.log("Garden of Eden created successfully!");
+                console.log("Garden scene children count:", gardenScene.children.length);
+                
+                // Show victory message
+                showVictoryMessage();
             } catch (error) {
                 console.error("Error creating Garden of Eden:", error);
                 console.error("Error stack:", error.stack);
@@ -6328,7 +6531,7 @@
                     </div>
                     <div style="color: #95a5a6; font-size: 11px; margin-bottom: 15px;">— Genesis 3:24</div>
                     <div style="color: #2ecc71; font-size: 16px; font-weight: bold; text-align: center; margin-bottom: 15px;">
-                        "Would you like to continue exploring this peaceful garden, or begin a new journey?"
+                        "Would you like to continue exploring this peaceful garden, or begin a new journey with the Divine Party?"
                     </div>
                 `;
                 
@@ -6347,7 +6550,7 @@
                         🌺 Keep Exploring
                     </button>
                     <button id="newgame-btn" style="padding: 12px 25px; font-size: 16px; font-weight: bold; background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; border: none; border-radius: 5px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
-                        ⚔️ New Game
+                        ⚔️ New Game+ (Divine Party!)
                     </button>
                 `;
                 quoteBox.appendChild(buttonContainer);
@@ -6763,6 +6966,11 @@
 
         // Game loop
         function update(dt) {
+            // Update advanced animation system
+            if (gameState === 'battle' && battleScene) {
+                AnimationSystem.update(dt);
+            }
+            
             if (gameState === 'explore') {
                 // Hide mobile interact button during dungeon exploration
                 if (isMobile) {
@@ -6928,10 +7136,27 @@
             }
         }
 
+        let lastFrameTime = performance.now();
+        let frameCount = 0;
+        let lastFPSUpdate = performance.now();
+
         function animate() {
             requestAnimationFrame(animate);
             
-            const dt = 0.016; // ~60fps
+            // Calculate real delta time for smooth 144 FPS
+            const currentTime = performance.now();
+            const dt = Math.min((currentTime - lastFrameTime) / 1000, 0.1); // Cap at 100ms to prevent huge jumps
+            lastFrameTime = currentTime;
+            
+            // Update FPS counter (once per second)
+            frameCount++;
+            if (currentTime - lastFPSUpdate >= 1000) {
+                const fps = Math.round((frameCount * 1000) / (currentTime - lastFPSUpdate));
+                document.getElementById('fps-counter').textContent = `FPS: ${fps}`;
+                frameCount = 0;
+                lastFPSUpdate = currentTime;
+            }
+            
             update(dt);
             
             if (gameState === 'battle' && battleScene && battleCamera) {
@@ -6940,6 +7165,12 @@
             } else if (gameState === 'garden' && gardenScene && gardenCamera) {
                 updateGardenWalk(dt);
                 renderer.render(gardenScene, gardenCamera);
+                // Debug: Log once that we're rendering the garden
+                if (!window.gardenRenderLogged) {
+                    console.log("Rendering Garden - Scene children:", gardenScene.children.length);
+                    console.log("Garden camera position:", gardenCamera.position);
+                    window.gardenRenderLogged = true;
+                }
             } else if (gameState === 'final' && gardenScene && gardenCamera) {
                 renderer.render(gardenScene, gardenCamera);
             } else {
