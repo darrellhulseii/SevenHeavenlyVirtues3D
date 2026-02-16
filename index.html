@@ -939,6 +939,7 @@
         <div><strong>Virtues:</strong> <span id="virtues">0</span>/7</div>
         <div><strong>Holy Water:</strong> <span id="water">3</span></div>
         <div><strong>Rosaries:</strong> <span id="rosary">2</span></div>
+        <div><strong>Divine Elixirs:</strong> <span id="elixirs">0</span></div>
         <div><strong>Gold:</strong> <span id="gold">0</span></div>
     </div>
 
@@ -1157,6 +1158,65 @@
             reference: "Matthew 18:6-8"
         };
 
+        // Mythical Creature Stat Boosts - Special permanent upgrades for defeating each creature
+        const MYTHICAL_REWARDS = {
+            "Vampire": {
+                name: "God's Blessing Against the Vampire",
+                description: "Through God's grace, you have vanquished the undead. This divine blessing strengthens your body and draws you closer to the Lord's eternal life.",
+                hpBoost: 25,
+                effect: "All Heroes: +25 Max HP"
+            },
+            "Werewolf": {
+                name: "God's Blessing Against the Werewolf",
+                description: "The Lord has delivered you from the beast's curse. His blessing empowers your righteous strikes and brings you closer to His divine strength.",
+                atkBoost: 5,
+                effect: "All Heroes: +5 ATK"
+            },
+            "Ghost": {
+                name: "God's Blessing Against the Ghost",
+                description: "God's protection shields you from the wandering spirit. This blessing fortifies your faith and draws you closer to His eternal peace.",
+                defBoost: 5,
+                effect: "All Heroes: +5 DEF"
+            },
+            "Succubus": {
+                name: "God's Blessing Against the Succubus",
+                description: "Through purity and prayer, you resisted temptation. God's blessing strengthens your resolve and brings you closer to His holy presence.",
+                hpBoost: 20,
+                defBoost: 3,
+                effect: "All Heroes: +20 Max HP, +3 DEF"
+            },
+            "Sasquatch": {
+                name: "God's Blessing Against the Sasquatch",
+                description: "The Lord granted you victory over the wild beast. His blessing channels divine power through you and draws you closer to His mighty hand.",
+                atkBoost: 7,
+                hpBoost: 15,
+                effect: "All Heroes: +7 ATK, +15 Max HP"
+            },
+            "Yeti": {
+                name: "God's Blessing Against the Yeti",
+                description: "God's warmth has melted the frozen terror. This divine blessing fortifies your spirit and brings you closer to His enduring love.",
+                hpBoost: 30,
+                defBoost: 5,
+                effect: "All Heroes: +30 Max HP, +5 DEF"
+            },
+            "Ogre": {
+                name: "God's Blessing Against the Ogre",
+                description: "With God's might, you felled the giant. His blessing empowers you with holy strength and draws you closer to His infinite power.",
+                atkBoost: 10,
+                hpBoost: 20,
+                defBoost: 5,
+                effect: "All Heroes: +10 ATK, +20 Max HP, +5 DEF"
+            },
+            "Jeffrey Epstein": {
+                name: "God's Blessing for Defending the Innocent",
+                description: "The Lord rewards those who protect His children from evil. This divine blessing strengthens your righteousness and brings you closer to God's perfect justice.",
+                atkBoost: 8,
+                defBoost: 8,
+                hpBoost: 40,
+                effect: "All Heroes: +8 ATK, +8 DEF, +40 Max HP"
+            }
+        };
+
         // Dungeon Themes - Different visual style for each level
         const DUNGEON_THEMES = {
             1: { 
@@ -1225,6 +1285,7 @@
         let gameState = 'title';
         let dungeonLevel = 1;
         let defeatedSins = new Set();
+        let defeatedMythicalCreatures = new Set(); // Track which mythical creatures have been defeated
         
         const inventory = {
             holyWater: 3,
@@ -1233,7 +1294,8 @@
             atkBoost: 0,
             defBoost: 0,
             hpBoost: 0,
-            virtueItems: []
+            virtueItems: [],
+            divineElixirs: 0  // Full party HP & MP restore
         };
 
         const heroes = [
@@ -2923,7 +2985,7 @@
             
             // Flame
             const flameGeometry = new THREE.ConeGeometry(0.3, 0.6, 8);
-            const flameMaterial = new THREE.MeshBasicMaterial({ 
+            const flameMaterial = new THREE.MeshStandardMaterial({ 
                 color: color,
                 emissive: color,
                 emissiveIntensity: 1
@@ -2995,7 +3057,11 @@
                 
                 // Red eyes
                 const eyeGeometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
-                const eyeMaterial = new THREE.MeshBasicMaterial({ color: 0xFF0000, emissive: 0xFF0000 });
+                const eyeMaterial = new THREE.MeshStandardMaterial({ 
+                    color: 0xFF0000, 
+                    emissive: 0xFF0000,
+                    emissiveIntensity: 1
+                });
                 const leftEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
                 leftEye.position.set(-0.15, 1.75, 0.25);
                 group.add(leftEye);
@@ -3033,7 +3099,11 @@
                 
                 // Yellow glowing eyes
                 const eyeGeometry = new THREE.SphereGeometry(0.1, 8, 8);
-                const eyeMaterial = new THREE.MeshBasicMaterial({ color: 0xFFFF00, emissive: 0xFFFF00 });
+                const eyeMaterial = new THREE.MeshStandardMaterial({ 
+                    color: 0xFFFF00, 
+                    emissive: 0xFFFF00,
+                    emissiveIntensity: 1
+                });
                 const leftEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
                 leftEye.position.set(-0.2, 1.8, 0.4);
                 group.add(leftEye);
@@ -3185,7 +3255,7 @@
                 
                 // Blue glowing eyes
                 const eyeGeometry = new THREE.SphereGeometry(0.1, 8, 8);
-                const eyeMaterial = new THREE.MeshBasicMaterial({ 
+                const eyeMaterial = new THREE.MeshStandardMaterial({ 
                     color: 0x00BFFF,
                     emissive: 0x00BFFF,
                     emissiveIntensity: 1
@@ -3243,7 +3313,7 @@
                 
                 // Red glowing eyes
                 const eyeGeometry = new THREE.SphereGeometry(0.12, 8, 8);
-                const eyeMaterial = new THREE.MeshBasicMaterial({ 
+                const eyeMaterial = new THREE.MeshStandardMaterial({ 
                     color: 0xFF0000,
                     emissive: 0xFF0000,
                     emissiveIntensity: 1
@@ -3314,7 +3384,7 @@
             
             // Sinister smile (red line)
             const smileGeometry = new THREE.BoxGeometry(0.25, 0.03, 0.03);
-            const smileMaterial = new THREE.MeshBasicMaterial({ 
+            const smileMaterial = new THREE.MeshStandardMaterial({ 
                 color: 0x8B0000,
                 emissive: 0xFF0000,
                 emissiveIntensity: 0.5
@@ -3365,7 +3435,30 @@
             document.getElementById('virtues').textContent = inventory.virtueItems.length;
             document.getElementById('water').textContent = inventory.holyWater;
             document.getElementById('rosary').textContent = inventory.rosaries;
+            document.getElementById('elixirs').textContent = inventory.divineElixirs;
             document.getElementById('gold').textContent = inventory.gold;
+        }
+
+        function levelUpHeroes() {
+            // Each level-up gives permanent stat increases to all heroes
+            // Stats scale with dungeon level for more dramatic progression
+            const levelMultiplier = 1 + (dungeonLevel - 1) * 0.2; // 1x at level 1, 1.2x at 2, 1.4x at 3, etc.
+            
+            const hpIncrease = Math.floor(15 * levelMultiplier);
+            const mpIncrease = Math.floor(5 * levelMultiplier);
+            const atkIncrease = Math.floor(3 * levelMultiplier);
+            const defIncrease = Math.floor(2 * levelMultiplier);
+            
+            heroes.forEach(hero => {
+                hero.maxHp += hpIncrease;
+                hero.hp += hpIncrease; // Also heal them
+                hero.maxMp += mpIncrease;
+                hero.mp += mpIncrease; // Also restore MP
+                hero.atk += atkIncrease;
+                hero.def += defIncrease;
+            });
+            
+            return `All Heroes: +${hpIncrease} Max HP, +${mpIncrease} Max MP, +${atkIncrease} ATK, +${defIncrease} DEF`;
         }
 
         function showMessage(text, duration = 3000) {
@@ -3882,6 +3975,7 @@
                 actionsEl.innerHTML = `
                     <button class="battle-btn" onclick="useItem('holyWater')">Holy Water (${inventory.holyWater})</button>
                     <button class="battle-btn" onclick="useItem('rosary')">Rosary (${inventory.rosaries})</button>
+                    <button class="battle-btn" onclick="useItem('divineElixir')">Divine Elixir (${inventory.divineElixirs})</button>
                     <button class="battle-btn selected" onclick="battle.phase='menu'; updateBattleUI();">Back</button>
                 `;
             }
@@ -4289,6 +4383,16 @@
                 battle.log.push(`${hero.name} prays! Divine light strikes all foes!`);
                 updateHUD();
                 nextTurn();
+            } else if (itemType === 'divineElixir' && inventory.divineElixirs > 0) {
+                // Restore full HP and MP to entire party
+                heroes.forEach(h => {
+                    h.hp = h.maxHp + inventory.hpBoost;
+                    h.mp = h.maxMp;
+                });
+                inventory.divineElixirs--;
+                battle.log.push(`${hero.name} uses Divine Elixir! All heroes fully restored!`);
+                updateHUD();
+                nextTurn();
             } else {
                 battle.log.push('No items!');
                 updateBattleUI();
@@ -4396,16 +4500,63 @@
                     return;
                 }
                 
-                // Mythical creatures give rewards but don't progress the level
+                // Mythical creatures give special stat boosts and don't progress the level
                 if (isMythicalCreature) {
                     // Give gold reward for defeating mythical creature
                     const goldReward = 50 + dungeonLevel * 10;
                     inventory.gold += goldReward;
                     
-                    showViceTeaching(battle.enemies[0].vice, () => {
-                        showMessage(`Victory! Earned ${goldReward} gold from ${viceName}!`, 3000);
-                        gameState = 'explore';
-                    });
+                    // Always give 3 Divine Elixirs for defeating mythical creatures
+                    inventory.divineElixirs += 3;
+                    
+                    // Check if this mythical creature was already defeated (can't get stat boost twice)
+                    const alreadyDefeated = defeatedMythicalCreatures.has(viceName);
+                    
+                    if (!alreadyDefeated) {
+                        // Mark as defeated
+                        defeatedMythicalCreatures.add(viceName);
+                        
+                        // Apply special stat boost for this mythical creature (first time only)
+                        const mythicalReward = MYTHICAL_REWARDS[viceName];
+                        if (mythicalReward) {
+                            // Apply HP boost
+                            if (mythicalReward.hpBoost) {
+                                inventory.hpBoost += mythicalReward.hpBoost;
+                                heroes.forEach(hero => {
+                                    hero.maxHp += mythicalReward.hpBoost;
+                                    hero.hp += mythicalReward.hpBoost; // Also heal them
+                                });
+                            }
+                            
+                            // Apply ATK boost
+                            if (mythicalReward.atkBoost) {
+                                inventory.atkBoost += mythicalReward.atkBoost;
+                            }
+                            
+                            // Apply DEF boost
+                            if (mythicalReward.defBoost) {
+                                inventory.defBoost += mythicalReward.defBoost;
+                            }
+                            
+                            // Show special reward screen (includes Divine Elixirs notification)
+                            showMythicalReward(mythicalReward, goldReward, () => {
+                                showViceTeaching(battle.enemies[0].vice, () => {
+                                    gameState = 'explore';
+                                });
+                            });
+                        } else {
+                            showViceTeaching(battle.enemies[0].vice, () => {
+                                showMessage(`Victory! Earned ${goldReward} gold from ${viceName}!`, 3000);
+                                gameState = 'explore';
+                            });
+                        }
+                    } else {
+                        // Already defeated this creature - give gold and elixirs but not stat boost
+                        showViceTeaching(battle.enemies[0].vice, () => {
+                            showMessage(`Victory! Earned ${goldReward} gold + 3 Divine Elixirs from ${viceName}! (Already received stat boost)`, 4000);
+                            gameState = 'explore';
+                        });
+                    }
                     return;
                 }
                 
@@ -4419,8 +4570,13 @@
                             showViceTeaching(battle.enemies[0].vice, () => {
                                 showMessage('All Sins defeated! The Devil awaits...', 4000);
                                 dungeonLevel++;
-                                generateDungeon(true);
-                                gameState = 'explore';
+                                // Level up heroes
+                                const statGains = levelUpHeroes();
+                                showMessage(`Level Up! ${statGains}`, 3000);
+                                setTimeout(() => {
+                                    generateDungeon(true);
+                                    gameState = 'explore';
+                                }, 3000);
                             });
                         });
                         return;
@@ -4431,9 +4587,13 @@
                     const virtueItem = VIRTUE_ITEMS[viceName];
                     showVirtueItemReceived(virtueItem, () => {
                         showViceTeaching(battle.enemies[0].vice, () => {
-                            showMessage(`Victory! Level ${dungeonLevel}`, 3000);
-                            generateDungeon();
-                            gameState = 'explore';
+                            // Level up heroes
+                            const statGains = levelUpHeroes();
+                            showMessage(`Victory! Level ${dungeonLevel} - ${statGains}`, 4000);
+                            setTimeout(() => {
+                                generateDungeon();
+                                gameState = 'explore';
+                            }, 4000);
                         });
                     });
                 } else {
@@ -4446,6 +4606,7 @@
             } else {
                 dungeonLevel = 1;
                 defeatedSins.clear();
+                defeatedMythicalCreatures.clear(); // Reset mythical creature defeats
                 showMessage('Defeated! Starting over...', 3000);
                 inventory.holyWater = 3;
                 inventory.rosaries = 2;
@@ -4454,6 +4615,7 @@
                 inventory.defBoost = 0;
                 inventory.hpBoost = 0;
                 inventory.virtueItems = [];
+                inventory.divineElixirs = 0;
                 generateDungeon();
                 gameState = 'explore';
             }
@@ -4472,6 +4634,46 @@
                 </div>
                 <div style="color: #95a5a6; font-size: 12px; line-height: 1.4;">
                     This sacred item strengthens your heroes!
+                </div>
+            `;
+            document.getElementById('quote-author').textContent = '';
+            document.getElementById('quote-overlay').style.display = 'flex';
+            
+            const btn = document.getElementById('quote-continue');
+            btn.textContent = 'Continue';
+            const handler = () => {
+                document.getElementById('quote-overlay').style.display = 'none';
+                btn.removeEventListener('click', handler);
+                callback();
+            };
+            btn.addEventListener('click', handler);
+        }
+
+        function showMythicalReward(reward, gold, callback) {
+            document.getElementById('quote-text').innerHTML = `
+                <div style="color: #ffd700; font-size: 22px; font-weight: bold; margin-bottom: 15px;">
+                    ✝️ DIVINE BLESSING RECEIVED ✝️
+                </div>
+                <div style="color: #3498db; font-size: 17px; font-weight: bold; margin-bottom: 12px; line-height: 1.3;">
+                    ${reward.name}
+                </div>
+                <div style="color: #ecf0f1; font-size: 13px; line-height: 1.6; margin-bottom: 15px; text-align: left;">
+                    ${reward.description}
+                </div>
+                <div style="color: #2ecc71; font-size: 16px; font-weight: bold; margin-bottom: 10px;">
+                    ${reward.effect}
+                </div>
+                <div style="color: #f39c12; font-size: 14px; margin-top: 12px;">
+                    💰 +${gold} Gold
+                </div>
+                <div style="color: #3498db; font-size: 14px; margin-top: 8px;">
+                    ✨ +3 Divine Elixirs (Full Party HP & MP Restore)
+                </div>
+                <div style="color: #9b59b6; font-size: 12px; line-height: 1.5; margin-top: 15px; font-style: italic;">
+                    "Draw near to God, and He will draw near to you."
+                </div>
+                <div style="color: #95a5a6; font-size: 10px; margin-top: 5px;">
+                    — James 4:8
                 </div>
             `;
             document.getElementById('quote-author').textContent = '';
@@ -4527,91 +4729,96 @@
         let gardenWalkProgress = 0;
 
         function createGardenOfEden() {
-            gameState = 'garden';
-            
-            // Hide battle UI
-            document.getElementById('battle-ui').style.display = 'none';
-            document.getElementById('battle-status').style.display = 'none';
-            document.getElementById('enemy-status').style.display = 'none';
-            
-            // Hide dungeon UI elements
-            document.getElementById('hud').style.display = 'none';
-            document.getElementById('crosshair').style.display = 'none';
-            
-            // Clear and hide the dungeon scene
-            if (scene) {
-                // Hide the dungeon player model if it exists
-                if (playerModel && scene.children.includes(playerModel)) {
-                    playerModel.visible = false;
-                }
-                // Hide all dungeon elements
-                scene.traverse((object) => {
-                    if (object.isMesh) {
-                        object.visible = false;
+            try {
+                gameState = 'garden';
+                
+                // Hide battle UI
+                document.getElementById('battle-ui').style.display = 'none';
+                document.getElementById('battle-status').style.display = 'none';
+                document.getElementById('enemy-status').style.display = 'none';
+                
+                // Hide dungeon UI elements
+                document.getElementById('hud').style.display = 'none';
+                document.getElementById('crosshair').style.display = 'none';
+                
+                // Clear and hide the dungeon scene
+                if (scene) {
+                    // Hide the dungeon player model if it exists
+                    if (playerModel && scene.children.includes(playerModel)) {
+                        playerModel.visible = false;
                     }
+                    // Hide all dungeon elements
+                    scene.traverse((object) => {
+                        if (object.isMesh) {
+                            object.visible = false;
+                        }
+                    });
+                }
+                
+                // Create garden scene with cinematic atmosphere
+                gardenScene = new THREE.Scene();
+                gardenScene.background = new THREE.Color(0xffd4a3); // Golden sky
+                gardenScene.fog = new THREE.FogExp2(0xffd4a3, 0.008); // Atmospheric depth
+                
+                // Ground - photorealistic lush green grass (reduced for compact Garden)
+                const groundGeometry = new THREE.PlaneGeometry(60, 60, 50, 50);
+                const groundMaterial = new THREE.MeshStandardMaterial({ 
+                    color: 0x2d5016,
+                    roughness: 0.95,
+                    metalness: 0.0,
+                    envMapIntensity: 0.3
                 });
-            }
-            
-            // Create garden scene with cinematic atmosphere
-            gardenScene = new THREE.Scene();
-            gardenScene.background = new THREE.Color(0xffd4a3); // Golden sky
-            gardenScene.fog = new THREE.FogExp2(0xffd4a3, 0.008); // Atmospheric depth
-            
-            // Ground - photorealistic lush green grass (reduced for compact Garden)
-            const groundGeometry = new THREE.PlaneGeometry(60, 60, 50, 50);
-            const groundMaterial = new THREE.MeshStandardMaterial({ 
-                color: 0x2d5016,
-                roughness: 0.95,
-                metalness: 0.0,
-                envMapIntensity: 0.3
-            });
-            const ground = new THREE.Mesh(groundGeometry, groundMaterial);
-            ground.rotation.x = -Math.PI / 2;
-            ground.receiveShadow = true;
-            gardenScene.add(ground);
-            
-            // Path with realistic dirt/stone texture (reduced for compact Garden)
-            const pathGeometry = new THREE.PlaneGeometry(5, 60, 25, 25);
-            const pathMaterial = new THREE.MeshStandardMaterial({ 
-                color: 0xD2B48C,
-                roughness: 0.92,
-                metalness: 0.0,
-                envMapIntensity: 0.2
-            });
-            const path = new THREE.Mesh(pathGeometry, pathMaterial);
-            path.rotation.x = -Math.PI / 2;
-            path.position.y = 0.05;
-            path.receiveShadow = true;
-            gardenScene.add(path);
-            
-            // ENTRANCE - Beatitudes Plaque at start
-            createBeatitudesPlaque();
-            
-            // LEFT SIDE - Biblical Artifacts
-            createTenCommandments(-5, 0, -8);  // Ten Commandments
-            createStaffOfAaron(-5, 0, -14);    // Staff of Aaron
-            createManna(-5, 0, -20);           // Manna from Heaven (NEW)
-            createArkOfCovenant(-5, 0, -26);   // Ark of the Covenant
-            
-            // RIGHT SIDE - Biblical Figures
-            createMosesStatue(5, 0, -8);       // Moses
-            createElijahStatue(5, 0, -14);     // Elijah
-            createMotherMaryStatue(5, 0, -20); // Mother Mary
-            createAbrahamStatue(5, 0, -26);    // Abraham
-            
-            // CENTER - Nine Orders of Angels (NEW) - Row of 9 angels
-            createAngelsRow(0, 0, -34);
-            
-            // END - Tree of Life and Cherubim Guardian
-            createTreeOfLife(0, 0, -38);       // Tree of Life (biblically accurate)
-            createCherubimStatue(0, 0, -42);   // Cherubim with Flaming Sword at the end
-            
-            // Four Rivers of Eden (biblically accurate from Genesis 2:10-14)
-            createRiver(-15, 0, -20, "Pishon");
-            createRiver(15, 0, -20, "Gihon");
-            createRiver(-15, 0, -10, "Tigris");
-            createRiver(15, 0, -10, "Euphrates");
-            
+                const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+                ground.rotation.x = -Math.PI / 2;
+                ground.receiveShadow = true;
+                gardenScene.add(ground);
+                
+                // Path with realistic dirt/stone texture (reduced for compact Garden)
+                const pathGeometry = new THREE.PlaneGeometry(5, 60, 25, 25);
+                const pathMaterial = new THREE.MeshStandardMaterial({ 
+                    color: 0xD2B48C,
+                    roughness: 0.92,
+                    metalness: 0.0,
+                    envMapIntensity: 0.2
+                });
+                const path = new THREE.Mesh(pathGeometry, pathMaterial);
+                path.rotation.x = -Math.PI / 2;
+                path.position.y = 0.05;
+                path.receiveShadow = true;
+                gardenScene.add(path);
+                
+                console.log("Garden scene created, adding artifacts...");
+                
+                // ENTRANCE - Beatitudes Plaque at start
+                createBeatitudesPlaque();
+                
+                // LEFT SIDE - Biblical Artifacts
+                createTenCommandments(-5, 0, -8);  // Ten Commandments
+                createStaffOfAaron(-5, 0, -14);    // Staff of Aaron
+                createManna(-5, 0, -20);           // Manna from Heaven (NEW)
+                createArkOfCovenant(-5, 0, -26);   // Ark of the Covenant
+                
+                // RIGHT SIDE - Biblical Figures
+                createMosesStatue(5, 0, -8);       // Moses
+                createElijahStatue(5, 0, -14);     // Elijah
+                createMotherMaryStatue(5, 0, -20); // Mother Mary
+                createAbrahamStatue(5, 0, -26);    // Abraham
+                
+                // CENTER - Nine Orders of Angels (NEW) - Row of 9 angels
+                createAngelsRow(0, 0, -34);
+                
+                // END - Tree of Life and Cherubim Guardian
+                createTreeOfLife(0, 0, -38);       // Tree of Life (biblically accurate)
+                createCherubimStatue(0, 0, -42);   // Cherubim with Flaming Sword at the end
+                
+                // Four Rivers of Eden (biblically accurate from Genesis 2:10-14)
+                createRiver(-15, 0, -20, "Pishon");
+                createRiver(15, 0, -20, "Gihon");
+                createRiver(-15, 0, -10, "Tigris");
+                createRiver(15, 0, -10, "Euphrates");
+                
+                console.log("Artifacts added, adding vegetation...");
+                
             // Remove Bible passage stands to keep it simpler and more compact
             
             // Reduced vegetation for 5-minute exploration
@@ -4729,8 +4936,16 @@
             gardenCamera.position.set(0, 2.5, 10);
             gardenCamera.lookAt(0, 1, 5);
             
+            console.log("Garden of Eden created successfully!");
+            console.log("Garden scene children count:", gardenScene.children.length);
+            
             // Show victory message
             showVictoryMessage();
+            } catch (error) {
+                console.error("Error creating Garden of Eden:", error);
+                console.error("Error stack:", error.stack);
+                alert("Error creating Garden: " + error.message);
+            }
         }
 
         function createBeatitudesPlaque() {
@@ -6155,6 +6370,7 @@
                     // Reset game
                     dungeonLevel = 1;
                     defeatedSins.clear();
+                    defeatedMythicalCreatures.clear(); // Reset mythical creature defeats for New Game+
                     inventory.holyWater = 3;
                     inventory.rosaries = 2;
                     inventory.gold = 0;
