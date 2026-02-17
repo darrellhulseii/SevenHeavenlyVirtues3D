@@ -314,30 +314,17 @@
             }
         }
         
-        /* Ultrawide screen adjustments */
+        /* Ultrawide screen adjustments - do NOT override centered battle UI */
         @media (min-aspect-ratio: 21/9) {
             #hud {
                 left: 40px;
                 top: 30px;
             }
-            #battle-status {
-                left: 40px;
-            }
-            #battle-ui {
-                right: 40px;
-            }
         }
         
         /* Portrait mobile adjustments */
         @media (max-width: 768px) and (orientation: portrait) {
-            #battle-status {
-                top: 60px;
-                max-width: calc(100vw - 40px);
-            }
-            #battle-ui {
-                bottom: 220px;
-                max-width: calc(100vw - 40px);
-            }
+            /* battle-status and battle-ui stay centered at bottom - no override needed */
         }
         
         /* Landscape mobile adjustments */
@@ -547,10 +534,10 @@
             left: 50%;
             transform: translateX(-50%);
             width: auto;
-            max-width: 450px;
-            background: rgba(20, 20, 60, 0.3); /* More visible - 70% transparent */
+            max-width: 620px;
+            background: rgba(20, 20, 60, 0.3);
             backdrop-filter: blur(4px);
-            padding: 4px 8px;
+            padding: 4px 10px;
             display: none;
             z-index: 150;
             border: 1px solid rgba(243, 156, 18, 0.5);
@@ -564,7 +551,7 @@
         @media (max-width: 768px) {
             #battle-ui {
                 width: auto;
-                max-width: 90vw;
+                max-width: 96vw;
                 font-size: 9px;
             }
         }
@@ -690,68 +677,8 @@
         
         .battle-actions {
             display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-        
-        .battle-btn {
-            background: linear-gradient(135deg, rgba(52, 73, 94, 0.9) 0%, rgba(44, 62, 80, 0.9) 100%);
-            color: #ecf0f1;
-            border: 1px solid rgba(149, 165, 166, 0.5);
-            padding: 8px 12px;
-            font-size: 11px;
-            font-weight: bold;
-            border-radius: 4px;
-            cursor: pointer;
-            font-family: 'Courier New', monospace;
-            transition: all 0.2s;
-            text-align: left;
-            position: relative;
-        }
-        
-        .battle-btn:hover {
-            background: linear-gradient(135deg, rgba(44, 62, 80, 0.95) 0%, rgba(52, 73, 94, 0.95) 100%);
-            border-color: rgba(243, 156, 18, 0.8);
-            transform: translateX(3px);
-        }
-        
-        .battle-btn.selected {
-            background: linear-gradient(135deg, rgba(243, 156, 18, 0.9) 0%, rgba(230, 126, 34, 0.9) 100%);
-            border-color: #f39c12;
-            color: #fff;
-            box-shadow: 0 0 10px rgba(243, 156, 18, 0.5);
-        }
-        
-        .battle-btn::before {
-            content: '▸ ';
-            opacity: 0;
-            transition: opacity 0.2s;
-        }
-        
-        .battle-btn.selected::before {
-            opacity: 1;
-        }
-        
-        #battle-log {
-            background: rgba(0, 0, 0, 0.6);
-            padding: 8px;
-            border-radius: 4px;
-            margin-bottom: 10px;
-            min-height: 40px;
-            max-height: 60px;
-            overflow-y: auto;
-            font-size: 10px;
-            border: 1px solid rgba(149, 165, 166, 0.3);
-        }
-        
-        .log-entry {
-            margin: 3px 0;
-            color: #ecf0f1;
-            line-height: 1.3;
-        }
-        
-        .log-entry:last-child {
-            color: #f39c12;
+            flex-direction: row;
+            gap: 4px;
         }
         #quote-overlay {
             position: fixed;
@@ -957,16 +884,15 @@
         <div><strong>Level:</strong> <span id="level">1</span></div>
         <div><strong>Sins Defeated:</strong> <span id="sins">0</span>/7</div>
         <div><strong>Virtues:</strong> <span id="virtues">0</span>/7</div>
-        <div><strong>Holy Water:</strong> <span id="water">3</span></div>
-        <div><strong>Rosaries:</strong> <span id="rosary">2</span></div>
         <div><strong>Divine Elixirs:</strong> <span id="elixirs">0</span></div>
         <div><strong>Gold:</strong> <span id="gold">0</span></div>
+        <div id="trinity-hud" style="display:none;color:#ffd700;"><strong>✝ Trinity:</strong> Unlocked</div>
     </div>
 
     <div id="message"></div>
     
     <div id="controls">
-        <strong>WASD:</strong> Move | <strong>Click:</strong> Rotate camera | <strong>Walk into enemies to battle</strong>
+        <strong>WASD:</strong> Move | <strong>Click:</strong> Rotate camera | <strong>Walk into enemies to battle</strong> | <strong>E:</strong> Open Shop (near merchant)
     </div>
     
     <!-- Mobile Touch Controls -->
@@ -1302,18 +1228,19 @@
         let dungeon = [];
         let enemies = [];
         let pickups = [];
+        let merchants = [];   // shop NPCs in dungeon
+        let trinityUnlocked = false; // whether player bought Trinity skill
         let gameState = 'title';
         let dungeonLevel = 1;
         let defeatedSins = new Set();
         let defeatedMythicalCreatures = new Set(); // Track which mythical creatures have been defeated
         
         const inventory = {
-            holyWater: 3,
-            rosaries: 2,
             gold: 0,
             atkBoost: 0,
             defBoost: 0,
             hpBoost: 0,
+            mpBoost: 0,
             virtueItems: [],
             divineElixirs: 0  // Full party HP & MP restore
         };
@@ -1625,6 +1552,8 @@
                 e.preventDefault();
                 if (gameState === 'garden' && nearestInteractable) {
                     showGardenDialog(nearestInteractable.type, nearestInteractable);
+                } else if (gameState === 'explore' && window._nearestMerchant) {
+                    openShop(window._nearestMerchant.isFinalShop);
                 }
             });
             
@@ -2990,6 +2919,37 @@
                 });
             }
 
+            // Spawn item shop merchant on level 3 and final level (7/Devil)
+            merchants = []; // clear previous merchants
+            const shouldSpawnShop = dungeonLevel === 3 || spawnDevilBoss;
+            if (shouldSpawnShop && rooms.length > 1) {
+                // Level 3 shop: stat items. Level 7: also sells Trinity
+                const shopRoom = rooms[1]; // always near the start so player finds it
+                const mx = (shopRoom.x + Math.floor(shopRoom.w / 2) - MAP_SIZE / 2) * CELL_SIZE + 3;
+                const mz = (shopRoom.y + Math.floor(shopRoom.h / 2) - MAP_SIZE / 2) * CELL_SIZE;
+                const merchantMesh = createMerchantModel();
+                merchantMesh.position.set(mx, 0, mz);
+                scene.add(merchantMesh);
+
+                // Floating "SHOP" sign above merchant
+                const shopCanvas = document.createElement('canvas');
+                const shopCtx = shopCanvas.getContext('2d');
+                shopCanvas.width = 256; shopCanvas.height = 64;
+                shopCtx.fillStyle = 'rgba(0,80,0,0.85)';
+                shopCtx.fillRect(0, 0, 256, 64);
+                shopCtx.font = 'bold 30px Arial';
+                shopCtx.fillStyle = '#ffd700';
+                shopCtx.textAlign = 'center';
+                shopCtx.fillText(spawnDevilBoss ? '✝ HOLY SHOP ✝' : '⚜ ITEM SHOP ⚜', 128, 42);
+                const shopTex = new THREE.CanvasTexture(shopCanvas);
+                const shopSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: shopTex }));
+                shopSprite.position.set(0, 3.2, 0);
+                shopSprite.scale.set(2.5, 0.6, 1);
+                merchantMesh.add(shopSprite);
+
+                merchants.push({ mesh: merchantMesh, position: { x: mx, z: mz }, isFinalShop: !!spawnDevilBoss });
+            }
+
             updateHUD();
         }
 
@@ -3368,6 +3328,121 @@
             return group;
         }
 
+        function createMerchantModel() {
+            const group = new THREE.Group();
+            // Robe body — friendly green monk
+            const body = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.35, 0.45, 1.3, 8),
+                new THREE.MeshStandardMaterial({ color: 0x2d6a2d })
+            );
+            body.position.y = 0.65;
+            group.add(body);
+            // Head
+            const head = new THREE.Mesh(
+                new THREE.SphereGeometry(0.28, 12, 12),
+                new THREE.MeshStandardMaterial({ color: 0xf5cba7 })
+            );
+            head.position.y = 1.55;
+            group.add(head);
+            // Hood
+            const hood = new THREE.Mesh(
+                new THREE.ConeGeometry(0.32, 0.5, 8),
+                new THREE.MeshStandardMaterial({ color: 0x1e5c1e })
+            );
+            hood.position.y = 1.85;
+            group.add(hood);
+            // Beard
+            const beard = new THREE.Mesh(
+                new THREE.ConeGeometry(0.12, 0.3, 6),
+                new THREE.MeshStandardMaterial({ color: 0x7d6608 })
+            );
+            beard.position.set(0, 1.35, 0.2);
+            beard.rotation.x = 0.4;
+            group.add(beard);
+            // Staff
+            const staff = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.04, 0.04, 2.0, 8),
+                new THREE.MeshStandardMaterial({ color: 0x8B4513 })
+            );
+            staff.position.set(0.55, 1.0, 0);
+            group.add(staff);
+            // Glowing orb on staff
+            const orb = new THREE.Mesh(
+                new THREE.SphereGeometry(0.12, 10, 10),
+                new THREE.MeshStandardMaterial({ color: 0xffd700, emissive: 0xffd700, emissiveIntensity: 1 })
+            );
+            orb.position.set(0.55, 2.1, 0);
+            group.add(orb);
+            // Warm golden light from merchant
+            const glow = new THREE.PointLight(0xffd700, 1.5, 6);
+            glow.position.set(0, 1.5, 0);
+            group.add(glow);
+            return group;
+        }
+
+        function openShop(isFinalShop) {
+            const shopItems = [
+                { name: '✝ Blessed Water (+20 Max HP each)', cost: 80,  action: () => { inventory.hpBoost += 20; heroes.forEach(h => { h.maxHp += 20; h.hp = Math.min(h.hp + 20, h.maxHp); }); showMessage('✝ Blessed Water! +20 Max HP to all heroes!'); } },
+                { name: '📿 Sacred Rosary (+5 ATK each)',    cost: 100, action: () => { inventory.atkBoost += 5; heroes.forEach(h => { h.atk += 5; }); showMessage('📿 Sacred Rosary! +5 ATK to all heroes!'); } },
+                { name: '🛡 Holy Shield (+5 DEF each)',       cost: 100, action: () => { inventory.defBoost += 5; heroes.forEach(h => { h.def += 5; }); showMessage('🛡 Holy Shield! +5 DEF to all heroes!'); } },
+                { name: '⚗ Divine Tonic (+15 Max MP each)',  cost: 120, action: () => { inventory.mpBoost += 15; heroes.forEach(h => { h.maxMp += 15; }); showMessage('⚗ Divine Tonic! +15 Max MP to all heroes!'); } },
+                { name: '🏆 Saint\'s Relic (+30 HP +10 ATK +5 DEF)', cost: 250, action: () => { inventory.hpBoost+=30; inventory.atkBoost+=10; inventory.defBoost+=5; heroes.forEach(h=>{h.maxHp+=30;h.hp=Math.min(h.hp+30,h.maxHp);h.atk+=10;h.def+=5;}); showMessage('🏆 Saint\'s Relic! +30 HP, +10 ATK, +5 DEF!'); } },
+            ];
+            if (isFinalShop && !trinityUnlocked) {
+                shopItems.push({ name: '✝✝✝ TRINITY SKILL — Wipes one enemy (costs all MP)', cost: 777, action: () => { trinityUnlocked = true; updateHUD(); showMessage('✝ Trinity unlocked! Jesus will descend upon your enemies!'); } });
+            }
+
+            let itemRows = shopItems.map((item, idx) => `
+                <div style="display:flex;align-items:center;justify-content:space-between;margin:6px 0;padding:6px 10px;background:rgba(255,215,0,0.08);border:1px solid rgba(255,215,0,0.3);border-radius:4px;">
+                    <span style="color:#ecf0f1;font-size:13px;">${item.name}</span>
+                    <button onclick="purchaseShopItem(${idx})" style="margin-left:12px;background:rgba(46,204,113,0.4);color:#fff;border:1px solid #2ecc71;padding:4px 12px;border-radius:3px;cursor:pointer;font-family:'Courier New',monospace;font-size:12px;font-weight:bold;">${item.cost} 🪙</button>
+                </div>
+            `).join('');
+
+            document.getElementById('quote-text').innerHTML = `
+                <div style="color:#ffd700;font-size:20px;font-weight:bold;margin-bottom:10px;">${isFinalShop ? '✝ Holy Shop ✝' : '⚜ Item Shop ⚜'}</div>
+                <div style="color:#aaa;font-size:12px;margin-bottom:12px;">Gold: <span id="shop-gold-display" style="color:#ffd700;font-weight:bold;">${inventory.gold}</span></div>
+                ${itemRows}
+            `;
+            document.getElementById('quote-author').textContent = '';
+
+            // Store shop items on window temporarily so purchase handler can access them
+            window._currentShopItems = shopItems;
+            window._shopIsFinal = isFinalShop;
+
+            const overlay = document.getElementById('quote-overlay');
+            overlay.style.display = 'flex';
+            const btn = document.getElementById('quote-continue');
+            btn.textContent = 'Leave Shop';
+            const handler = () => {
+                overlay.style.display = 'none';
+                btn.removeEventListener('click', handler);
+                window._currentShopItems = null;
+            };
+            btn.addEventListener('click', handler);
+        }
+
+        function purchaseShopItem(idx) {
+            const items = window._currentShopItems;
+            if (!items || !items[idx]) return;
+            const item = items[idx];
+            if (inventory.gold < item.cost) {
+                showMessage('Not enough gold!', 2000);
+                return;
+            }
+            inventory.gold -= item.cost;
+            item.action();
+            updateHUD();
+            // Refresh gold display in shop
+            const goldEl = document.getElementById('shop-gold-display');
+            if (goldEl) goldEl.textContent = inventory.gold;
+            // Remove purchased item from list (prevent re-buy of Trinity)
+            if (item.name.includes('TRINITY')) {
+                items.splice(idx, 1);
+                openShop(window._shopIsFinal); // reopen to refresh
+            }
+        }
+
         function createEpsteinModel() {
             const group = new THREE.Group();
             
@@ -3453,10 +3528,10 @@
             document.getElementById('level').textContent = dungeonLevel;
             document.getElementById('sins').textContent = defeatedSins.size;
             document.getElementById('virtues').textContent = inventory.virtueItems.length;
-            document.getElementById('water').textContent = inventory.holyWater;
-            document.getElementById('rosary').textContent = inventory.rosaries;
             document.getElementById('elixirs').textContent = inventory.divineElixirs;
             document.getElementById('gold').textContent = inventory.gold;
+            const trinityEl = document.getElementById('trinity-hud');
+            if (trinityEl) trinityEl.style.display = trinityUnlocked ? 'block' : 'none';
         }
 
         function levelUpHeroes() {
@@ -3965,18 +4040,6 @@
                 `;
                 heroStatusEl.appendChild(statusDiv);
             });
-                        <span class="stat-value">${Math.max(0, hero.hp)}/${hero.maxHp + inventory.hpBoost}</span>
-                    </span>
-                    <span class="stat-bar-container mp-bar">
-                        <span class="stat-label">MP</span>
-                        <span class="stat-bar">
-                            <span class="stat-bar-fill" style="width: ${mpPercent}%;"></span>
-                        </span>
-                        <span class="stat-value">${hero.mp}/${hero.maxMp}</span>
-                    </span>
-                `;
-                heroStatusEl.appendChild(statusDiv);
-            });
             
             // Enemy status hidden in FFX style - no enemy health bars shown
             
@@ -3984,18 +4047,14 @@
             const actionsEl = document.getElementById('battle-actions');
             if (battle.phase === 'menu') {
                 const hero = heroes[battle.currentHeroIndex];
-                // Shorten attack names for compact display
-                let specialShort = hero.specialAttack;
-                if (specialShort === "Rosary Throw") specialShort = "Rosary";
-                else if (specialShort === "Heavenly Host") specialShort = "Angels";
-                else if (specialShort === "Divine Charge") specialShort = "Charge";
-                
+                const trinityBtn = trinityUnlocked ? `<button class="battle-btn" onclick="selectBattleAction('trinity')">✝ Trinity (All MP)</button>` : '';
                 actionsEl.innerHTML = `
-                    <button class="battle-btn selected" onclick="selectBattleAction('attack')">Atk</button>
-                    <button class="battle-btn" onclick="selectBattleAction('special')">${specialShort} (${hero.specialCost})</button>
-                    <button class="battle-btn" onclick="selectBattleAction('prayer')">Litany (10)</button>
-                    <button class="battle-btn" onclick="selectBattleAction('item')">Itm</button>
-                    <button class="battle-btn" onclick="selectBattleAction('flee')">Run</button>
+                    <button class="battle-btn selected" onclick="selectBattleAction('attack')">Attack</button>
+                    <button class="battle-btn" onclick="selectBattleAction('special')">${hero.specialAttack} (${hero.specialCost} MP)</button>
+                    <button class="battle-btn" onclick="selectBattleAction('prayer')">Litany of the Saints (10 MP)</button>
+                    ${trinityBtn}
+                    <button class="battle-btn" onclick="selectBattleAction('item')">Item</button>
+                    <button class="battle-btn" onclick="selectBattleAction('flee')">Flee</button>
                 `;
             } else if (battle.phase === 'target') {
                 const targetEnemy = battle.enemies[battle.targetIndex];
@@ -4012,10 +4071,8 @@
                 `;
             } else if (battle.phase === 'item') {
                 actionsEl.innerHTML = `
-                    <button class="battle-btn" onclick="useItem('holyWater')">H2O (${inventory.holyWater})</button>
-                    <button class="battle-btn" onclick="useItem('rosary')">Ros (${inventory.rosaries})</button>
-                    <button class="battle-btn" onclick="useItem('divineElixir')">Elx (${inventory.divineElixirs})</button>
-                    <button class="battle-btn selected" onclick="battle.phase='menu'; updateBattleUI();">✕</button>
+                    <button class="battle-btn" onclick="useItem('divineElixir')">Divine Elixir (${inventory.divineElixirs})</button>
+                    <button class="battle-btn selected" onclick="battle.phase='menu'; updateBattleUI();">Back</button>
                 `;
             }
             
@@ -4030,10 +4087,15 @@
                 focusCameraOnEnemy(battle.targetIndex);
                 updateBattleUI();
             } else if (action === 'prayer') {
-                // Prayer targets all enemies (Call upon the Saints)
                 battle.currentAction = 'prayer';
                 battle.phase = 'executing';
                 executePrayerAttack();
+            } else if (action === 'trinity') {
+                battle.currentAction = 'trinity';
+                battle.phase = 'target';
+                battle.targetIndex = battle.enemies.findIndex(e => e.hp > 0);
+                focusCameraOnEnemy(battle.targetIndex);
+                updateBattleUI();
             } else if (action === 'item') {
                 battle.phase = 'item';
                 updateBattleUI();
@@ -4392,11 +4454,59 @@
                 } else {
                     battle.log.push(`${hero.name} lacks MP!`);
                 }
+            } else if (battle.currentAction === 'trinity') {
+                // Trinity: costs ALL MP, summons Jesus on crucifix, wipes target instantly
+                if (hero.mp > 0) {
+                    const mpSpent = hero.mp;
+                    hero.mp = 0;
+                    target.hp = 0; // Instant kill
+                    battle.log.push(`✝ ${hero.name} calls upon the Holy Trinity! Jesus descends on the Crucifix!`);
+                    battle.log.push(`Divine light obliterates ${target.name}! (${mpSpent} MP consumed)`);
+                    
+                    // Dramatic Trinity animation — golden pillar of light
+                    if (battleScene) {
+                        const trinityLight = new THREE.PointLight(0xffd700, 10, 20);
+                        trinityLight.position.set(0, 5, 0);
+                        battleScene.add(trinityLight);
+                        
+                        // Pulsing gold particles rain down
+                        AnimationSystem.createParticleEffect(
+                            new THREE.Vector3(0, 6, 0), 0xffd700, 40, 'fall'
+                        );
+                        
+                        // Fade out the light after 2s
+                        setTimeout(() => {
+                            if (battleScene) battleScene.remove(trinityLight);
+                        }, 2000);
+                    }
+                    
+                    // Enemy defeated fade
+                    if (battleEnemyModels[battle.targetIndex]) {
+                        setTimeout(() => {
+                            const enemyModel = battleEnemyModels[battle.targetIndex];
+                            let opacity = 1;
+                            const fadeInterval = setInterval(() => {
+                                opacity -= 0.08;
+                                enemyModel.traverse((child) => {
+                                    if (child.material) {
+                                        child.material.opacity = opacity;
+                                        child.material.transparent = true;
+                                        child.material.emissive = new THREE.Color(0xffd700);
+                                        child.material.emissiveIntensity = 1 - opacity;
+                                    }
+                                });
+                                if (opacity <= 0) clearInterval(fadeInterval);
+                            }, 40);
+                        }, 500);
+                    }
+                } else {
+                    battle.log.push(`${hero.name} has no MP for Trinity!`);
+                }
             }
             
             setTimeout(() => {
                 nextTurn();
-            }, battle.currentAction === 'special' ? 2000 : 800);
+            }, battle.currentAction === 'special' || battle.currentAction === 'trinity' ? 2000 : 800);
         }
 
         function cancelTarget() {
@@ -4407,23 +4517,7 @@
         function useItem(itemType) {
             const hero = heroes[battle.currentHeroIndex];
             
-            if (itemType === 'holyWater' && inventory.holyWater > 0) {
-                hero.hp = Math.min(hero.maxHp + inventory.hpBoost, hero.hp + 50);
-                inventory.holyWater--;
-                battle.log.push(`${hero.name} drinks Holy Water! +50 HP`);
-                updateHUD();
-                nextTurn();
-            } else if (itemType === 'rosary' && inventory.rosaries > 0) {
-                const damage = 30 + dungeonLevel * 5;
-                battle.enemies.forEach(enemy => {
-                    if (enemy.hp > 0) enemy.hp -= damage;
-                });
-                inventory.rosaries--;
-                battle.log.push(`${hero.name} prays! Divine light strikes all foes!`);
-                updateHUD();
-                nextTurn();
-            } else if (itemType === 'divineElixir' && inventory.divineElixirs > 0) {
-                // Restore full HP and MP to entire party
+            if (itemType === 'divineElixir' && inventory.divineElixirs > 0) {
                 heroes.forEach(h => {
                     h.hp = h.maxHp + inventory.hpBoost;
                     h.mp = h.maxMp;
@@ -4433,7 +4527,7 @@
                 updateHUD();
                 nextTurn();
             } else {
-                battle.log.push('No items!');
+                battle.log.push('No items available!');
                 updateBattleUI();
             }
         }
@@ -4645,16 +4739,16 @@
             } else {
                 dungeonLevel = 1;
                 defeatedSins.clear();
-                defeatedMythicalCreatures.clear(); // Reset mythical creature defeats
+                defeatedMythicalCreatures.clear();
                 showMessage('Defeated! Starting over...', 3000);
-                inventory.holyWater = 3;
-                inventory.rosaries = 2;
                 inventory.gold = 0;
                 inventory.atkBoost = 0;
                 inventory.defBoost = 0;
                 inventory.hpBoost = 0;
+                inventory.mpBoost = 0;
                 inventory.virtueItems = [];
                 inventory.divineElixirs = 0;
+                trinityUnlocked = false;
                 generateDungeon();
                 gameState = 'explore';
             }
@@ -4973,7 +5067,6 @@
                 path.receiveShadow = true;
                 gardenScene.add(path);
                 
-                console.log("Garden scene created, adding artifacts...");
                 
                 // ENTRANCE - Beatitudes Plaque at start
                 createBeatitudesPlaque();
@@ -5003,7 +5096,6 @@
                 createRiver(-15, 0, -10, "Tigris");
                 createRiver(15, 0, -10, "Euphrates");
                 
-                console.log("Artifacts added, adding vegetation...");
                 
                 // Remove Bible passage stands to keep it simpler and more compact
                 
@@ -5072,7 +5164,6 @@
                     createRock(-18 + Math.random() * 36, 0, -2 - Math.random() * 40);
                 }
                 
-                console.log("Vegetation added, adding lighting...");
                 
                 // Lighting - Photorealistic golden hour lighting
                 const ambientLight = new THREE.AmbientLight(0xffffee, 0.5);
@@ -5107,7 +5198,6 @@
                 rimLight.position.set(10, 10, -20);
                 gardenScene.add(rimLight);
                 
-                console.log("Lighting added, creating models...");
                 
                 // Create Jesus model at the end of the path
                 jesusModel = createJesusModel();
@@ -5125,22 +5215,6 @@
                 gardenCamera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
                 gardenCamera.position.set(0, 2.5, 10);
                 gardenCamera.lookAt(0, 1, 5);
-                
-                // TEST: Add a bright sphere to verify garden is rendering
-                const testSphere = new THREE.Mesh(
-                    new THREE.SphereGeometry(2, 32, 32),
-                    new THREE.MeshStandardMaterial({ 
-                        color: 0xFF0000, 
-                        emissive: 0xFF0000,
-                        emissiveIntensity: 1
-                    })
-                );
-                testSphere.position.set(0, 2, 0);
-                gardenScene.add(testSphere);
-                console.log("Added bright red test sphere at (0, 2, 0)");
-                
-                console.log("Garden of Eden created successfully!");
-                console.log("Garden scene children count:", gardenScene.children.length);
                 
                 // Show victory message
                 showVictoryMessage();
@@ -6573,14 +6647,14 @@
                     // Reset game
                     dungeonLevel = 1;
                     defeatedSins.clear();
-                    defeatedMythicalCreatures.clear(); // Reset mythical creature defeats for New Game+
-                    inventory.holyWater = 3;
-                    inventory.rosaries = 2;
+                    defeatedMythicalCreatures.clear();
                     inventory.gold = 0;
                     inventory.atkBoost = 0;
                     inventory.defBoost = 0;
                     inventory.hpBoost = 0;
+                    inventory.mpBoost = 0;
                     inventory.virtueItems = [];
+                    trinityUnlocked = false;
                     
                     // Clean up garden
                     if (gardenScene) {
@@ -6792,6 +6866,10 @@
         // Event handlers
         function onKeyDown(e) {
             keys[e.key.toLowerCase()] = true;
+            // E key: open shop if near merchant
+            if (e.key.toLowerCase() === 'e' && gameState === 'explore' && window._nearestMerchant) {
+                openShop(window._nearestMerchant.isFinalShop);
+            }
         }
 
         function onKeyUp(e) {
@@ -6972,10 +7050,15 @@
             }
             
             if (gameState === 'explore') {
-                // Hide mobile interact button during dungeon exploration
+                // Clear nearest merchant reference each frame (proximity check re-sets it)
+                window._nearestMerchant = null;
+                // Reset interact button (merchant proximity will re-show it if needed)
                 if (isMobile) {
                     const interactBtn = document.getElementById('mobile-interact-btn');
-                    if (interactBtn) interactBtn.style.display = 'none';
+                    if (interactBtn && interactBtn.textContent === '🛒 SHOP') {
+                        interactBtn.style.display = 'none';
+                        interactBtn.textContent = 'INTERACT';
+                    }
                 }
                 
                 // Safety check: return early if player model not created yet
@@ -7103,16 +7186,15 @@
                         pickups.splice(i, 1);
                         
                         if (pickup.type === 'holyWater') {
-                            inventory.holyWater++;
-                            const hpIncrease = 10;
+                            const hpIncrease = 15;
                             inventory.hpBoost += hpIncrease;
-                            heroes.forEach(h => h.maxHp += hpIncrease);
-                            showMessage(`Holy Water! +${hpIncrease} Max HP!`);
+                            heroes.forEach(h => { h.maxHp += hpIncrease; h.hp = Math.min(h.hp + hpIncrease, h.maxHp); });
+                            showMessage(`✝ Holy Water! +${hpIncrease} Max HP to all heroes!`);
                         } else if (pickup.type === 'rosary') {
-                            inventory.rosaries++;
-                            const atkIncrease = 2;
+                            const atkIncrease = 3;
                             inventory.atkBoost += atkIncrease;
-                            showMessage(`Rosary! +${atkIncrease} ATK!`);
+                            heroes.forEach(h => { h.atk += atkIncrease; });
+                            showMessage(`📿 Rosary! +${atkIncrease} ATK to all heroes!`);
                         } else if (pickup.type === 'gold') {
                             const goldAmount = 10 + Math.floor(Math.random() * 20);
                             inventory.gold += goldAmount;
@@ -7128,6 +7210,23 @@
                     p.mesh.rotation.y += dt * 2;
                     p.mesh.position.y = 1 + Math.sin(Date.now() * 0.002) * 0.2;
                 });
+                
+                // Merchant proximity — open shop on E or show interact button
+                if (merchants.length > 0 && playerModel) {
+                    merchants.forEach(m => {
+                        m.mesh.rotation.y += dt * 0.4; // gentle spin
+                        const dist = playerModel.position.distanceTo(m.mesh.position);
+                        if (dist < 4) {
+                            const interactBtn = document.getElementById('mobile-interact-btn');
+                            if (interactBtn) {
+                                interactBtn.style.display = 'flex';
+                                interactBtn.textContent = '🛒 SHOP';
+                            }
+                            // Store nearest merchant for E-key
+                            window._nearestMerchant = m;
+                        }
+                    });
+                }
                 
                 // Rotate enemies
                 enemies.forEach(e => {
@@ -7165,12 +7264,6 @@
             } else if (gameState === 'garden' && gardenScene && gardenCamera) {
                 updateGardenWalk(dt);
                 renderer.render(gardenScene, gardenCamera);
-                // Debug: Log once that we're rendering the garden
-                if (!window.gardenRenderLogged) {
-                    console.log("Rendering Garden - Scene children:", gardenScene.children.length);
-                    console.log("Garden camera position:", gardenCamera.position);
-                    window.gardenRenderLogged = true;
-                }
             } else if (gameState === 'final' && gardenScene && gardenCamera) {
                 renderer.render(gardenScene, gardenCamera);
             } else {
