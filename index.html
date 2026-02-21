@@ -931,7 +931,7 @@
         // Game Constants
         const MOVE_SPEED = 13.5; // Reduced by 10% from 15 (15 * 0.9 = 13.5)
         const ROTATION_SPEED = 0.002;
-        const MAP_SIZE = 40;
+        const MAP_SIZE = 28;  // Reduced from 40 to prevent memory crash (784 cells vs 1600)
         const CELL_SIZE = 4;
         
         // Bible verses for title screen
@@ -1090,9 +1090,9 @@
         };
 
         // Special human evil - appears on Devil level
-        const EPSTEIN_ENCOUNTER = {
-            name: "Jeffrey Epstein",
-            companion: "Ghislaine Maxwell",
+        const JEFF_ENCOUNTER = {
+            name: "Jeff",
+            companion: "Maxwell",
             description: "A trafficker of innocence and embodiment of exploitation",
             color: 0xDC143C,
             auraColor: 0xFF0000,
@@ -1153,7 +1153,7 @@
                 defBoost: 5,
                 effect: "All Heroes: +10 ATK, +20 Max HP, +5 DEF"
             },
-            "Jeffrey Epstein": {
+            "Jeff": {
                 name: "God's Blessing for Defending the Innocent",
                 description: "The Lord rewards those who protect His children from evil. This divine blessing strengthens your righteousness and brings you closer to God's perfect justice.",
                 atkBoost: 8,
@@ -1228,6 +1228,11 @@
         let dungeon = [];
         let enemies = [];
         let pickups = [];
+        // Pre-allocated vectors - reused every frame to avoid GC at 144fps
+        const _fwd = new THREE.Vector3();
+        const _right = new THREE.Vector3();
+        const _moveDir = new THREE.Vector3();
+        const _tmpVec2 = new THREE.Vector2();
         let merchants = [];   // shop NPCs in dungeon
         let trinityUnlocked = false; // whether player bought Trinity skill
         let gameState = 'title';
@@ -1377,47 +1382,42 @@
         // Three.js setup
         function init3D() {
             scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x87CEEB); // Bright sky blue
-            scene.fog = new THREE.FogExp2(0x87CEEB, 0.015); // Exponential fog for atmospheric depth
+            scene.background = new THREE.Color(0x87CEEB);
+            scene.fog = new THREE.FogExp2(0x87CEEB, 0.01);  // Atmospheric depth  // Reduced for performance
 
             camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.set(0, 3, 5); // Start further back for better initial view
+            camera.position.set(0, 3, 5);
 
             renderer = new THREE.WebGLRenderer({ 
-                antialias: true,
-                powerPreference: "high-performance"
+                antialias: false,
+                powerPreference: "high-performance",
+                precision: "mediump",
+                alpha: false,
+                stencil: false,
+                failIfMajorPerformanceCaveat: false
             });
             renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-            renderer.shadowMap.enabled = true;
-            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            renderer.setPixelRatio(1.0);
+            renderer.shadowMap.enabled = false;
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;  // Cinematic tone mapping
+            renderer.toneMappingExposure = 1.1;  // Slight brightness boost
             
-            // Enable physically-based rendering for cinematic quality
-            renderer.physicallyCorrectLights = true;
-            renderer.toneMapping = THREE.ACESFilmicToneMapping;
-            renderer.toneMappingExposure = 1.5;
-            renderer.outputEncoding = THREE.sRGBEncoding;
+            // Handle WebGL context loss
+            renderer.domElement.addEventListener('webglcontextlost', (e) => {
+                e.preventDefault();
+                console.error('WebGL context lost');
+                alert('Graphics error. Please refresh the page.');
+            });
             
             document.getElementById('canvas-container').appendChild(renderer.domElement);
 
             // Lighting - Cinematic dramatic lighting
-            const ambientLight = new THREE.AmbientLight(0x4a4a6a, 0.3);
+            const ambientLight = new THREE.AmbientLight(0x4a4a6a, 0.4);  // Increased for better visibility
             scene.add(ambientLight);
 
             // Main key light - warm dramatic lighting from above
-            const directionalLight = new THREE.DirectionalLight(0xffaa66, 3.5);
+            const directionalLight = new THREE.DirectionalLight(0xffaa66, 4.0);  // Enhanced key light
             directionalLight.position.set(10, 20, 10);
-            directionalLight.castShadow = true;
-            directionalLight.shadow.mapSize.width = 2048;
-            directionalLight.shadow.mapSize.height = 2048;
-            directionalLight.shadow.camera.left = -50;
-            directionalLight.shadow.camera.right = 50;
-            directionalLight.shadow.camera.top = 50;
-            directionalLight.shadow.camera.bottom = -50;
-            directionalLight.shadow.camera.near = 0.5;
-            directionalLight.shadow.camera.far = 100;
-            directionalLight.shadow.bias = -0.0005;
-            directionalLight.shadow.radius = 2;
             scene.add(directionalLight);
             
             // Atmospheric hemisphere light for depth
@@ -1427,10 +1427,6 @@
             // Player torch light - warm orange glow
             const pointLight = new THREE.PointLight(0xffaa44, 2.0, 20, 2);
             pointLight.position.copy(camera.position);
-            pointLight.castShadow = true;
-            pointLight.shadow.mapSize.width = 1024;
-            pointLight.shadow.mapSize.height = 1024;
-            pointLight.shadow.bias = -0.001;
             scene.add(pointLight);
             camera.userData.light = pointLight;
             
@@ -1777,7 +1773,7 @@
             group.add(hair);
             
             // Eyes (glossy)
-            const eyeGeometry = new THREE.SphereGeometry(0.04, 16, 16);
+            const eyeGeometry = new THREE.SphereGeometry(0.04, 24, 24);
             const eyeMaterial = new THREE.MeshStandardMaterial({ 
                 color: 0x5d4037,
                 roughness: 0.1,
@@ -1793,7 +1789,7 @@
             group.add(rightEye);
             
             // Legs (brown cloth material)
-            const legGeometry = new THREE.CylinderGeometry(0.1, 0.08, 0.4, 16);
+            const legGeometry = new THREE.CylinderGeometry(0.1, 0.08, 0.4, 24);
             const legMaterial = new THREE.MeshStandardMaterial({ 
                 color: 0x8d6e63,
                 roughness: 0.9,
@@ -1856,7 +1852,7 @@
             group.add(rightEye);
             
             // Halo (gold ring)
-            const haloGeometry = new THREE.TorusGeometry(0.3, 0.03, 8, 16);
+            const haloGeometry = new THREE.TorusGeometry(0.3, 0.03, 16, 32);
             const haloMaterial = new THREE.MeshStandardMaterial({ 
                 color: 0xf39c12,
                 emissive: 0xf39c12,
@@ -1950,7 +1946,7 @@
             group.add(rightEye);
             
             // Banner/Flag pole (brown)
-            const poleGeometry = new THREE.CylinderGeometry(0.05, 0.05, 1.0, 8);
+            const poleGeometry = new THREE.CylinderGeometry(0.05, 0.05, 1.0, 24);
             const poleMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
             const pole = new THREE.Mesh(poleGeometry, poleMaterial);
             pole.position.set(0.4, 0.7, 0);
@@ -1982,9 +1978,11 @@
             // Black Dominican robe (main body)
             const robeGeometry = new THREE.BoxGeometry(0.8, 1.3, 0.5);
             const robeMaterial = new THREE.MeshStandardMaterial({ 
-                color: 0x1a1a1a, 
-                roughness: 0.85,
-                metalness: 0.1
+                color: 0x1a1a1a,
+                roughness: 0.9,
+                metalness: 0.0,
+                emissive: 0x0a0a0a,
+                emissiveIntensity: 0.02
             });
             const robe = new THREE.Mesh(robeGeometry, robeMaterial);
             robe.position.y = 0.75;
@@ -2003,7 +2001,7 @@
             group.add(scapular);
             
             // Hood
-            const hoodGeometry = new THREE.ConeGeometry(0.3, 0.4, 8);
+            const hoodGeometry = new THREE.ConeGeometry(0.3, 0.4, 24);
             const hoodMaterial = new THREE.MeshStandardMaterial({ 
                 color: 0x1a1a1a,
                 roughness: 0.85
@@ -2014,7 +2012,7 @@
             group.add(hood);
             
             // Head
-            const headGeometry = new THREE.SphereGeometry(0.25, 16, 16);
+            const headGeometry = new THREE.SphereGeometry(0.25, 24, 24);
             const headMaterial = new THREE.MeshStandardMaterial({ color: 0xf0c291 });
             const head = new THREE.Mesh(headGeometry, headMaterial);
             head.position.y = 1.6;
@@ -2022,7 +2020,7 @@
             group.add(head);
             
             // GLOWING HALO
-            const haloGeometry = new THREE.TorusGeometry(0.35, 0.05, 8, 32);
+            const haloGeometry = new THREE.TorusGeometry(0.35, 0.05, 16, 32);
             const haloMaterial = new THREE.MeshStandardMaterial({ 
                 color: 0xffeb3b,
                 emissive: 0xffeb3b,
@@ -2044,9 +2042,7 @@
             const crossVertical = new THREE.BoxGeometry(0.05, 0.2, 0.05);
             const crossHorizontal = new THREE.BoxGeometry(0.15, 0.05, 0.05);
             const crossMaterial = new THREE.MeshStandardMaterial({ 
-                color: 0xd4af37,
-                metalness: 0.8,
-                roughness: 0.2
+                color: 0xffd700, metalness: 0.95, roughness: 0.15, emissive: 0xffd700, emissiveIntensity: 0.1
             });
             const crossV = new THREE.Mesh(crossVertical, crossMaterial);
             crossV.position.set(0, 1.2, 0.3);
@@ -2056,7 +2052,7 @@
             group.add(crossH);
             
             // Rope belt
-            const beltGeometry = new THREE.TorusGeometry(0.35, 0.03, 8, 16);
+            const beltGeometry = new THREE.TorusGeometry(0.35, 0.03, 16, 32);
             const beltMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
             const belt = new THREE.Mesh(beltGeometry, beltMaterial);
             belt.position.y = 0.5;
@@ -2064,7 +2060,7 @@
             group.add(belt);
             
             // Legs/feet
-            const legGeometry = new THREE.CylinderGeometry(0.12, 0.10, 0.5, 16);
+            const legGeometry = new THREE.CylinderGeometry(0.12, 0.10, 0.5, 24);
             const legMaterial = new THREE.MeshStandardMaterial({ 
                 color: 0x1a1a1a,
                 roughness: 0.85
@@ -2128,7 +2124,7 @@
             group.add(head);
             
             // Eyes (glowing intensely)
-            const eyeGeometry = new THREE.SphereGeometry(0.08, 16, 16);
+            const eyeGeometry = new THREE.SphereGeometry(0.08, 24, 24);
             const eyeMaterial = new THREE.MeshStandardMaterial({ 
                 color: vice.name === "The Devil" ? 0xffff00 : 0xff4400,
                 emissive: vice.name === "The Devil" ? 0xffff00 : 0xff4400,
@@ -2178,7 +2174,7 @@
                 
                 // Crown spikes with glow
                 for (let i = -1; i <= 1; i++) {
-                    const spikeGeometry = new THREE.ConeGeometry(0.08, 0.3, 8);
+                    const spikeGeometry = new THREE.ConeGeometry(0.08, 0.3, 24);
                     const spike = new THREE.Mesh(spikeGeometry, crownMaterial);
                     spike.position.set(i * 0.25, 2.25, 0);
                     spike.castShadow = true;
@@ -2186,7 +2182,7 @@
                 }
             } else if (vice.name === "Greed") {
                 // Money bag with realistic cloth
-                const bagGeometry = new THREE.SphereGeometry(0.2, 16, 16);
+                const bagGeometry = new THREE.SphereGeometry(0.2, 24, 24);
                 bagGeometry.scale(1, 1.3, 1);
                 const bagMaterial = new THREE.MeshStandardMaterial({ 
                     color: 0x8B4513,
@@ -2215,7 +2211,7 @@
                 }
             } else if (vice.name === "The Devil") {
                 // Horns with dark red glow
-                const hornGeometry = new THREE.ConeGeometry(0.1, 0.4, 8);
+                const hornGeometry = new THREE.ConeGeometry(0.1, 0.4, 24);
                 const hornMaterial = new THREE.MeshStandardMaterial({ 
                     color: 0x4a0000,
                     roughness: 0.6,
@@ -2236,7 +2232,7 @@
                 
                 // Tail with segments
                 for (let i = 0; i < 5; i++) {
-                    const segmentGeometry = new THREE.SphereGeometry(0.08 - i * 0.01, 8, 8);
+                    const segmentGeometry = new THREE.SphereGeometry(0.08, 24, 24);
                     const segmentMaterial = new THREE.MeshStandardMaterial({ 
                         color: 0x8B0000,
                         roughness: 0.8,
@@ -2256,7 +2252,7 @@
             }
             
             // Legs with muscle definition
-            const legGeometry = new THREE.CylinderGeometry(0.12, 0.10, 0.5, 16);
+            const legGeometry = new THREE.CylinderGeometry(0.12, 0.10, 0.5, 24);
             const legMaterial = new THREE.MeshStandardMaterial({ 
                 color: 0x2a2a2a,
                 roughness: 0.85,
@@ -2286,7 +2282,7 @@
             group.add(robe);
             
             // Head with beard
-            const headGeometry = new THREE.SphereGeometry(0.25, 16, 16);
+            const headGeometry = new THREE.SphereGeometry(0.25, 24, 24);
             const headMaterial = new THREE.MeshStandardMaterial({ color: 0xf0c291 });
             const head = new THREE.Mesh(headGeometry, headMaterial);
             head.position.y = 1.5;
@@ -2294,7 +2290,7 @@
             group.add(head);
             
             // Stigmata wounds on hands (red glowing spheres)
-            const stigmataGeometry = new THREE.SphereGeometry(0.08, 8, 8);
+            const stigmataGeometry = new THREE.SphereGeometry(0.08, 24, 24);
             const stigmataMaterial = new THREE.MeshStandardMaterial({ 
                 color: 0xff0000,
                 emissive: 0xff0000,
@@ -2309,7 +2305,7 @@
             group.add(rightStigmata);
             
             // Rosary beads
-            const beadGeometry = new THREE.SphereGeometry(0.03, 8, 8);
+            const beadGeometry = new THREE.SphereGeometry(0.03, 24, 24);
             const beadMaterial = new THREE.MeshStandardMaterial({ color: 0x654321 });
             for (let i = 0; i < 10; i++) {
                 const bead = new THREE.Mesh(beadGeometry, beadMaterial);
@@ -2340,7 +2336,7 @@
             group.add(scapular);
             
             // Head
-            const headGeometry = new THREE.SphereGeometry(0.25, 16, 16);
+            const headGeometry = new THREE.SphereGeometry(0.25, 24, 24);
             const headMaterial = new THREE.MeshStandardMaterial({ color: 0xf0c291 });
             const head = new THREE.Mesh(headGeometry, headMaterial);
             head.position.y = 1.6;
@@ -2348,7 +2344,7 @@
             group.add(head);
             
             // Glowing halo
-            const haloGeometry = new THREE.TorusGeometry(0.35, 0.05, 8, 32);
+            const haloGeometry = new THREE.TorusGeometry(0.35, 0.05, 16, 32);
             const haloMaterial = new THREE.MeshStandardMaterial({ 
                 color: 0xffeb3b,
                 emissive: 0xffeb3b,
@@ -2385,7 +2381,7 @@
             group.add(robe);
             
             // Head
-            const headGeometry = new THREE.SphereGeometry(0.23, 16, 16);
+            const headGeometry = new THREE.SphereGeometry(0.23, 24, 24);
             const headMaterial = new THREE.MeshStandardMaterial({ color: 0xf0c291 });
             const head = new THREE.Mesh(headGeometry, headMaterial);
             head.position.y = 1.6;
@@ -2393,7 +2389,7 @@
             group.add(head);
             
             // Veil
-            const veilGeometry = new THREE.ConeGeometry(0.35, 0.5, 16);
+            const veilGeometry = new THREE.ConeGeometry(0.35, 0.5, 24);
             const veilMaterial = new THREE.MeshStandardMaterial({ color: 0x1e40af, roughness: 0.7 });
             const veil = new THREE.Mesh(veilGeometry, veilMaterial);
             veil.position.y = 1.9;
@@ -2401,7 +2397,7 @@
             group.add(veil);
             
             // Golden halo
-            const haloGeometry = new THREE.TorusGeometry(0.35, 0.05, 8, 32);
+            const haloGeometry = new THREE.TorusGeometry(0.35, 0.05, 16, 32);
             const haloMaterial = new THREE.MeshStandardMaterial({ 
                 color: 0xffd700,
                 emissive: 0xffd700,
@@ -2415,7 +2411,7 @@
             group.add(halo);
             
             // Rosary in hands
-            const rosaryGeometry = new THREE.TorusGeometry(0.15, 0.03, 8, 24);
+            const rosaryGeometry = new THREE.TorusGeometry(0.15, 0.03, 16, 32);
             const rosaryMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
             const rosary = new THREE.Mesh(rosaryGeometry, rosaryMaterial);
             rosary.position.set(0, 0.5, 0.3);
@@ -2435,7 +2431,10 @@
             while(scene.children.length > 0) { 
                 const obj = scene.children[0];
                 if (obj.geometry) obj.geometry.dispose();
-                if (obj.material) obj.material.dispose();
+                if (obj.material) {
+                    if (Array.isArray(obj.material)) obj.material.forEach(m => m.dispose());
+                    else obj.material.dispose();
+                }
                 scene.remove(obj);
             }
 
@@ -2461,7 +2460,6 @@
             
             const pointLight = new THREE.PointLight(0xffffff, 1.0, 50);
             pointLight.position.copy(camera.position);
-            pointLight.castShadow = true;
             scene.add(pointLight);
             camera.userData.light = pointLight;
 
@@ -2497,6 +2495,22 @@
                 }
             }
 
+            // Safety check: ensure we have at least 2 rooms
+            if (rooms.length < 2) {
+                // Fallback: create 2 guaranteed rooms
+                rooms.length = 0;
+                rooms.push({ x: 5, y: 5, w: 6, h: 6 });
+                rooms.push({ x: MAP_SIZE - 11, y: MAP_SIZE - 11, w: 6, h: 6 });
+                // Clear their spaces
+                for (const room of rooms) {
+                    for (let ry = room.y; ry < room.y + room.h; ry++) {
+                        for (let rx = room.x; rx < room.x + room.w; rx++) {
+                            dungeon[ry][rx] = 0;
+                        }
+                    }
+                }
+            }
+
             // Connect rooms with corridors
             for (let i = 0; i < rooms.length - 1; i++) {
                 const r1 = rooms[i];
@@ -2514,55 +2528,78 @@
                 }
             }
 
-            // Build 3D dungeon with theme colors
-            const wallGeometry = new THREE.BoxGeometry(CELL_SIZE, 4, CELL_SIZE);
-            const floorGeometry = new THREE.BoxGeometry(CELL_SIZE, 0.2, CELL_SIZE);
-            const ceilingGeometry = new THREE.BoxGeometry(CELL_SIZE, 0.2, CELL_SIZE);
-            
-            const wallMaterial = new THREE.MeshStandardMaterial({ 
-                color: theme.wallColor,
-                roughness: 0.9,
-                metalness: 0.0,
-                emissive: theme.wallColor,
-                emissiveIntensity: 0.1
-            });
-            const floorMaterial = new THREE.MeshStandardMaterial({ 
-                color: theme.floorColor,
-                roughness: 0.85,
-                metalness: 0.0
-            });
-            const ceilingMaterial = new THREE.MeshStandardMaterial({ 
-                color: theme.ceilingColor,
-                roughness: 0.8,
-                metalness: 0.0
-            });
+            // Build 3D dungeon with InstancedMesh (single draw call per type = no crash)
+            try {
+                const wallGeometry = new THREE.BoxGeometry(CELL_SIZE, 4, CELL_SIZE);
+                const floorGeometry = new THREE.BoxGeometry(CELL_SIZE, 0.2, CELL_SIZE);
+                const ceilingGeometry = new THREE.BoxGeometry(CELL_SIZE, 0.2, CELL_SIZE);
+                
+                const wallMaterial = new THREE.MeshStandardMaterial({ 
+                    color: theme.wallColor,
+                    roughness: 0.9,
+                    metalness: 0.0,
+                    emissive: theme.wallColor,
+                    emissiveIntensity: 0.08
+                });
+                const floorMaterial = new THREE.MeshStandardMaterial({ 
+                    color: theme.floorColor,
+                    roughness: 0.85,
+                    metalness: 0.0
+                });
+                const ceilingMaterial = new THREE.MeshStandardMaterial({ 
+                    color: theme.ceilingColor,
+                    roughness: 0.8,
+                    metalness: 0.0
+                });
 
-            for (let y = 0; y < MAP_SIZE; y++) {
-                for (let x = 0; x < MAP_SIZE; x++) {
-                    const posX = (x - MAP_SIZE / 2) * CELL_SIZE;
-                    const posZ = (y - MAP_SIZE / 2) * CELL_SIZE;
+                // Count cells first for instanced buffer sizing
+                let wallCount = 0, openCount = 0;
+                for (let y = 0; y < MAP_SIZE; y++)
+                    for (let x = 0; x < MAP_SIZE; x++)
+                        dungeon[y][x] === 1 ? wallCount++ : openCount++;
 
-                    if (dungeon[y][x] === 1) {
-                        // Wall
-                        const wall = new THREE.Mesh(wallGeometry, wallMaterial);
-                        wall.position.set(posX, 2, posZ);
-                        wall.castShadow = true;
-                        wall.receiveShadow = true;
-                        scene.add(wall);
-                    } else {
-                        // Floor
-                        const floor = new THREE.Mesh(floorGeometry, floorMaterial);
-                        floor.position.set(posX, 0, posZ);
-                        floor.receiveShadow = true;
-                        scene.add(floor);
-                        
-                        // Ceiling
-                        const ceiling = new THREE.Mesh(ceilingGeometry, ceilingMaterial);
-                        ceiling.position.set(posX, 4, posZ);
-                        ceiling.receiveShadow = true;
-                        scene.add(ceiling);
+                // Sanity check to prevent crash
+                if (wallCount > MAP_SIZE * MAP_SIZE || openCount > MAP_SIZE * MAP_SIZE) {
+                    throw new Error('Invalid dungeon cell count');
+                }
+
+                const wallInst  = new THREE.InstancedMesh(wallGeometry,    wallMaterial,    wallCount);
+                const floorInst = new THREE.InstancedMesh(floorGeometry,   floorMaterial,   openCount);
+                const ceilInst  = new THREE.InstancedMesh(ceilingGeometry, ceilingMaterial, openCount);
+                wallInst.receiveShadow  = false;
+                floorInst.receiveShadow = false;
+                ceilInst.receiveShadow  = false;
+
+                const dummy = new THREE.Object3D();
+                let wi = 0, oi = 0;
+                for (let y = 0; y < MAP_SIZE; y++) {
+                    for (let x = 0; x < MAP_SIZE; x++) {
+                        const posX = (x - MAP_SIZE / 2) * CELL_SIZE;
+                        const posZ = (y - MAP_SIZE / 2) * CELL_SIZE;
+                        if (dungeon[y][x] === 1) {
+                            dummy.position.set(posX, 2, posZ);
+                            dummy.updateMatrix();
+                            wallInst.setMatrixAt(wi++, dummy.matrix);
+                        } else {
+                            dummy.position.set(posX, 0, posZ);
+                            dummy.updateMatrix();
+                            floorInst.setMatrixAt(oi, dummy.matrix);
+                            dummy.position.set(posX, 4, posZ);
+                            dummy.updateMatrix();
+                            ceilInst.setMatrixAt(oi, dummy.matrix);
+                            oi++;
+                        }
                     }
                 }
+                wallInst.instanceMatrix.needsUpdate  = true;
+                floorInst.instanceMatrix.needsUpdate = true;
+                ceilInst.instanceMatrix.needsUpdate  = true;
+                scene.add(wallInst);
+                scene.add(floorInst);
+                scene.add(ceilInst);
+            } catch (err) {
+                alert('Error creating dungeon geometry. Please refresh the page. Error: ' + err.message);
+                return;
             }
 
             // Position player in first room
@@ -2616,10 +2653,14 @@
                         if (vice.name === "The Devil") {
                             // Massive glowing red pillar of light reaching to the sky
                             const beaconGeometry = new THREE.CylinderGeometry(2, 2, 50, 32);
-                            const beaconMaterial = new THREE.MeshBasicMaterial({ 
+                            const beaconMaterial = new THREE.MeshStandardMaterial({ 
                                 color: 0xff0000,
+                                emissive: 0xff0000,
+                                emissiveIntensity: 0.8,
                                 transparent: true,
-                                opacity: 0.4
+                                opacity: 0.4,
+                                roughness: 0.3,
+                                metalness: 0.1
                             });
                             const beacon = new THREE.Mesh(beaconGeometry, beaconMaterial);
                             beacon.position.set(ex, 25, ez);
@@ -2698,7 +2739,7 @@
                         if (typeRand < 0.4) {
                             type = 'holyWater';
                             // Holy water bottle
-                            const bottleGeometry = new THREE.CylinderGeometry(0.15, 0.2, 0.4, 8);
+                            const bottleGeometry = new THREE.CylinderGeometry(0.15, 0.2, 0.4, 24);
                             const bottleMaterial = new THREE.MeshStandardMaterial({ 
                                 color: 0x3498db,
                                 transparent: true,
@@ -2715,7 +2756,7 @@
                             // Create circular chain of beads
                             const numBeads = 12;
                             const radius = 0.25;
-                            const beadGeometry = new THREE.SphereGeometry(0.04, 8, 8);
+                            const beadGeometry = new THREE.SphereGeometry(0.04, 24, 24);
                             const beadMaterial = new THREE.MeshStandardMaterial({ 
                                 color: 0x8b4513,
                                 metalness: 0.3,
@@ -2747,7 +2788,7 @@
                             
                             // Center bead (larger)
                             const centerBead = new THREE.Mesh(
-                                new THREE.SphereGeometry(0.06, 8, 8),
+                                new THREE.SphereGeometry(0.06, 24, 24),
                                 new THREE.MeshStandardMaterial({ 
                                     color: 0xf39c12,
                                     metalness: 0.5,
@@ -2762,7 +2803,7 @@
                             // Gold coin stack
                             const coinGroup = new THREE.Group();
                             for (let i = 0; i < 3; i++) {
-                                const coinGeometry = new THREE.CylinderGeometry(0.15, 0.15, 0.05, 16);
+                                const coinGeometry = new THREE.CylinderGeometry(0.15, 0.15, 0.05, 24);
                                 const coinMaterial = new THREE.MeshStandardMaterial({ 
                                     color: 0xf39c12,
                                     metalness: 0.8,
@@ -2857,32 +2898,36 @@
                 }
             }
 
-            // Spawn Jeffrey Epstein encounter on Devil level
+            // Spawn Jeff encounter on Devil level
             if (spawnDevilBoss && rooms.length > 3) {
-                const epsteinRoom = rooms[Math.floor(Math.random() * (rooms.length - 3)) + 2];
-                const ex = (epsteinRoom.x + Math.floor(epsteinRoom.w / 2) - MAP_SIZE / 2) * CELL_SIZE;
-                const ez = (epsteinRoom.y + Math.floor(epsteinRoom.h / 2) - MAP_SIZE / 2) * CELL_SIZE;
+                const jeffRoom = rooms[Math.floor(Math.random() * (rooms.length - 3)) + 2];
+                const ex = (jeffRoom.x + Math.floor(jeffRoom.w / 2) - MAP_SIZE / 2) * CELL_SIZE;
+                const ez = (jeffRoom.y + Math.floor(jeffRoom.h / 2) - MAP_SIZE / 2) * CELL_SIZE;
                 
-                const epsteinMesh = createEpsteinModel();
-                epsteinMesh.position.set(ex, 0, ez);
-                epsteinMesh.castShadow = true;
-                scene.add(epsteinMesh);
+                const jeffMesh = createJeffModel();
+                jeffMesh.position.set(ex, 0, ez);
+                jeffMesh.castShadow = true;
+                scene.add(jeffMesh);
                 
-                // Red evil aura around Epstein
+                // Red evil aura around Jeff
                 const auraGeometry = new THREE.CylinderGeometry(1.5, 1.5, 0.1, 32);
-                const auraMaterial = new THREE.MeshBasicMaterial({ 
-                    color: EPSTEIN_ENCOUNTER.auraColor,
+                const auraMaterial = new THREE.MeshStandardMaterial({ 
+                    color: JEFF_ENCOUNTER.auraColor,
+                    emissive: JEFF_ENCOUNTER.auraColor,
+                    emissiveIntensity: 0.5,
                     transparent: true,
-                    opacity: 0.3
+                    opacity: 0.3,
+                    roughness: 0.2,
+                    metalness: 0.0
                 });
                 const aura = new THREE.Mesh(auraGeometry, auraMaterial);
                 aura.position.set(ex, 0.05, ez);
                 scene.add(aura);
                 
                 // Red glow
-                const epsteinLight = new THREE.PointLight(EPSTEIN_ENCOUNTER.auraColor, 3, 10);
-                epsteinLight.position.set(ex, 1, ez);
-                scene.add(epsteinLight);
+                const jeffLight = new THREE.PointLight(JEFF_ENCOUNTER.auraColor, 3, 10);
+                jeffLight.position.set(ex, 1, ez);
+                scene.add(jeffLight);
                 
                 // Name label
                 const canvas = document.createElement('canvas');
@@ -2894,27 +2939,27 @@
                 context.font = 'bold 28px Arial';
                 context.fillStyle = '#ff0000';
                 context.textAlign = 'center';
-                context.fillText(EPSTEIN_ENCOUNTER.name.toUpperCase(), 128, 42);
+                context.fillText(JEFF_ENCOUNTER.name.toUpperCase(), 128, 42);
                 
                 const texture = new THREE.CanvasTexture(canvas);
                 const spriteMaterial = new THREE.SpriteMaterial({ map: texture });
                 const sprite = new THREE.Sprite(spriteMaterial);
                 sprite.position.set(0, 2.5, 0);
                 sprite.scale.set(2.5, 0.6, 1);
-                epsteinMesh.add(sprite);
+                jeffMesh.add(sprite);
                 
                 enemies.push({ 
-                    mesh: epsteinMesh, 
+                    mesh: jeffMesh, 
                     vice: {
-                        name: EPSTEIN_ENCOUNTER.name,
-                        minion: EPSTEIN_ENCOUNTER.companion,
-                        color: EPSTEIN_ENCOUNTER.color,
-                        catechism: EPSTEIN_ENCOUNTER.description,
-                        verse: EPSTEIN_ENCOUNTER.verse,
-                        reference: EPSTEIN_ENCOUNTER.reference
+                        name: JEFF_ENCOUNTER.name,
+                        minion: JEFF_ENCOUNTER.companion,
+                        color: JEFF_ENCOUNTER.color,
+                        catechism: JEFF_ENCOUNTER.description,
+                        verse: JEFF_ENCOUNTER.verse,
+                        reference: JEFF_ENCOUNTER.reference
                     },
                     position: { x: ex, z: ez },
-                    isEpstein: true,
+                    isJeff: true,
                     level: 7
                 });
             }
@@ -2957,14 +3002,14 @@
             const group = new THREE.Group();
             
             // Torch post
-            const postGeometry = new THREE.CylinderGeometry(0.1, 0.1, 2, 8);
+            const postGeometry = new THREE.CylinderGeometry(0.1, 0.1, 2, 24);
             const postMaterial = new THREE.MeshStandardMaterial({ color: 0x3E2723 });
             const post = new THREE.Mesh(postGeometry, postMaterial);
             post.position.y = 1;
             group.add(post);
             
             // Flame
-            const flameGeometry = new THREE.ConeGeometry(0.3, 0.6, 8);
+            const flameGeometry = new THREE.ConeGeometry(0.3, 0.6, 24);
             const flameMaterial = new THREE.MeshStandardMaterial({ 
                 color: color,
                 emissive: color,
@@ -2987,7 +3032,7 @@
             const group = new THREE.Group();
             
             // Crystal formation
-            const crystalGeometry = new THREE.ConeGeometry(0.3, 1.5, 6);
+            const crystalGeometry = new THREE.ConeGeometry(0.3, 1.5, 24);
             const crystalMaterial = new THREE.MeshStandardMaterial({ 
                 color: color,
                 emissive: color,
@@ -3022,7 +3067,7 @@
             
             if (creature.name === "Vampire") {
                 // Vampire - humanoid with cape
-                const bodyGeometry = new THREE.CylinderGeometry(0.3, 0.4, 1.5, 8);
+                const bodyGeometry = new THREE.CylinderGeometry(0.3, 0.4, 1.5, 24);
                 const bodyMaterial = new THREE.MeshStandardMaterial({ color: 0x1a1a1a });
                 const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
                 body.position.y = 0.75;
@@ -3050,7 +3095,7 @@
                 group.add(rightEye);
                 
                 // Cape
-                const capeGeometry = new THREE.ConeGeometry(0.8, 1.5, 8);
+                const capeGeometry = new THREE.ConeGeometry(0.8, 1.5, 24);
                 const capeMaterial = new THREE.MeshStandardMaterial({ color: 0x8B0000 });
                 const cape = new THREE.Mesh(capeGeometry, capeMaterial);
                 cape.position.set(0, 0.75, -0.3);
@@ -3078,7 +3123,7 @@
                 group.add(snout);
                 
                 // Yellow glowing eyes
-                const eyeGeometry = new THREE.SphereGeometry(0.1, 8, 8);
+                const eyeGeometry = new THREE.SphereGeometry(0.1, 24, 24);
                 const eyeMaterial = new THREE.MeshStandardMaterial({ 
                     color: 0xFFFF00, 
                     emissive: 0xFFFF00,
@@ -3102,7 +3147,7 @@
                 
             } else if (creature.name === "Ghost") {
                 // Ghost - floating translucent form
-                const ghostGeometry = new THREE.SphereGeometry(0.6, 16, 16);
+                const ghostGeometry = new THREE.SphereGeometry(0.6, 24, 24);
                 const ghostMaterial = new THREE.MeshStandardMaterial({ 
                     color: 0xE0E0E0,
                     emissive: 0xFFFFFF,
@@ -3116,15 +3161,15 @@
                 group.add(ghost);
                 
                 // Wispy tail
-                const tailGeometry = new THREE.ConeGeometry(0.5, 1, 8);
+                const tailGeometry = new THREE.ConeGeometry(0.5, 1, 24);
                 const tail = new THREE.Mesh(tailGeometry, ghostMaterial);
                 tail.position.y = 0.5;
                 tail.rotation.x = Math.PI;
                 group.add(tail);
                 
                 // Dark hollow eyes
-                const eyeGeometry = new THREE.SphereGeometry(0.1, 8, 8);
-                const eyeMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
+                const eyeGeometry = new THREE.SphereGeometry(0.1, 24, 24);
+                const eyeMaterial = new THREE.MeshStandardMaterial({ color: 0x000000, roughness: 0.1, metalness: 0.9, emissive: 0x000000, emissiveIntensity: 0 });
                 const leftEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
                 leftEye.position.set(-0.2, 1.6, 0.5);
                 group.add(leftEye);
@@ -3139,21 +3184,21 @@
                 
             } else if (creature.name === "Succubus") {
                 // Succubus - seductive demon
-                const bodyGeometry = new THREE.CylinderGeometry(0.3, 0.4, 1.5, 8);
+                const bodyGeometry = new THREE.CylinderGeometry(0.3, 0.4, 1.5, 24);
                 const bodyMaterial = new THREE.MeshStandardMaterial({ color: 0xFF1493 });
                 const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
                 body.position.y = 0.75;
                 group.add(body);
                 
                 // Head
-                const headGeometry = new THREE.SphereGeometry(0.3, 16, 16);
+                const headGeometry = new THREE.SphereGeometry(0.3, 24, 24);
                 const headMaterial = new THREE.MeshStandardMaterial({ color: 0xFFB6C1 });
                 const head = new THREE.Mesh(headGeometry, headMaterial);
                 head.position.y = 1.7;
                 group.add(head);
                 
                 // Horns
-                const hornGeometry = new THREE.ConeGeometry(0.1, 0.5, 8);
+                const hornGeometry = new THREE.ConeGeometry(0.1, 0.5, 24);
                 const hornMaterial = new THREE.MeshStandardMaterial({ color: 0x8B0000 });
                 const leftHorn = new THREE.Mesh(hornGeometry, hornMaterial);
                 leftHorn.position.set(-0.25, 2.1, 0);
@@ -3195,8 +3240,8 @@
                 group.add(head);
                 
                 // Small eyes
-                const eyeGeometry = new THREE.SphereGeometry(0.08, 8, 8);
-                const eyeMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
+                const eyeGeometry = new THREE.SphereGeometry(0.08, 24, 24);
+                const eyeMaterial = new THREE.MeshStandardMaterial({ color: 0x000000, roughness: 0.1, metalness: 0.9, emissive: 0x000000, emissiveIntensity: 0 });
                 const leftEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
                 leftEye.position.set(-0.25, 1.95, 0.4);
                 group.add(leftEye);
@@ -3205,7 +3250,7 @@
                 group.add(rightEye);
                 
                 // Long arms
-                const armGeometry = new THREE.CylinderGeometry(0.2, 0.15, 1.2, 8);
+                const armGeometry = new THREE.CylinderGeometry(0.2, 0.15, 1.2, 24);
                 const leftArm = new THREE.Mesh(armGeometry, bodyMaterial);
                 leftArm.position.set(-0.6, 0.7, 0);
                 leftArm.rotation.z = Math.PI / 6;
@@ -3234,7 +3279,7 @@
                 group.add(head);
                 
                 // Blue glowing eyes
-                const eyeGeometry = new THREE.SphereGeometry(0.1, 8, 8);
+                const eyeGeometry = new THREE.SphereGeometry(0.1, 24, 24);
                 const eyeMaterial = new THREE.MeshStandardMaterial({ 
                     color: 0x00BFFF,
                     emissive: 0x00BFFF,
@@ -3248,7 +3293,7 @@
                 group.add(rightEye);
                 
                 // Large arms
-                const armGeometry = new THREE.CylinderGeometry(0.25, 0.2, 1.2, 8);
+                const armGeometry = new THREE.CylinderGeometry(0.25, 0.2, 1.2, 24);
                 const leftArm = new THREE.Mesh(armGeometry, bodyMaterial);
                 leftArm.position.set(-0.65, 0.7, 0);
                 leftArm.rotation.z = Math.PI / 6;
@@ -3280,7 +3325,7 @@
                 group.add(head);
                 
                 // Tusks
-                const tuskGeometry = new THREE.ConeGeometry(0.08, 0.4, 8);
+                const tuskGeometry = new THREE.ConeGeometry(0.08, 0.4, 24);
                 const tuskMaterial = new THREE.MeshStandardMaterial({ color: 0xFFFACD });
                 const leftTusk = new THREE.Mesh(tuskGeometry, tuskMaterial);
                 leftTusk.position.set(-0.25, 2.2, 0.45);
@@ -3292,7 +3337,7 @@
                 group.add(rightTusk);
                 
                 // Red glowing eyes
-                const eyeGeometry = new THREE.SphereGeometry(0.12, 8, 8);
+                const eyeGeometry = new THREE.SphereGeometry(0.12, 24, 24);
                 const eyeMaterial = new THREE.MeshStandardMaterial({ 
                     color: 0xFF0000,
                     emissive: 0xFF0000,
@@ -3306,7 +3351,7 @@
                 group.add(rightEye);
                 
                 // Massive arms with clubs
-                const armGeometry = new THREE.CylinderGeometry(0.3, 0.25, 1.5, 8);
+                const armGeometry = new THREE.CylinderGeometry(0.3, 0.25, 1.5, 24);
                 const leftArm = new THREE.Mesh(armGeometry, bodyMaterial);
                 leftArm.position.set(-0.75, 1, 0);
                 leftArm.rotation.z = Math.PI / 4;
@@ -3317,7 +3362,7 @@
                 group.add(rightArm);
                 
                 // Wooden club in right hand
-                const clubGeometry = new THREE.CylinderGeometry(0.15, 0.25, 1, 8);
+                const clubGeometry = new THREE.CylinderGeometry(0.15, 0.25, 1, 24);
                 const clubMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
                 const club = new THREE.Mesh(clubGeometry, clubMaterial);
                 club.position.set(1.2, 0.3, 0);
@@ -3332,28 +3377,28 @@
             const group = new THREE.Group();
             // Robe body — friendly green monk
             const body = new THREE.Mesh(
-                new THREE.CylinderGeometry(0.35, 0.45, 1.3, 8),
+                new THREE.CylinderGeometry(0.35, 0.45, 1.3, 24),
                 new THREE.MeshStandardMaterial({ color: 0x2d6a2d })
             );
             body.position.y = 0.65;
             group.add(body);
             // Head
             const head = new THREE.Mesh(
-                new THREE.SphereGeometry(0.28, 12, 12),
+                new THREE.SphereGeometry(0.28, 24, 24),
                 new THREE.MeshStandardMaterial({ color: 0xf5cba7 })
             );
             head.position.y = 1.55;
             group.add(head);
             // Hood
             const hood = new THREE.Mesh(
-                new THREE.ConeGeometry(0.32, 0.5, 8),
+                new THREE.ConeGeometry(0.32, 0.5, 24),
                 new THREE.MeshStandardMaterial({ color: 0x1e5c1e })
             );
             hood.position.y = 1.85;
             group.add(hood);
             // Beard
             const beard = new THREE.Mesh(
-                new THREE.ConeGeometry(0.12, 0.3, 6),
+                new THREE.ConeGeometry(0.12, 0.3, 24),
                 new THREE.MeshStandardMaterial({ color: 0x7d6608 })
             );
             beard.position.set(0, 1.35, 0.2);
@@ -3361,14 +3406,14 @@
             group.add(beard);
             // Staff
             const staff = new THREE.Mesh(
-                new THREE.CylinderGeometry(0.04, 0.04, 2.0, 8),
+                new THREE.CylinderGeometry(0.04, 0.04, 2.0, 24),
                 new THREE.MeshStandardMaterial({ color: 0x8B4513 })
             );
             staff.position.set(0.55, 1.0, 0);
             group.add(staff);
             // Glowing orb on staff
             const orb = new THREE.Mesh(
-                new THREE.SphereGeometry(0.12, 10, 10),
+                new THREE.SphereGeometry(0.12, 24, 24),
                 new THREE.MeshStandardMaterial({ color: 0xffd700, emissive: 0xffd700, emissiveIntensity: 1 })
             );
             orb.position.set(0.55, 2.1, 0);
@@ -3443,7 +3488,7 @@
             }
         }
 
-        function createEpsteinModel() {
+        function createJeffModel() {
             const group = new THREE.Group();
             
             // Human figure - business suit
@@ -3469,7 +3514,7 @@
             
             // Dark eyes
             const eyeGeometry = new THREE.BoxGeometry(0.08, 0.08, 0.08);
-            const eyeMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
+            const eyeMaterial = new THREE.MeshStandardMaterial({ color: 0x000000, roughness: 0.1, metalness: 0.9, emissive: 0x000000, emissiveIntensity: 0 });
             const leftEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
             leftEye.position.set(-0.12, 1.7, 0.2);
             group.add(leftEye);
@@ -3489,7 +3534,7 @@
             group.add(smile);
             
             // Arms
-            const armGeometry = new THREE.CylinderGeometry(0.12, 0.12, 1, 8);
+            const armGeometry = new THREE.CylinderGeometry(0.12, 0.12, 1, 24);
             const leftArm = new THREE.Mesh(armGeometry, suitMaterial);
             leftArm.position.set(-0.4, 0.7, 0);
             leftArm.rotation.z = Math.PI / 8;
@@ -3500,7 +3545,7 @@
             group.add(rightArm);
             
             // Legs
-            const legGeometry = new THREE.CylinderGeometry(0.12, 0.12, 0.8, 8);
+            const legGeometry = new THREE.CylinderGeometry(0.12, 0.12, 0.8, 24);
             const legMaterial = new THREE.MeshStandardMaterial({ color: 0x2a2a2a });
             const leftLeg = new THREE.Mesh(legGeometry, legMaterial);
             leftLeg.position.set(-0.15, 0.1, 0);
@@ -3510,8 +3555,8 @@
             group.add(rightLeg);
             
             // Evil red aura around him
-            const auraGeometry = new THREE.SphereGeometry(1.2, 16, 16);
-            const auraMaterial = new THREE.MeshBasicMaterial({ 
+            const auraGeometry = new THREE.SphereGeometry(1.2, 24, 24);
+            const auraMaterial = new THREE.MeshStandardMaterial({ 
                 color: 0xFF0000,
                 transparent: true,
                 opacity: 0.15,
@@ -3596,13 +3641,13 @@
             // Setup enemies
             let viceHp, minionHp, viceAtk, minionAtk;
             
-            // Check if this is Jeffrey Epstein
-            if (enemy.isEpstein) {
+            // Check if this is Jeff
+            if (enemy.isJeff) {
                 const levelMultiplier = 1 + (dungeonLevel - 1) * 0.5;
-                viceHp = Math.floor(EPSTEIN_ENCOUNTER.baseHp * levelMultiplier);
-                minionHp = Math.floor(EPSTEIN_ENCOUNTER.companionHp * levelMultiplier);
-                viceAtk = Math.floor(EPSTEIN_ENCOUNTER.baseAtk * levelMultiplier);
-                minionAtk = Math.floor(EPSTEIN_ENCOUNTER.companionAtk * levelMultiplier);
+                viceHp = Math.floor(JEFF_ENCOUNTER.baseHp * levelMultiplier);
+                minionHp = Math.floor(JEFF_ENCOUNTER.companionHp * levelMultiplier);
+                viceAtk = Math.floor(JEFF_ENCOUNTER.baseAtk * levelMultiplier);
+                minionAtk = Math.floor(JEFF_ENCOUNTER.companionAtk * levelMultiplier);
             }
             // Check if this is a mythical creature
             else if (enemy.isMythical) {
@@ -3651,7 +3696,7 @@
             battle.log = [`Facing ${enemy.vice.name}!`];
             
             // Create 3D battle scene
-            createBattleScene(enemy.vice, enemy.isEpstein);
+            createBattleScene(enemy.vice, enemy.isJeff);
             
             updateBattleUI();
             document.getElementById('battle-ui').style.display = 'block';
@@ -3665,7 +3710,7 @@
         let battleHeroModels = [];
         let battleEnemyModels = [];
 
-        function createBattleScene(vice, isEpstein = false) {
+        function createBattleScene(vice, isJeff = false) {
             // Clear any existing battle scene
             if (battleScene) {
                 while(battleScene.children.length > 0) { 
@@ -3678,8 +3723,8 @@
             
             battleScene = new THREE.Scene();
             
-            // Special island scene for Epstein
-            if (isEpstein) {
+            // Special island scene for Jeff
+            if (isJeff) {
                 // Sky - bright blue
                 battleScene.background = new THREE.Color(0x87CEEB);
                 
@@ -3711,7 +3756,7 @@
                 const buildingGroup = new THREE.Group();
                 
                 // Main structure - blue and white striped dome
-                const domeGeometry = new THREE.SphereGeometry(2, 16, 16, 0, Math.PI * 2, 0, Math.PI / 2);
+                const domeGeometry = new THREE.SphereGeometry(2, 24, 24);
                 const domeMaterial = new THREE.MeshStandardMaterial({ 
                     color: 0x4169E1,
                     emissive: 0x1E3A8A,
@@ -3722,7 +3767,7 @@
                 buildingGroup.add(dome);
                 
                 // White base
-                const baseGeometry = new THREE.CylinderGeometry(2.2, 2.5, 2, 8);
+                const baseGeometry = new THREE.CylinderGeometry(2.2, 2.5, 2, 24);
                 const whiteMaterial = new THREE.MeshStandardMaterial({ 
                     color: 0xFFFAFA,
                     roughness: 0.4
@@ -3734,7 +3779,7 @@
                 // White columns
                 for (let i = 0; i < 8; i++) {
                     const angle = (i / 8) * Math.PI * 2;
-                    const columnGeometry = new THREE.CylinderGeometry(0.15, 0.15, 2.5, 8);
+                    const columnGeometry = new THREE.CylinderGeometry(0.15, 0.15, 2.5, 24);
                     const column = new THREE.Mesh(columnGeometry, whiteMaterial);
                     column.position.set(
                         Math.cos(angle) * 2.3,
@@ -3745,7 +3790,7 @@
                 }
                 
                 // Gold top ornament
-                const ornamentGeometry = new THREE.SphereGeometry(0.4, 16, 16);
+                const ornamentGeometry = new THREE.SphereGeometry(0.4, 24, 24);
                 const goldMaterial = new THREE.MeshStandardMaterial({ 
                     color: 0xFFD700,
                     metalness: 0.9,
@@ -3767,7 +3812,7 @@
                     const palmGroup = new THREE.Group();
                     
                     // Trunk
-                    const trunkGeometry = new THREE.CylinderGeometry(0.2, 0.25, 3, 8);
+                    const trunkGeometry = new THREE.CylinderGeometry(0.2, 0.25, 3, 24);
                     const trunkMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
                     const trunk = new THREE.Mesh(trunkGeometry, trunkMaterial);
                     trunk.position.y = 1.5;
@@ -3816,7 +3861,7 @@
                 
                 // Add some environment elements (rocks/trees)
                 for (let i = 0; i < 5; i++) {
-                    const envGeo = new THREE.CylinderGeometry(0.3, 0.4, 1.5, 6);
+                    const envGeo = new THREE.CylinderGeometry(0.3, 0.4, 1.5, 24);
                     const envMat = new THREE.MeshStandardMaterial({ 
                         color: bgIndex === 0 ? 0x2d5016 : bgIndex === 1 ? 0x8B7355 : 0x4a4a5a
                     });
@@ -3880,14 +3925,14 @@
             battleEnemyModels = [];
             for (let i = 0; i < 2; i++) {
                 let enemyModel;
-                // Check if this is Epstein
-                if (isEpstein && vice.name === EPSTEIN_ENCOUNTER.name) {
+                // Check if this is Jeff
+                if (isJeff && vice.name === JEFF_ENCOUNTER.name) {
                     if (i === 0) {
-                        enemyModel = createEpsteinModel();
+                        enemyModel = createJeffModel();
                     } else {
-                        // Ghislaine - similar but female
-                        enemyModel = createEpsteinModel(); // Reuse model, will scale/modify
-                        enemyModel.scale.set(0.85, 0.85, 0.85); // Smaller for Ghislaine
+                        // Maxwell - similar but female
+                        enemyModel = createJeffModel(); // Reuse model, will scale/modify
+                        enemyModel.scale.set(0.85, 0.85, 0.85); // Smaller for Maxwell
                     }
                 }
                 // Check if this is a mythical creature
@@ -3904,8 +3949,8 @@
                 enemyModel.rotation.y = -Math.PI / 6; // Face left slightly
                 enemyModel.castShadow = true;
                 
-                // Scale down minion slightly (if not already scaled for Ghislaine)
-                if (i === 1 && !isEpstein) {
+                // Scale down minion slightly (if not already scaled for Maxwell)
+                if (i === 1 && !isJeff) {
                     enemyModel.scale.set(0.7, 0.7, 0.7);
                 }
                 
@@ -4114,44 +4159,20 @@
             const hero = heroes[battle.currentHeroIndex];
             
             if (hero.mp >= 10) {
-                const damage = 40 + Math.floor(Math.random() * 20); // Enhanced from 20-30 to 40-60
+                const damage = 40 + Math.floor(Math.random() * 20);
                 let enemiesHit = 0;
                 
                 battle.enemies.forEach((enemy, i) => {
                     if (enemy.hp > 0) {
                         enemy.hp -= damage;
                         enemiesHit++;
-                        
-                        // Shake enemy
-                        if (battleEnemyModels[i]) {
-                            const enemyModel = battleEnemyModels[i];
-                            let shakeCount = 0;
-                            const shakeInterval = setInterval(() => {
-                                enemyModel.position.x += (Math.random() - 0.5) * 0.3;
-                                shakeCount++;
-                                if (shakeCount > 5) {
-                                    clearInterval(shakeInterval);
-                                    enemyModel.position.x = 5;
-                                }
-                            }, 50);
-                        }
-                        
-                        // Fade out if defeated
-                        if (enemy.hp <= 0 && battleEnemyModels[i]) {
-                            const enemyModel = battleEnemyModels[i];
-                            let opacity = 1;
-                            const fadeInterval = setInterval(() => {
-                                opacity -= 0.1;
-                                enemyModel.traverse((child) => {
-                                    if (child.material) {
-                                        child.material.opacity = opacity;
-                                        child.material.transparent = true;
-                                    }
-                                });
-                                if (opacity <= 0) {
-                                    clearInterval(fadeInterval);
-                                }
-                            }, 50);
+                        const enemyModel = battleEnemyModels[i];
+                        if (enemyModel) {
+                            if (enemy.hp > 0) {
+                                shakeModel(enemyModel, 400, 0.35);
+                            } else {
+                                setTimeout(() => fadeOutModel(enemyModel, 600), 300);
+                            }
                         }
                     }
                 });
@@ -4159,28 +4180,17 @@
                 hero.mp -= 10;
                 battle.log.push(`${hero.name} prays the Litany of the Saints! ${damage} holy damage to all foes!`);
                 
-                // All heroes glow
-                battleHeroModels.forEach(heroModel => {
-                    heroModel.traverse((child) => {
-                        if (child.material) {
-                            const originalEmissive = child.material.emissive ? child.material.emissive.clone() : new THREE.Color(0x000000);
-                            child.material.emissive = new THREE.Color(0xffffff);
-                            child.material.emissiveIntensity = 0.8;
-                            setTimeout(() => {
-                                child.material.emissive = originalEmissive;
-                                child.material.emissiveIntensity = 0;
-                            }, 1000);
-                        }
-                    });
+                // All heroes glow briefly using setEmissive helper
+                battleHeroModels.forEach(m => {
+                    setEmissive(m, 0xffffff, 0.8);
+                    setTimeout(() => setEmissive(m, 0x000000, 0), 900);
                 });
                 
             } else {
                 battle.log.push(`${hero.name} lacks MP!`);
             }
             
-            setTimeout(() => {
-                nextTurn();
-            }, 1200);
+            setTimeout(() => { if (battle.active) nextTurn(); }, 1200);
         }
 
         function changeTarget(delta) {
@@ -4195,318 +4205,201 @@
             }
         }
 
+        // Safe material helper — only sets emissive on materials that support it
+        function setEmissive(model, color, intensity) {
+            if (!model) return;
+            model.traverse((child) => {
+                if (child.isMesh && child.material && child.material.emissive !== undefined) {
+                    child.material.emissive.setHex(color);
+                    child.material.emissiveIntensity = intensity;
+                }
+            });
+        }
+
+        // Safe fade helper using RAF chain instead of setInterval
+        function fadeOutModel(model, duration, onDone) {
+            if (!model) return;
+            const start = performance.now();
+            function fadeStep() {
+                const t = Math.min((performance.now() - start) / duration, 1);
+                model.traverse((child) => {
+                    if (child.isMesh && child.material) {
+                        child.material.transparent = true;
+                        child.material.opacity = 1 - t;
+                    }
+                });
+                if (t < 1) requestAnimationFrame(fadeStep);
+                else if (onDone) onDone();
+            }
+            requestAnimationFrame(fadeStep);
+        }
+
+        // Safe shake helper using RAF chain
+        function shakeModel(model, duration, intensity) {
+            if (!model) return;
+            const start = performance.now();
+            const origX = model.position.x;
+            function shakeStep() {
+                const t = (performance.now() - start) / duration;
+                if (t < 1) {
+                    model.position.x = origX + (Math.random() - 0.5) * intensity * (1 - t);
+                    requestAnimationFrame(shakeStep);
+                } else {
+                    model.position.x = origX;
+                }
+            }
+            requestAnimationFrame(shakeStep);
+        }
+
+        // Safe hero dash using RAF
+        function dashHero(model, duration) {
+            if (!model) return;
+            const start = performance.now();
+            const origZ = model.position.z;
+            function dashStep() {
+                const t = Math.min((performance.now() - start) / duration, 1);
+                model.position.z = origZ + Math.sin(t * Math.PI) * 3;
+                if (t < 1) requestAnimationFrame(dashStep);
+                else model.position.z = origZ;
+            }
+            requestAnimationFrame(dashStep);
+        }
+
         function confirmTarget() {
             const hero = heroes[battle.currentHeroIndex];
             const target = battle.enemies[battle.targetIndex];
-            
+            if (!target) { nextTurn(); return; }
+
             if (battle.currentAction === 'attack') {
-                const damage = Math.max(1, hero.atk - target.def + Math.floor(Math.random() * 5));
+                const damage = Math.max(1, hero.atk - (target.def || 0) + Math.floor(Math.random() * 5));
                 target.hp -= damage;
                 battle.log.push(`${hero.name} deals ${damage} damage to ${target.name}!`);
-                
-                // Attack animation - hero moves forward
-                if (battleHeroModels[battle.currentHeroIndex]) {
-                    const heroModel = battleHeroModels[battle.currentHeroIndex];
-                    const originalZ = heroModel.position.z;
-                    
-                    // Quick dash forward
-                    let dashProgress = 0;
-                    const dashInterval = setInterval(() => {
-                        dashProgress += 0.2;
-                        heroModel.position.z = originalZ + Math.sin(dashProgress * Math.PI) * 3;
-                        
-                        if (dashProgress >= 1) {
-                            clearInterval(dashInterval);
-                            heroModel.position.z = originalZ;
-                        }
-                    }, 30);
+
+                const heroModel = battleHeroModels[battle.currentHeroIndex];
+                const enemyModel = battleEnemyModels[battle.targetIndex];
+
+                dashHero(heroModel, 300);
+
+                if (enemyModel) {
+                    if (target.hp > 0) {
+                        shakeModel(enemyModel, 400, 0.4);
+                        setEmissive(enemyModel, 0xff0000, 0.6);
+                        setTimeout(() => setEmissive(enemyModel, 0x000000, 0), 400);
+                    } else {
+                        setTimeout(() => fadeOutModel(enemyModel, 600), 400);
+                    }
                 }
-                
-                // Damage animation - enemy shakes and flashes red
-                if (battleEnemyModels[battle.targetIndex] && target.hp > 0) {
-                    const enemyModel = battleEnemyModels[battle.targetIndex];
-                    let shakeCount = 0;
-                    const originalX = enemyModel.position.x;
-                    
-                    const damageInterval = setInterval(() => {
-                        enemyModel.position.x = originalX + (Math.random() - 0.5) * 0.4;
-                        
-                        // Flash red
-                        enemyModel.traverse((child) => {
-                            if (child.material) {
-                                child.material.emissive = new THREE.Color(0xff0000);
-                                child.material.emissiveIntensity = 0.5;
-                            }
-                        });
-                        
-                        shakeCount++;
-                        if (shakeCount > 6) {
-                            clearInterval(damageInterval);
-                            enemyModel.position.x = originalX;
-                            
-                            // Reset color
-                            enemyModel.traverse((child) => {
-                                if (child.material) {
-                                    child.material.emissive = new THREE.Color(0x000000);
-                                    child.material.emissiveIntensity = 0;
-                                }
-                            });
-                        }
-                    }, 50);
-                }
-                
-                // Enemy defeated - fade out
-                if (target.hp <= 0 && battleEnemyModels[battle.targetIndex]) {
-                    setTimeout(() => {
-                        const enemyModel = battleEnemyModels[battle.targetIndex];
-                        let opacity = 1;
-                        const fadeInterval = setInterval(() => {
-                            opacity -= 0.1;
-                            enemyModel.traverse((child) => {
-                                if (child.material) {
-                                    child.material.opacity = opacity;
-                                    child.material.transparent = true;
-                                }
-                            });
-                            if (opacity <= 0) {
-                                clearInterval(fadeInterval);
-                            }
-                        }, 50);
-                    }, 400);
-                }
-                
+
             } else if (battle.currentAction === 'special') {
-                const specialCost = hero.specialCost;
-                const specialDamage = hero.specialDamage;
-                
-                if (hero.mp >= specialCost) {
-                    target.hp -= specialDamage;
-                    hero.mp -= specialCost;
-                    battle.log.push(`${hero.name} uses ${hero.specialAttack}! ${specialDamage} damage!`);
-                    
-                    // SPECIAL ATTACK ANIMATIONS
-                    if (hero.name === "St. Michael") {
-                        // Heavenly Host - Angels descend from heaven
-                        if (battleHeroModels[battle.currentHeroIndex]) {
-                            const heroModel = battleHeroModels[battle.currentHeroIndex];
-                            
-                            // Hero glows with divine light
-                            heroModel.traverse((child) => {
-                                if (child.material) {
-                                    child.material.emissive = new THREE.Color(0xffd700);
-                                    child.material.emissiveIntensity = 1.0;
-                                }
-                            });
-                            
-                            // Create descending angel lights
-                            for (let i = 0; i < 5; i++) {
-                                setTimeout(() => {
-                                    const angelLight = new THREE.Mesh(
-                                        new THREE.SphereGeometry(0.3, 8, 8),
-                                        new THREE.MeshBasicMaterial({ 
-                                            color: 0xffffff,
-                                            transparent: true,
-                                            opacity: 1
-                                        })
-                                    );
-                                    angelLight.position.set(
-                                        battleEnemyModels[battle.targetIndex].position.x + (Math.random() - 0.5) * 2,
-                                        10,
-                                        battleEnemyModels[battle.targetIndex].position.z + (Math.random() - 0.5) * 2
-                                    );
-                                    battleScene.add(angelLight);
-                                    
-                                    // Descend
-                                    let descent = 0;
-                                    const descendInterval = setInterval(() => {
-                                        descent += 0.5;
-                                        angelLight.position.y = 10 - descent;
-                                        
-                                        if (angelLight.position.y <= 0) {
-                                            clearInterval(descendInterval);
-                                            battleScene.remove(angelLight);
-                                        }
-                                    }, 30);
-                                }, i * 100);
-                            }
-                            
+                if (hero.mp >= hero.specialCost) {
+                    const dmg = hero.specialDamage;
+                    target.hp -= dmg;
+                    hero.mp -= hero.specialCost;
+                    battle.log.push(`${hero.name} uses ${hero.specialAttack}! ${dmg} damage!`);
+
+                    const heroModel  = battleHeroModels[battle.currentHeroIndex];
+                    const enemyModel = battleEnemyModels[battle.targetIndex];
+
+                    if (hero.name === 'St. Michael') {
+                        // Angels descend — lightweight point lights only, no setInterval
+                        setEmissive(heroModel, 0xffd700, 1.0);
+                        for (let i = 0; i < 5; i++) {
                             setTimeout(() => {
-                                heroModel.traverse((child) => {
-                                    if (child.material) {
-                                        child.material.emissive = new THREE.Color(0x000000);
-                                        child.material.emissiveIntensity = 0;
-                                    }
-                                });
-                            }, 1500);
+                                if (!battleScene) return;
+                                const light = new THREE.PointLight(0xffffff, 3, 8);
+                                const ex = enemyModel ? enemyModel.position.x + (Math.random()-0.5)*2 : 0;
+                                const ez = enemyModel ? enemyModel.position.z + (Math.random()-0.5)*2 : 0;
+                                light.position.set(ex, 8, ez);
+                                battleScene.add(light);
+                                // Descend via RAF
+                                const s = performance.now();
+                                const drop = () => {
+                                    const t = Math.min((performance.now()-s)/700, 1);
+                                    light.position.y = 8 * (1 - t);
+                                    if (t < 1) requestAnimationFrame(drop);
+                                    else if (battleScene) battleScene.remove(light);
+                                };
+                                requestAnimationFrame(drop);
+                            }, i * 150);
                         }
-                        
-                    } else if (hero.name === "St. Vincent") {
-                        // Rosary Throw
-                        if (battleHeroModels[battle.currentHeroIndex]) {
-                            const heroModel = battleHeroModels[battle.currentHeroIndex];
-                            
-                            // Create rosary projectile
-                            const rosary = new THREE.Group();
-                            const beadGeometry = new THREE.SphereGeometry(0.08, 8, 8);
-                            const beadMaterial = new THREE.MeshStandardMaterial({ color: 0x8b4513 });
-                            for (let i = 0; i < 5; i++) {
-                                const bead = new THREE.Mesh(beadGeometry, beadMaterial);
-                                bead.position.x = i * 0.15;
-                                rosary.add(bead);
-                            }
-                            
+                        setTimeout(() => setEmissive(heroModel, 0x000000, 0), 1500);
+
+                    } else if (hero.name === 'St. Vincent') {
+                        // Rosary Throw — RAF arc
+                        if (heroModel && enemyModel && battleScene) {
+                            const rosary = new THREE.Mesh(
+                                new THREE.SphereGeometry(0.15, 24, 24),
+                                new THREE.MeshStandardMaterial({ color: 0x8b4513, emissive: 0x8b4513, emissiveIntensity: 0.5 })
+                            );
                             rosary.position.copy(heroModel.position);
                             rosary.position.y = 1.5;
                             battleScene.add(rosary);
-                            
-                            // Throw animation
-                            const targetPos = battleEnemyModels[battle.targetIndex].position;
-                            let throwProgress = 0;
-                            const throwInterval = setInterval(() => {
-                                throwProgress += 0.05;
-                                
-                                rosary.position.x = heroModel.position.x + (targetPos.x - heroModel.position.x) * throwProgress;
-                                rosary.position.z = heroModel.position.z + (targetPos.z - heroModel.position.z) * throwProgress;
-                                rosary.position.y = 1.5 + Math.sin(throwProgress * Math.PI) * 2;
-                                rosary.rotation.z += 0.3;
-                                
-                                if (throwProgress >= 1) {
-                                    clearInterval(throwInterval);
-                                    battleScene.remove(rosary);
-                                }
-                            }, 30);
+                            const from = heroModel.position.clone();
+                            const to   = enemyModel.position.clone();
+                            const s = performance.now();
+                            const fly = () => {
+                                const t = Math.min((performance.now()-s)/600, 1);
+                                rosary.position.lerpVectors(from, to, t);
+                                rosary.position.y = 1.5 + Math.sin(t * Math.PI) * 2;
+                                rosary.rotation.z += 0.15;
+                                if (t < 1) requestAnimationFrame(fly);
+                                else if (battleScene) battleScene.remove(rosary);
+                            };
+                            requestAnimationFrame(fly);
                         }
-                        
-                    } else if (hero.name === "St. Joan") {
-                        // Divine Charge - Prayer then sword lunge
-                        if (battleHeroModels[battle.currentHeroIndex]) {
-                            const heroModel = battleHeroModels[battle.currentHeroIndex];
-                            const originalZ = heroModel.position.z;
-                            
-                            // Prayer pose - glow
-                            heroModel.traverse((child) => {
-                                if (child.material) {
-                                    child.material.emissive = new THREE.Color(0xffd700);
-                                    child.material.emissiveIntensity = 0.8;
-                                }
-                            });
-                            
-                            // After prayer, charge forward
-                            setTimeout(() => {
-                                let chargeProgress = 0;
-                                const chargeInterval = setInterval(() => {
-                                    chargeProgress += 0.1;
-                                    heroModel.position.z = originalZ + Math.sin(chargeProgress * Math.PI) * 5;
-                                    
-                                    if (chargeProgress >= 1) {
-                                        clearInterval(chargeInterval);
-                                        heroModel.position.z = originalZ;
-                                        
-                                        // Stop glowing
-                                        heroModel.traverse((child) => {
-                                            if (child.material) {
-                                                child.material.emissive = new THREE.Color(0x000000);
-                                                child.material.emissiveIntensity = 0;
-                                            }
-                                        });
-                                    }
-                                }, 30);
-                            }, 800);
-                        }
-                    }
-                    
-                    // Enemy damage animation
-                    if (battleEnemyModels[battle.targetIndex] && target.hp > 0) {
+
+                    } else if (hero.name === 'St. Joan') {
+                        // Divine Charge — glow then dash
+                        setEmissive(heroModel, 0xffd700, 0.8);
                         setTimeout(() => {
-                            const enemyModel = battleEnemyModels[battle.targetIndex];
-                            let shakeCount = 0;
-                            const originalX = enemyModel.position.x;
-                            
-                            const damageInterval = setInterval(() => {
-                                enemyModel.position.x = originalX + (Math.random() - 0.5) * 0.5;
-                                shakeCount++;
-                                if (shakeCount > 8) {
-                                    clearInterval(damageInterval);
-                                    enemyModel.position.x = originalX;
-                                }
-                            }, 50);
+                            dashHero(heroModel, 500);
+                            setTimeout(() => setEmissive(heroModel, 0x000000, 0), 600);
+                        }, 700);
+                    }
+
+                    // Damage / defeat animation on enemy
+                    if (enemyModel) {
+                        setTimeout(() => {
+                            if (target.hp > 0) {
+                                shakeModel(enemyModel, 500, 0.5);
+                            } else {
+                                fadeOutModel(enemyModel, 700);
+                            }
                         }, 600);
                     }
-                    
-                    if (target.hp <= 0 && battleEnemyModels[battle.targetIndex]) {
-                        setTimeout(() => {
-                            const enemyModel = battleEnemyModels[battle.targetIndex];
-                            let opacity = 1;
-                            const fadeInterval = setInterval(() => {
-                                opacity -= 0.1;
-                                enemyModel.traverse((child) => {
-                                    if (child.material) {
-                                        child.material.opacity = opacity;
-                                        child.material.transparent = true;
-                                    }
-                                });
-                                if (opacity <= 0) {
-                                    clearInterval(fadeInterval);
-                                }
-                            }, 50);
-                        }, 800);
-                    }
+
                 } else {
                     battle.log.push(`${hero.name} lacks MP!`);
                 }
+
             } else if (battle.currentAction === 'trinity') {
-                // Trinity: costs ALL MP, summons Jesus on crucifix, wipes target instantly
                 if (hero.mp > 0) {
                     const mpSpent = hero.mp;
                     hero.mp = 0;
-                    target.hp = 0; // Instant kill
-                    battle.log.push(`✝ ${hero.name} calls upon the Holy Trinity! Jesus descends on the Crucifix!`);
+                    target.hp = 0;
+                    battle.log.push(`✝ ${hero.name} calls upon the Holy Trinity!`);
                     battle.log.push(`Divine light obliterates ${target.name}! (${mpSpent} MP consumed)`);
-                    
-                    // Dramatic Trinity animation — golden pillar of light
+
                     if (battleScene) {
-                        const trinityLight = new THREE.PointLight(0xffd700, 10, 20);
-                        trinityLight.position.set(0, 5, 0);
-                        battleScene.add(trinityLight);
-                        
-                        // Pulsing gold particles rain down
-                        AnimationSystem.createParticleEffect(
-                            new THREE.Vector3(0, 6, 0), 0xffd700, 40, 'fall'
-                        );
-                        
-                        // Fade out the light after 2s
-                        setTimeout(() => {
-                            if (battleScene) battleScene.remove(trinityLight);
-                        }, 2000);
+                        const light = new THREE.PointLight(0xffd700, 12, 25);
+                        light.position.set(0, 5, 0);
+                        battleScene.add(light);
+                        AnimationSystem.createParticleEffect(new THREE.Vector3(0, 5, 0), 0xffd700, 30, 'fall');
+                        setTimeout(() => { if (battleScene) battleScene.remove(light); }, 2000);
                     }
-                    
-                    // Enemy defeated fade
-                    if (battleEnemyModels[battle.targetIndex]) {
-                        setTimeout(() => {
-                            const enemyModel = battleEnemyModels[battle.targetIndex];
-                            let opacity = 1;
-                            const fadeInterval = setInterval(() => {
-                                opacity -= 0.08;
-                                enemyModel.traverse((child) => {
-                                    if (child.material) {
-                                        child.material.opacity = opacity;
-                                        child.material.transparent = true;
-                                        child.material.emissive = new THREE.Color(0xffd700);
-                                        child.material.emissiveIntensity = 1 - opacity;
-                                    }
-                                });
-                                if (opacity <= 0) clearInterval(fadeInterval);
-                            }, 40);
-                        }, 500);
+
+                    const enemyModel = battleEnemyModels[battle.targetIndex];
+                    if (enemyModel) {
+                        setEmissive(enemyModel, 0xffd700, 1.0);
+                        setTimeout(() => fadeOutModel(enemyModel, 800), 400);
                     }
                 } else {
                     battle.log.push(`${hero.name} has no MP for Trinity!`);
                 }
             }
-            
-            setTimeout(() => {
-                nextTurn();
-            }, battle.currentAction === 'special' || battle.currentAction === 'trinity' ? 2000 : 800);
+
+            const delay = (battle.currentAction === 'special' || battle.currentAction === 'trinity') ? 1800 : 700;
+            setTimeout(() => { if (battle.active) nextTurn(); }, delay);
         }
 
         function cancelTarget() {
@@ -4610,8 +4503,8 @@
                     enemies = enemies.filter(e => e !== enemyToRemove);
                 }
                 
-                // Check if this was a mythical creature or Epstein
-                const isMythicalCreature = enemyToRemove && (enemyToRemove.isMythical || enemyToRemove.isEpstein);
+                // Check if this was a mythical creature or Jeff
+                const isMythicalCreature = enemyToRemove && (enemyToRemove.isMythical || enemyToRemove.isJeff);
                 
                 // Award virtue item for deadly sins
                 if (DEADLY_SINS.includes(viceName) && !inventory.virtueItems.includes(viceName)) {
@@ -4873,7 +4766,7 @@
                 for (let i = 0; i < count; i++) {
                     const particle = {
                         mesh: new THREE.Mesh(
-                            new THREE.SphereGeometry(0.1, 8, 8),
+                            new THREE.SphereGeometry(0.1, 24, 24),
                             new THREE.MeshStandardMaterial({
                                 color: color,
                                 emissive: color,
@@ -5173,8 +5066,8 @@
                 const sunLight = new THREE.DirectionalLight(0xfff5e6, 3.0);
                 sunLight.position.set(15, 30, 10);
                 sunLight.castShadow = true;
-                sunLight.shadow.mapSize.width = 4096;
-                sunLight.shadow.mapSize.height = 4096;
+                sunLight.shadow.mapSize.width = 512;
+                sunLight.shadow.mapSize.height = 512;
                 sunLight.shadow.camera.left = -80;
                 sunLight.shadow.camera.right = 80;
                 sunLight.shadow.camera.top = 80;
@@ -5267,7 +5160,7 @@
             gardenScene.add(rightTablet);
             
             // Stone pedestal
-            const pedestalGeometry = new THREE.CylinderGeometry(1.5, 1.8, 0.5, 8);
+            const pedestalGeometry = new THREE.CylinderGeometry(1.5, 1.8, 0.5, 24);
             const pedestalMaterial = new THREE.MeshStandardMaterial({ color: 0x696969 });
             const pedestal = new THREE.Mesh(pedestalGeometry, pedestalMaterial);
             pedestal.position.set(x, y + 0.25, z);
@@ -5276,7 +5169,7 @@
 
         function createStaffOfAaron(x, y, z) {
             // Staff
-            const staffGeometry = new THREE.CylinderGeometry(0.08, 0.08, 3, 8);
+            const staffGeometry = new THREE.CylinderGeometry(0.08, 0.08, 3, 24);
             const staffMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
             const staff = new THREE.Mesh(staffGeometry, staffMaterial);
             staff.position.set(x, y + 1.5, z);
@@ -5287,7 +5180,7 @@
             
             // Blossoming almond branches
             for (let i = 0; i < 5; i++) {
-                const blossomGeometry = new THREE.SphereGeometry(0.15, 8, 8);
+                const blossomGeometry = new THREE.SphereGeometry(0.15, 24, 24);
                 const blossomMaterial = new THREE.MeshStandardMaterial({ 
                     color: 0xFFB6C1,
                     emissive: 0xFFB6C1,
@@ -5303,7 +5196,7 @@
             }
             
             // Display stand
-            const standGeometry = new THREE.CylinderGeometry(0.5, 0.6, 0.8, 8);
+            const standGeometry = new THREE.CylinderGeometry(0.5, 0.6, 0.8, 24);
             const standMaterial = new THREE.MeshStandardMaterial({ color: 0xD4AF37 });
             const stand = new THREE.Mesh(standGeometry, standMaterial);
             stand.position.set(x, y + 0.4, z);
@@ -5355,7 +5248,7 @@
             gardenScene.add(rightWing);
             
             // Pedestal
-            const pedestalGeometry = new THREE.CylinderGeometry(1.5, 1.8, 1, 8);
+            const pedestalGeometry = new THREE.CylinderGeometry(1.5, 1.8, 1, 24);
             const pedestalMaterial = new THREE.MeshStandardMaterial({ color: 0x8B7355 });
             const pedestal = new THREE.Mesh(pedestalGeometry, pedestalMaterial);
             pedestal.position.set(x, y + 0.5, z);
@@ -5388,7 +5281,7 @@
             group.add(beard);
             
             // Staff in hand
-            const staffGeometry = new THREE.CylinderGeometry(0.05, 0.05, 2.5, 8);
+            const staffGeometry = new THREE.CylinderGeometry(0.05, 0.05, 2.5, 24);
             const staffMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
             const staff = new THREE.Mesh(staffGeometry, staffMaterial);
             staff.position.set(0.6, 1.5, 0);
@@ -5443,14 +5336,14 @@
             group.add(hair);
             
             // Staff/Walking stick
-            const staffGeometry = new THREE.CylinderGeometry(0.06, 0.06, 2.3, 8);
+            const staffGeometry = new THREE.CylinderGeometry(0.06, 0.06, 2.3, 24);
             const staffMaterial = new THREE.MeshStandardMaterial({ color: 0x654321 });
             const staff = new THREE.Mesh(staffGeometry, staffMaterial);
             staff.position.set(0.6, 1.4, 0);
             group.add(staff);
             
             // Flame symbol (Elijah called down fire from heaven)
-            const flameGeometry = new THREE.ConeGeometry(0.15, 0.4, 6);
+            const flameGeometry = new THREE.ConeGeometry(0.15, 0.4, 24);
             const flameMaterial = new THREE.MeshStandardMaterial({ 
                 color: 0xff6600,
                 emissive: 0xff6600,
@@ -5503,7 +5396,7 @@
             group.add(hands);
             
             // Halo
-            const haloGeometry = new THREE.TorusGeometry(0.4, 0.04, 8, 16);
+            const haloGeometry = new THREE.TorusGeometry(0.4, 0.04, 16, 32);
             const haloMaterial = new THREE.MeshStandardMaterial({ 
                 color: 0xffd700,
                 emissive: 0xffd700,
@@ -5546,14 +5439,14 @@
             group.add(beard);
             
             // Walking staff
-            const staffGeometry = new THREE.CylinderGeometry(0.05, 0.05, 2.5, 8);
+            const staffGeometry = new THREE.CylinderGeometry(0.05, 0.05, 2.5, 24);
             const staffMaterial = new THREE.MeshStandardMaterial({ color: 0x654321 });
             const staff = new THREE.Mesh(staffGeometry, staffMaterial);
             staff.position.set(0.6, 1.5, 0);
             group.add(staff);
             
             // Turban/head covering
-            const turbanGeometry = new THREE.CylinderGeometry(0.35, 0.35, 0.3, 8);
+            const turbanGeometry = new THREE.CylinderGeometry(0.35, 0.35, 0.3, 24);
             const turbanMaterial = new THREE.MeshStandardMaterial({ color: 0xDEB887 });
             const turban = new THREE.Mesh(turbanGeometry, turbanMaterial);
             turban.position.y = 2.45;
@@ -5580,7 +5473,7 @@
             gardenScene.add(stand);
             
             // Post
-            const postGeometry = new THREE.CylinderGeometry(0.1, 0.1, 1.5, 8);
+            const postGeometry = new THREE.CylinderGeometry(0.1, 0.1, 1.5, 24);
             const post = new THREE.Mesh(postGeometry, standMaterial);
             post.position.set(x, y + 0.75, z);
             gardenScene.add(post);
@@ -5590,7 +5483,7 @@
             const group = new THREE.Group();
             
             // Cherubim body (angelic figure)
-            const bodyGeometry = new THREE.CylinderGeometry(0.4, 0.5, 2, 8);
+            const bodyGeometry = new THREE.CylinderGeometry(0.4, 0.5, 2, 24);
             const bodyMaterial = new THREE.MeshStandardMaterial({ 
                 color: 0xf5f5dc, // Beige/cream
                 roughness: 0.6,
@@ -5602,14 +5495,14 @@
             group.add(body);
             
             // Head
-            const headGeometry = new THREE.SphereGeometry(0.3, 16, 16);
+            const headGeometry = new THREE.SphereGeometry(0.3, 24, 24);
             const head = new THREE.Mesh(headGeometry, bodyMaterial);
             head.position.set(0, 2.7, 0);
             head.castShadow = true;
             group.add(head);
             
             // Glowing halo
-            const haloGeometry = new THREE.TorusGeometry(0.4, 0.05, 8, 32);
+            const haloGeometry = new THREE.TorusGeometry(0.4, 0.05, 16, 32);
             const haloMaterial = new THREE.MeshStandardMaterial({ 
                 color: 0xffeb3b,
                 emissive: 0xffeb3b,
@@ -5644,7 +5537,7 @@
             group.add(rightWing);
             
             // FLAMING SWORD - The Key Feature
-            const swordHandleGeo = new THREE.CylinderGeometry(0.08, 0.08, 0.6, 8);
+            const swordHandleGeo = new THREE.CylinderGeometry(0.08, 0.08, 0.6, 24);
             const swordHandleMat = new THREE.MeshStandardMaterial({ color: 0x654321 });
             const swordHandle = new THREE.Mesh(swordHandleGeo, swordHandleMat);
             swordHandle.position.set(0.5, 1.5, 0);
@@ -5663,7 +5556,7 @@
             group.add(swordBlade);
             
             // FLAMES on the sword
-            const flameGeometry = new THREE.ConeGeometry(0.25, 0.8, 8);
+            const flameGeometry = new THREE.ConeGeometry(0.25, 0.8, 24);
             const flameMaterial = new THREE.MeshStandardMaterial({ 
                 color: 0xff4500,
                 emissive: 0xff4500,
@@ -5691,7 +5584,7 @@
             const group = new THREE.Group();
             
             // Golden jar/pot for manna
-            const jarGeometry = new THREE.CylinderGeometry(0.4, 0.5, 0.8, 16);
+            const jarGeometry = new THREE.CylinderGeometry(0.4, 0.5, 0.8, 24);
             const jarMaterial = new THREE.MeshStandardMaterial({ 
                 color: 0xDAA520,
                 metalness: 0.8,
@@ -5704,13 +5597,13 @@
             group.add(jar);
             
             // Lid
-            const lidGeometry = new THREE.CylinderGeometry(0.45, 0.45, 0.2, 16);
+            const lidGeometry = new THREE.CylinderGeometry(0.45, 0.45, 0.2, 24);
             const lid = new THREE.Mesh(lidGeometry, jarMaterial);
             lid.position.y = 1.7;
             group.add(lid);
             
             // Pedestal
-            const pedestalGeometry = new THREE.CylinderGeometry(0.6, 0.7, 0.8, 8);
+            const pedestalGeometry = new THREE.CylinderGeometry(0.6, 0.7, 0.8, 24);
             const pedestalMaterial = new THREE.MeshStandardMaterial({ color: 0x8B7355 });
             const pedestal = new THREE.Mesh(pedestalGeometry, pedestalMaterial);
             pedestal.position.y = 0.4;
@@ -5718,7 +5611,7 @@
             
             // Glowing particles above jar (representing manna)
             for (let i = 0; i < 10; i++) {
-                const particleGeometry = new THREE.SphereGeometry(0.05, 8, 8);
+                const particleGeometry = new THREE.SphereGeometry(0.05, 24, 24);
                 const particleMaterial = new THREE.MeshStandardMaterial({ 
                     color: 0xFFFFE0,
                     emissive: 0xFFFFE0,
@@ -5748,7 +5641,7 @@
             const group = new THREE.Group();
             
             // Large trunk
-            const trunkGeometry = new THREE.CylinderGeometry(0.8, 1.2, 5, 12);
+            const trunkGeometry = new THREE.CylinderGeometry(0.8, 1.2, 5, 24);
             const trunkMaterial = new THREE.MeshStandardMaterial({ 
                 color: 0x8B4513,
                 roughness: 0.95
@@ -5758,7 +5651,7 @@
             group.add(trunk);
             
             // Golden glowing canopy
-            const canopyGeometry = new THREE.SphereGeometry(3, 16, 16);
+            const canopyGeometry = new THREE.SphereGeometry(3, 24, 24);
             const canopyMaterial = new THREE.MeshStandardMaterial({ 
                 color: 0x90EE90,
                 emissive: 0xFFD700,
@@ -5773,7 +5666,7 @@
             // Glowing fruit (12 fruits for 12 months - Revelation 22:2)
             for (let i = 0; i < 12; i++) {
                 const angle = (i / 12) * Math.PI * 2;
-                const fruitGeometry = new THREE.SphereGeometry(0.3, 8, 8);
+                const fruitGeometry = new THREE.SphereGeometry(0.3, 24, 24);
                 const fruitMaterial = new THREE.MeshStandardMaterial({ 
                     color: 0xFFD700,
                     emissive: 0xFFD700,
@@ -5816,7 +5709,7 @@
             const group = new THREE.Group();
             
             // Angelic robes - white/cream
-            const robeGeometry = new THREE.CylinderGeometry(0.3, 0.4, 1.5, 8);
+            const robeGeometry = new THREE.CylinderGeometry(0.3, 0.4, 1.5, 24);
             const robeMaterial = new THREE.MeshStandardMaterial({ 
                 color: 0xFFFAFA,
                 emissive: 0xFFFFFF,
@@ -5827,13 +5720,13 @@
             group.add(robe);
             
             // Head
-            const headGeometry = new THREE.SphereGeometry(0.2, 12, 12);
+            const headGeometry = new THREE.SphereGeometry(0.2, 24, 24);
             const head = new THREE.Mesh(headGeometry, robeMaterial);
             head.position.y = 1.7;
             group.add(head);
             
             // Golden halo
-            const haloGeometry = new THREE.TorusGeometry(0.25, 0.04, 8, 16);
+            const haloGeometry = new THREE.TorusGeometry(0.25, 0.04, 16, 32);
             const haloMaterial = new THREE.MeshStandardMaterial({ 
                 color: 0xFFD700,
                 emissive: 0xFFD700,
@@ -5895,7 +5788,7 @@
             const group = new THREE.Group();
             
             // Pedestal
-            const pedestalGeometry = new THREE.CylinderGeometry(0.5, 0.6, 0.8, 8);
+            const pedestalGeometry = new THREE.CylinderGeometry(0.5, 0.6, 0.8, 24);
             const pedestalMaterial = new THREE.MeshStandardMaterial({ 
                 color: 0x8b7355,
                 roughness: 0.8,
@@ -5981,7 +5874,7 @@
 
         function createPalmTree(x, y, z) {
             // Tall slender trunk
-            const trunkGeometry = new THREE.CylinderGeometry(0.2, 0.25, 6, 8);
+            const trunkGeometry = new THREE.CylinderGeometry(0.2, 0.25, 6, 24);
             const trunkMaterial = new THREE.MeshStandardMaterial({ color: 0xD2691E });
             const trunk = new THREE.Mesh(trunkGeometry, trunkMaterial);
             trunk.position.set(x, y + 3, z);
@@ -6008,7 +5901,7 @@
 
         function createCypressTree(x, y, z) {
             // Tall thin trunk
-            const trunkGeometry = new THREE.CylinderGeometry(0.2, 0.3, 5, 8);
+            const trunkGeometry = new THREE.CylinderGeometry(0.2, 0.3, 5, 24);
             const trunkMaterial = new THREE.MeshStandardMaterial({ color: 0x654321 });
             const trunk = new THREE.Mesh(trunkGeometry, trunkMaterial);
             trunk.position.set(x, y + 2.5, z);
@@ -6016,7 +5909,7 @@
             gardenScene.add(trunk);
             
             // Cone-shaped foliage
-            const foliageGeometry = new THREE.ConeGeometry(1, 4, 8);
+            const foliageGeometry = new THREE.ConeGeometry(1, 4, 24);
             const foliageMaterial = new THREE.MeshStandardMaterial({ color: 0x355E3B });
             const foliage = new THREE.Mesh(foliageGeometry, foliageMaterial);
             foliage.position.set(x, y + 5.5, z);
@@ -6026,7 +5919,7 @@
 
         function createFruitTree(x, y, z, fruitColor) {
             // Medium trunk
-            const trunkGeometry = new THREE.CylinderGeometry(0.3, 0.35, 3, 8);
+            const trunkGeometry = new THREE.CylinderGeometry(0.3, 0.35, 3, 24);
             const trunkMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
             const trunk = new THREE.Mesh(trunkGeometry, trunkMaterial);
             trunk.position.set(x, y + 1.5, z);
@@ -6034,7 +5927,7 @@
             gardenScene.add(trunk);
             
             // Leafy canopy
-            const canopyGeometry = new THREE.SphereGeometry(1.5, 8, 8);
+            const canopyGeometry = new THREE.SphereGeometry(1.5, 24, 24);
             const canopyMaterial = new THREE.MeshStandardMaterial({ color: 0x90EE90 });
             const canopy = new THREE.Mesh(canopyGeometry, canopyMaterial);
             canopy.position.set(x, y + 3.5, z);
@@ -6043,7 +5936,7 @@
             
             // Fruit
             for (let i = 0; i < 6; i++) {
-                const fruitGeometry = new THREE.SphereGeometry(0.12, 8, 8);
+                const fruitGeometry = new THREE.SphereGeometry(0.12, 24, 24);
                 const fruitMaterial = new THREE.MeshStandardMaterial({ color: fruitColor });
                 const fruit = new THREE.Mesh(fruitGeometry, fruitMaterial);
                 fruit.position.set(
@@ -6057,7 +5950,7 @@
 
         function createFlower(x, y, z, color) {
             // Realistic stem
-            const stemGeometry = new THREE.CylinderGeometry(0.02, 0.02, 0.3, 16);
+            const stemGeometry = new THREE.CylinderGeometry(0.02, 0.02, 0.3, 24);
             const stemMaterial = new THREE.MeshStandardMaterial({ 
                 color: 0x228B22,
                 roughness: 0.8,
@@ -6069,7 +5962,7 @@
             gardenScene.add(stem);
             
             // Center of flower
-            const flowerGeometry = new THREE.SphereGeometry(0.08, 16, 16);
+            const flowerGeometry = new THREE.SphereGeometry(0.08, 24, 24);
             const flowerMaterial = new THREE.MeshStandardMaterial({ 
                 color: color,
                 roughness: 0.4,
@@ -6085,7 +5978,7 @@
             
             // Realistic petals with translucent appearance
             for (let i = 0; i < 5; i++) {
-                const petalGeometry = new THREE.SphereGeometry(0.06, 16, 16);
+                const petalGeometry = new THREE.SphereGeometry(0.06, 24, 24);
                 const petalMaterial = new THREE.MeshStandardMaterial({ 
                     color: color,
                     roughness: 0.3,
@@ -6107,7 +6000,7 @@
         }
 
         function createBush(x, y, z) {
-            const bushGeometry = new THREE.SphereGeometry(0.6, 8, 6);
+            const bushGeometry = new THREE.SphereGeometry(0.6, 24, 24);
             const bushMaterial = new THREE.MeshStandardMaterial({ color: 0x2F4F2F });
             const bush = new THREE.Mesh(bushGeometry, bushMaterial);
             bush.position.set(x, y + 0.4, z);
@@ -6118,7 +6011,7 @@
 
         function createVine(x, y, z) {
             // Climbing support
-            const supportGeometry = new THREE.CylinderGeometry(0.05, 0.05, 3, 8);
+            const supportGeometry = new THREE.CylinderGeometry(0.05, 0.05, 3, 24);
             const supportMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
             const support = new THREE.Mesh(supportGeometry, supportMaterial);
             support.position.set(x, y + 1.5, z);
@@ -6126,7 +6019,7 @@
             
             // Vine leaves
             for (let i = 0; i < 10; i++) {
-                const leafGeometry = new THREE.SphereGeometry(0.15, 6, 6);
+                const leafGeometry = new THREE.SphereGeometry(0.15, 24, 24);
                 const leafMaterial = new THREE.MeshStandardMaterial({ color: 0x228B22 });
                 const leaf = new THREE.Mesh(leafGeometry, leafMaterial);
                 leaf.position.set(
@@ -6139,7 +6032,7 @@
             
             // Purple flowering vine
             for (let i = 0; i < 5; i++) {
-                const flowerGeometry = new THREE.SphereGeometry(0.08, 6, 6);
+                const flowerGeometry = new THREE.SphereGeometry(0.08, 24, 24);
                 const flowerMaterial = new THREE.MeshStandardMaterial({ 
                     color: 0x9370DB,
                     emissive: 0x9370DB,
@@ -6231,7 +6124,7 @@
             group.add(haloLight);
             
             // Arms extended in welcome (cylindrical for realism)
-            const armGeometry = new THREE.CylinderGeometry(0.06, 0.05, 0.6, 16);
+            const armGeometry = new THREE.CylinderGeometry(0.06, 0.05, 0.6, 24);
             const armMaterial = new THREE.MeshStandardMaterial({ 
                 color: 0xffffff,
                 roughness: 0.4,
@@ -6250,7 +6143,7 @@
             group.add(rightArm);
             
             // Legs
-            const legGeometry = new THREE.CylinderGeometry(0.08, 0.07, 0.5, 16);
+            const legGeometry = new THREE.CylinderGeometry(0.08, 0.07, 0.5, 24);
             const legMaterial = new THREE.MeshStandardMaterial({ 
                 color: 0xffffff,
                 roughness: 0.5,
@@ -6311,55 +6204,51 @@
             // Use the stored garden player model
             if (!gardenPlayerModel) return;
             
-            // FREE ROAM MOVEMENT - WASD controls
+            // FREE ROAM MOVEMENT - WASD controls (use pre-allocated vectors)
             const moveSpeed = 0.1;
-            const forward = new THREE.Vector3();
-            const right = new THREE.Vector3();
-            
-            gardenCamera.getWorldDirection(forward);
-            forward.y = 0;
-            forward.normalize();
-            
-            right.crossVectors(gardenCamera.up, forward).normalize();
+            gardenCamera.getWorldDirection(_fwd);
+            _fwd.y = 0;
+            _fwd.normalize();
+            _right.crossVectors(gardenCamera.up, _fwd).normalize();
             
             let hasMoved = false;
             
             // Keyboard movement
             if (keys['w']) {
-                gardenPlayerModel.position.x += forward.x * moveSpeed;
-                gardenPlayerModel.position.z += forward.z * moveSpeed;
+                gardenPlayerModel.position.x += _fwd.x * moveSpeed;
+                gardenPlayerModel.position.z += _fwd.z * moveSpeed;
                 hasMoved = true;
             }
             if (keys['s']) {
-                gardenPlayerModel.position.x -= forward.x * moveSpeed;
-                gardenPlayerModel.position.z -= forward.z * moveSpeed;
+                gardenPlayerModel.position.x -= _fwd.x * moveSpeed;
+                gardenPlayerModel.position.z -= _fwd.z * moveSpeed;
                 hasMoved = true;
             }
             if (keys['a']) {
-                gardenPlayerModel.position.x += right.x * moveSpeed;
-                gardenPlayerModel.position.z += right.z * moveSpeed;
+                gardenPlayerModel.position.x += _right.x * moveSpeed;
+                gardenPlayerModel.position.z += _right.z * moveSpeed;
                 hasMoved = true;
             }
             if (keys['d']) {
-                gardenPlayerModel.position.x -= right.x * moveSpeed;
-                gardenPlayerModel.position.z -= right.z * moveSpeed;
+                gardenPlayerModel.position.x -= _right.x * moveSpeed;
+                gardenPlayerModel.position.z -= _right.z * moveSpeed;
                 hasMoved = true;
             }
             
             // Mobile joystick movement
             if (movementJoystick.active) {
-                gardenPlayerModel.position.x += right.x * movementJoystick.deltaX * moveSpeed;
-                gardenPlayerModel.position.z += right.z * movementJoystick.deltaX * moveSpeed;
-                gardenPlayerModel.position.x -= forward.x * movementJoystick.deltaY * moveSpeed;
-                gardenPlayerModel.position.z -= forward.z * movementJoystick.deltaY * moveSpeed;
+                gardenPlayerModel.position.x += _right.x * movementJoystick.deltaX * moveSpeed;
+                gardenPlayerModel.position.z += _right.z * movementJoystick.deltaX * moveSpeed;
+                gardenPlayerModel.position.x -= _fwd.x * movementJoystick.deltaY * moveSpeed;
+                gardenPlayerModel.position.z -= _fwd.z * movementJoystick.deltaY * moveSpeed;
                 hasMoved = true;
             }
             
             // Rotate player to face movement direction
             if (hasMoved) {
-                const moveDir = new THREE.Vector3(forward.x, 0, forward.z);
-                if (keys['s']) moveDir.multiplyScalar(-1);
-                gardenPlayerModel.rotation.y = Math.atan2(moveDir.x, moveDir.z);
+                _moveDir.set(_fwd.x, 0, _fwd.z);
+                if (keys['s']) _moveDir.multiplyScalar(-1);
+                gardenPlayerModel.rotation.y = Math.atan2(_moveDir.x, _moveDir.z);
             }
             
             // Keep Jesus model in place if it exists
@@ -6910,7 +6799,7 @@
                 
                 // Update renderer size and pixel ratio
                 renderer.setSize(width, height);
-                renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Limit pixel ratio for performance
+                renderer.setPixelRatio(1.0); // Fixed at 1.0 for compatibility
                 
                 // Update garden camera if it exists
                 if (gardenCamera) {
@@ -7075,14 +6964,10 @@
                 
                 // Movement - keyboard and touch (moves player model)
                 const moveSpeed = MOVE_SPEED * dt;
-                const forward = new THREE.Vector3();
-                const right = new THREE.Vector3();
-                
-                camera.getWorldDirection(forward);
-                forward.y = 0;
-                forward.normalize();
-                
-                right.crossVectors(camera.up, forward).normalize();
+                camera.getWorldDirection(_fwd);
+                _fwd.y = 0;
+                _fwd.normalize();
+                _right.crossVectors(camera.up, _fwd).normalize();
                 
                 // Calculate desired player position
                 let desiredX = playerModel.position.x;
@@ -7091,32 +6976,32 @@
                 
                 // Keyboard movement
                 if (keys['w']) {
-                    desiredX += forward.x * moveSpeed;
-                    desiredZ += forward.z * moveSpeed;
+                    desiredX += _fwd.x * moveSpeed;
+                    desiredZ += _fwd.z * moveSpeed;
                     hasMoved = true;
                 }
                 if (keys['s']) {
-                    desiredX -= forward.x * moveSpeed;
-                    desiredZ -= forward.z * moveSpeed;
+                    desiredX -= _fwd.x * moveSpeed;
+                    desiredZ -= _fwd.z * moveSpeed;
                     hasMoved = true;
                 }
                 if (keys['a']) {
-                    desiredX += right.x * moveSpeed;
-                    desiredZ += right.z * moveSpeed;
+                    desiredX += _right.x * moveSpeed;
+                    desiredZ += _right.z * moveSpeed;
                     hasMoved = true;
                 }
                 if (keys['d']) {
-                    desiredX -= right.x * moveSpeed;
-                    desiredZ -= right.z * moveSpeed;
+                    desiredX -= _right.x * moveSpeed;
+                    desiredZ -= _right.z * moveSpeed;
                     hasMoved = true;
                 }
                 
                 // Mobile joystick movement (fixed directions - no inversion)
                 if (movementJoystick.active) {
-                    desiredX -= right.x * movementJoystick.deltaX * moveSpeed;
-                    desiredZ -= right.z * movementJoystick.deltaX * moveSpeed;
-                    desiredX -= forward.x * movementJoystick.deltaY * moveSpeed;
-                    desiredZ -= forward.z * movementJoystick.deltaY * moveSpeed;
+                    desiredX -= _right.x * movementJoystick.deltaX * moveSpeed;
+                    desiredZ -= _right.z * movementJoystick.deltaX * moveSpeed;
+                    desiredX -= _fwd.x * movementJoystick.deltaY * moveSpeed;
+                    desiredZ -= _fwd.z * movementJoystick.deltaY * moveSpeed;
                     hasMoved = true;
                 }
                 
@@ -7130,12 +7015,9 @@
                 
                 // Rotate player model to face movement direction
                 if (hasMoved) {
-                    const moveDirection = new THREE.Vector2(
-                        desiredX - playerModel.position.x,
-                        desiredZ - playerModel.position.z
-                    );
-                    if (moveDirection.length() > 0.01) {
-                        playerModel.rotation.y = Math.atan2(moveDirection.x, moveDirection.y);
+                    _tmpVec2.set(desiredX - playerModel.position.x, desiredZ - playerModel.position.z);
+                    if (_tmpVec2.length() > 0.01) {
+                        playerModel.rotation.y = Math.atan2(_tmpVec2.x, _tmpVec2.y);
                     }
                 }
                 
@@ -7242,6 +7124,9 @@
         function animate() {
             requestAnimationFrame(animate);
             
+            // Don't render during title screen - save GPU
+            if (gameState === 'title') return;
+            
             // Calculate real delta time for smooth 144 FPS
             const currentTime = performance.now();
             const dt = Math.min((currentTime - lastFrameTime) / 1000, 0.1); // Cap at 100ms to prevent huge jumps
@@ -7266,15 +7151,31 @@
                 renderer.render(gardenScene, gardenCamera);
             } else if (gameState === 'final' && gardenScene && gardenCamera) {
                 renderer.render(gardenScene, gardenCamera);
-            } else {
+            } else if (scene && camera) {
                 renderer.render(scene, camera);
             }
         }
 
-        // Initialize
-        init3D();
-        onWindowResize(); // Ensure proper initial sizing
-        animate();
+        // Initialize with error catching
+        try {
+            // Check WebGL support
+            const canvas = document.createElement('canvas');
+            const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+            if (!gl) {
+                throw new Error('WebGL not supported in this browser');
+            }
+            
+            init3D();
+            onWindowResize();
+            animate();
+        } catch (e) {
+            console.error('Initialization error:', e);
+            const loading = document.getElementById('loading');
+            if (loading) {
+                loading.style.display = 'block';
+                loading.innerHTML = '<div style="color:red;padding:20px;background:rgba(0,0,0,0.8);border-radius:10px;max-width:500px;margin:100px auto;">⚠️ Error loading game<br><br>Please refresh and try again.<br><br>Error details: ' + (e.message || 'Unknown error') + '<br><br>Try:<br>• Using Chrome/Firefox/Edge<br>• Updating your browser<br>• Enabling hardware acceleration</div>';
+            }
+        }
     </script>
 </body>
 </html>
