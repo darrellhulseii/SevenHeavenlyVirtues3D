@@ -1225,6 +1225,7 @@
 
         // Game state
         let scene, camera, renderer, raycaster, mouse, playerModel;
+        let battleScene, battleCamera, gardenScene, gardenCamera, gardenPlayerModel;
         let dungeon = [];
         let enemies = [];
         let pickups = [];
@@ -3611,117 +3612,136 @@
         }
 
         function startBattle(enemy) {
-            gameState = 'battle';
-            battle.active = true;
-            
-            // Hide mobile interact button during battle
-            if (isMobile) {
-                const interactBtn = document.getElementById('mobile-interact-btn');
-                if (interactBtn) interactBtn.style.display = 'none';
-            }
-            
-            const isFinalBoss = enemy.vice.name === "The Devil";
-            
-            if (isFinalBoss && inventory.virtueItems.length === 7) {
-                showOneRingVictory();
-                return;
-            }
-            
-            // Setup heroes
-            heroes.forEach(hero => {
-                hero.hp = hero.maxHp + inventory.hpBoost;
-                hero.mp = hero.maxMp;
-                // Don't adjust divine party stats - they're already powerful
-                if (!newGamePlus) {
-                    hero.atk = (hero.name === "St. Vincent" ? 15 : hero.name === "St. Michael" ? 18 : 14) + inventory.atkBoost;
-                    hero.def = (hero.name === "St. Vincent" ? 8 : hero.name === "St. Michael" ? 6 : 10) + inventory.defBoost;
-                }
-            });
-            
-            // Setup enemies
-            let viceHp, minionHp, viceAtk, minionAtk;
-            
-            // Check if this is Jeff
-            if (enemy.isJeff) {
-                const levelMultiplier = 1 + (dungeonLevel - 1) * 0.5;
-                viceHp = Math.floor(JEFF_ENCOUNTER.baseHp * levelMultiplier);
-                minionHp = Math.floor(JEFF_ENCOUNTER.companionHp * levelMultiplier);
-                viceAtk = Math.floor(JEFF_ENCOUNTER.baseAtk * levelMultiplier);
-                minionAtk = Math.floor(JEFF_ENCOUNTER.companionAtk * levelMultiplier);
-            }
-            // Check if this is a mythical creature
-            else if (enemy.isMythical) {
-                const creature = MYTHICAL_CREATURES[enemy.level || dungeonLevel];
-                // Scale mythical creature stats based on dungeon level (they get stronger as you progress)
-                const levelMultiplier = 1 + (dungeonLevel - 1) * 0.5; // 1x at level 1, 1.5x at level 2, 2x at level 3, etc.
-                viceHp = Math.floor(creature.baseHp * levelMultiplier);
-                minionHp = Math.floor(creature.baseHp * 0.6 * levelMultiplier);
-                viceAtk = Math.floor(creature.baseAtk * levelMultiplier);
-                minionAtk = Math.floor(creature.baseAtk * 0.7 * levelMultiplier);
-            } else if (isFinalBoss) {
-                // Devil scales massively with defeated sins
-                const sinMultiplier = 1 + (defeatedSins.size * 0.3); // Gets stronger with each sin defeated
-                viceHp = Math.floor(200 * sinMultiplier);
-                minionHp = Math.floor(100 * sinMultiplier);
-                viceAtk = Math.floor(30 * sinMultiplier);
-                minionAtk = Math.floor(20 * sinMultiplier);
-            } else {
-                // Deadly Sins scale aggressively with level (exponential growth)
-                const baseHp = 50;
-                const baseAtk = 15;
-                const levelMultiplier = Math.pow(1.4, dungeonLevel - 1); // 1x, 1.4x, 1.96x, 2.74x, 3.84x, 5.38x, 7.53x
+            try {
+                gameState = 'battle';
+                battle.active = true;
                 
-                viceHp = Math.floor(baseHp * levelMultiplier);
-                minionHp = Math.floor(30 * levelMultiplier);
-                viceAtk = Math.floor(baseAtk * levelMultiplier);
-                minionAtk = Math.floor(10 * levelMultiplier);
+                // Hide mobile interact button during battle
+                if (isMobile) {
+                    const interactBtn = document.getElementById('mobile-interact-btn');
+                    if (interactBtn) interactBtn.style.display = 'none';
+                }
+                
+                const isFinalBoss = enemy.vice.name === "The Devil";
+                
+                if (isFinalBoss && inventory.virtueItems.length === 7) {
+                    showOneRingVictory();
+                    return;
+                }
+                
+                // Setup heroes
+                heroes.forEach(hero => {
+                    hero.hp = hero.maxHp + inventory.hpBoost;
+                    hero.mp = hero.maxMp + inventory.mpBoost;
+                    // Don't adjust divine party stats - they're already powerful
+                    if (!newGamePlus) {
+                        hero.atk = (hero.name === "St. Vincent" ? 15 : hero.name === "St. Michael" ? 18 : 14) + inventory.atkBoost;
+                        hero.def = (hero.name === "St. Vincent" ? 8 : hero.name === "St. Michael" ? 6 : 10) + inventory.defBoost;
+                    }
+                });
+                
+                // Setup enemies
+                let viceHp, minionHp, viceAtk, minionAtk;
+                
+                // Check if this is Jeff
+                if (enemy.isJeff) {
+                    const levelMultiplier = 1 + (dungeonLevel - 1) * 0.5;
+                    viceHp = Math.floor(JEFF_ENCOUNTER.baseHp * levelMultiplier);
+                    minionHp = Math.floor(JEFF_ENCOUNTER.companionHp * levelMultiplier);
+                    viceAtk = Math.floor(JEFF_ENCOUNTER.baseAtk * levelMultiplier);
+                    minionAtk = Math.floor(JEFF_ENCOUNTER.companionAtk * levelMultiplier);
+                }
+                // Check if this is a mythical creature
+                else if (enemy.isMythical) {
+                    const creature = MYTHICAL_CREATURES[enemy.level || dungeonLevel];
+                    if (!creature) {
+                        console.error('Mythical creature not found for level', enemy.level || dungeonLevel);
+                        return;
+                    }
+                    // Scale mythical creature stats based on dungeon level
+                    const levelMultiplier = 1 + (dungeonLevel - 1) * 0.5;
+                    viceHp = Math.floor(creature.baseHp * levelMultiplier);
+                    minionHp = Math.floor(creature.baseHp * 0.6 * levelMultiplier);
+                    viceAtk = Math.floor(creature.baseAtk * levelMultiplier);
+                    minionAtk = Math.floor(creature.baseAtk * 0.7 * levelMultiplier);
+                } else if (isFinalBoss) {
+                    // Devil scales massively with defeated sins
+                    const sinMultiplier = 1 + (defeatedSins.size * 0.3);
+                    viceHp = Math.floor(200 * sinMultiplier);
+                    minionHp = Math.floor(100 * sinMultiplier);
+                    viceAtk = Math.floor(30 * sinMultiplier);
+                    minionAtk = Math.floor(20 * sinMultiplier);
+                } else {
+                    // Deadly Sins scale aggressively with level (exponential growth)
+                    const baseHp = 50;
+                    const baseAtk = 15;
+                    const levelMultiplier = Math.pow(1.4, dungeonLevel - 1);
+                    
+                    viceHp = Math.floor(baseHp * levelMultiplier);
+                    minionHp = Math.floor(30 * levelMultiplier);
+                    viceAtk = Math.floor(baseAtk * levelMultiplier);
+                    minionAtk = Math.floor(10 * levelMultiplier);
+                }
+                
+                // New Game+ mode: Enemies are 200x stronger!
+                if (newGamePlus) {
+                    viceHp *= 200;
+                    minionHp *= 200;
+                    viceAtk *= 200;
+                    minionAtk *= 200;
+                }
+                
+                battle.enemies = [
+                    { name: enemy.vice.name, hp: viceHp, maxHp: viceHp, atk: viceAtk, def: 4, vice: enemy.vice },
+                    { name: enemy.vice.minion, hp: minionHp, maxHp: minionHp, atk: minionAtk, def: 2, vice: enemy.vice }
+                ];
+                
+                battle.currentHeroIndex = 0;
+                battle.targetIndex = 0;
+                battle.phase = 'menu';
+                battle.log = [`Facing ${enemy.vice.name}!`];
+                
+                // Create 3D battle scene
+                createBattleScene(enemy.vice, enemy.isJeff);
+                
+                updateBattleUI();
+                document.getElementById('battle-ui').style.display = 'block';
+                document.getElementById('battle-status').style.display = 'block';
+                document.getElementById('enemy-status').style.display = 'block';
+                if (document.pointerLockElement) {
+                    document.exitPointerLock();
+                }
+            } catch (error) {
+                console.error('BATTLE START ERROR:', error);
+                console.error('Error stack:', error.stack);
+                alert('Battle initialization error. Refreshing game...');
+                location.reload();
             }
-            
-            // New Game+ mode: Enemies are 200x stronger!
-            if (newGamePlus) {
-                viceHp *= 200;
-                minionHp *= 200;
-                viceAtk *= 200;
-                minionAtk *= 200;
-            }
-            
-            battle.enemies = [
-                { name: enemy.vice.name, hp: viceHp, maxHp: viceHp, atk: viceAtk, def: 4, vice: enemy.vice },
-                { name: enemy.vice.minion, hp: minionHp, maxHp: minionHp, atk: minionAtk, def: 2, vice: enemy.vice }
-            ];
-            
-            battle.currentHeroIndex = 0;
-            battle.targetIndex = 0;
-            battle.phase = 'menu';
-            battle.log = [`Facing ${enemy.vice.name}!`];
-            
-            // Create 3D battle scene
-            createBattleScene(enemy.vice, enemy.isJeff);
-            
-            updateBattleUI();
-            document.getElementById('battle-ui').style.display = 'block';
-            document.getElementById('battle-status').style.display = 'block';
-            document.getElementById('enemy-status').style.display = 'block';
-            document.exitPointerLock();
         }
 
-        let battleScene = null;
-        let battleCamera = null;
+        // Battle models arrays
         let battleHeroModels = [];
         let battleEnemyModels = [];
 
         function createBattleScene(vice, isJeff = false) {
-            // Clear any existing battle scene
-            if (battleScene) {
-                while(battleScene.children.length > 0) { 
-                    const obj = battleScene.children[0];
-                    if (obj.geometry) obj.geometry.dispose();
-                    if (obj.material) obj.material.dispose();
-                    battleScene.remove(obj);
+            try {
+                // Clear any existing battle scene
+                if (battleScene) {
+                    while(battleScene.children.length > 0) { 
+                        const obj = battleScene.children[0];
+                        if (obj.geometry) obj.geometry.dispose();
+                        if (obj.material) {
+                            if (Array.isArray(obj.material)) {
+                                obj.material.forEach(m => m.dispose());
+                            } else {
+                                obj.material.dispose();
+                            }
+                        }
+                        battleScene.remove(obj);
+                    }
                 }
-            }
-            
-            battleScene = new THREE.Scene();
+                
+                battleScene = new THREE.Scene();
             
             // Special island scene for Jeff
             if (isJeff) {
@@ -3895,30 +3915,51 @@
             battleHeroModels = [];
             let heroModels;
             
-            if (newGamePlus) {
-                // Divine party models
-                heroModels = [
-                    createJesusModel(),
-                    createPadrePioModel(),
-                    createStVincentFerrerModel(),
-                    createMotherMaryModel()
-                ];
-            } else {
-                // Regular party models
-                heroModels = [
-                    createStVincentModel(),
-                    createStMichaelModel(),
-                    createStJoanModel()
-                ];
-            }
-            
-            for (let i = 0; i < heroModels.length; i++) {
-                const heroModel = heroModels[i];
-                heroModel.position.set(-5, 0, -3 + i * 2);
-                heroModel.rotation.y = Math.PI / 6; // Face right slightly
-                heroModel.castShadow = true;
-                battleScene.add(heroModel);
-                battleHeroModels.push(heroModel);
+            try {
+                if (newGamePlus) {
+                    // Divine party models
+                    heroModels = [
+                        createJesusModel(),
+                        createPadrePioModel(),
+                        createStVincentFerrerModel(),
+                        createMotherMaryModel()
+                    ];
+                } else {
+                    // Regular party models
+                    heroModels = [
+                        createStVincentModel(),
+                        createStMichaelModel(),
+                        createStJoanModel()
+                    ];
+                }
+                
+                // Filter out any undefined models
+                heroModels = heroModels.filter(model => model !== null && model !== undefined);
+                
+                if (heroModels.length === 0) {
+                    throw new Error('No hero models created');
+                }
+                
+                for (let i = 0; i < heroModels.length; i++) {
+                    const heroModel = heroModels[i];
+                    heroModel.position.set(-5, 0, -3 + i * 2);
+                    heroModel.rotation.y = Math.PI / 6; // Face right slightly
+                    heroModel.castShadow = true;
+                    battleScene.add(heroModel);
+                    battleHeroModels.push(heroModel);
+                }
+            } catch (error) {
+                console.error('Error creating hero models:', error);
+                // Create fallback hero models
+                for (let i = 0; i < 3; i++) {
+                    const fallbackGeometry = new THREE.BoxGeometry(0.8, 2, 0.6);
+                    const fallbackMaterial = new THREE.MeshStandardMaterial({ color: 0x0000ff });
+                    const fallbackHero = new THREE.Mesh(fallbackGeometry, fallbackMaterial);
+                    fallbackHero.position.set(-5, 0, -3 + i * 2);
+                    fallbackHero.rotation.y = Math.PI / 6;
+                    battleScene.add(fallbackHero);
+                    battleHeroModels.push(fallbackHero);
+                }
             }
             
             // Position enemies on the right side
@@ -3926,23 +3967,32 @@
             for (let i = 0; i < 2; i++) {
                 let enemyModel;
                 // Check if this is Jeff
-                if (isJeff && vice.name === JEFF_ENCOUNTER.name) {
+                if (isJeff && vice && vice.name === JEFF_ENCOUNTER.name) {
                     if (i === 0) {
                         enemyModel = createJeffModel();
                     } else {
                         // Maxwell - similar but female
                         enemyModel = createJeffModel(); // Reuse model, will scale/modify
-                        enemyModel.scale.set(0.85, 0.85, 0.85); // Smaller for Maxwell
+                        if (enemyModel) enemyModel.scale.set(0.85, 0.85, 0.85); // Smaller for Maxwell
                     }
                 }
                 // Check if this is a mythical creature
-                else {
+                else if (vice) {
                     const creatureData = MYTHICAL_CREATURES[dungeonLevel];
                     if (creatureData && vice.name === creatureData.name) {
                         enemyModel = createMythicalCreatureModel(creatureData, dungeonLevel);
                     } else {
                         enemyModel = createViceModel(vice);
                     }
+                }
+                
+                // Safety check: ensure model was created
+                if (!enemyModel) {
+                    console.error('Failed to create enemy model for', vice);
+                    // Create a fallback simple model
+                    const fallbackGeometry = new THREE.BoxGeometry(1, 2, 1);
+                    const fallbackMaterial = new THREE.MeshStandardMaterial({ color: 0xff0000 });
+                    enemyModel = new THREE.Mesh(fallbackGeometry, fallbackMaterial);
                 }
                 
                 enemyModel.position.set(5, 0, -1 + i * 2);
@@ -3966,6 +4016,16 @@
             // Store original camera position for animations
             battleCamera.userData.originalPosition = battleCamera.position.clone();
             battleCamera.userData.targetPosition = battleCamera.position.clone();
+            
+            } catch (error) {
+                console.error('Error creating battle scene:', error);
+                // Fallback: create minimal battle scene
+                if (!battleScene) battleScene = new THREE.Scene();
+                if (!battleCamera) {
+                    battleCamera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+                    battleCamera.position.set(0, 4, 10);
+                }
+            }
         }
 
         // Animate battle camera (called during battles)
@@ -4278,7 +4338,7 @@
                 const heroModel = battleHeroModels[battle.currentHeroIndex];
                 const enemyModel = battleEnemyModels[battle.targetIndex];
 
-                dashHero(heroModel, 300);
+                if (heroModel) dashHero(heroModel, 300);
 
                 if (enemyModel) {
                     if (target.hp > 0) {
@@ -4302,7 +4362,7 @@
 
                     if (hero.name === 'St. Michael') {
                         // Angels descend — lightweight point lights only, no setInterval
-                        setEmissive(heroModel, 0xffd700, 1.0);
+                        if (heroModel) setEmissive(heroModel, 0xffd700, 1.0);
                         for (let i = 0; i < 5; i++) {
                             setTimeout(() => {
                                 if (!battleScene) return;
@@ -4322,7 +4382,7 @@
                                 requestAnimationFrame(drop);
                             }, i * 150);
                         }
-                        setTimeout(() => setEmissive(heroModel, 0x000000, 0), 1500);
+                        setTimeout(() => { if (heroModel) setEmissive(heroModel, 0x000000, 0); }, 1500);
 
                     } else if (hero.name === 'St. Vincent') {
                         // Rosary Throw — RAF arc
@@ -4350,11 +4410,15 @@
 
                     } else if (hero.name === 'St. Joan') {
                         // Divine Charge — glow then dash
-                        setEmissive(heroModel, 0xffd700, 0.8);
-                        setTimeout(() => {
-                            dashHero(heroModel, 500);
-                            setTimeout(() => setEmissive(heroModel, 0x000000, 0), 600);
-                        }, 700);
+                        if (heroModel) {
+                            setEmissive(heroModel, 0xffd700, 0.8);
+                            setTimeout(() => {
+                                if (heroModel) {
+                                    dashHero(heroModel, 500);
+                                    setTimeout(() => { if (heroModel) setEmissive(heroModel, 0x000000, 0); }, 600);
+                                }
+                            }, 700);
+                        }
                     }
 
                     // Damage / defeat animation on enemy
@@ -4528,8 +4592,8 @@
                 
                 // Mythical creatures give special stat boosts and don't progress the level
                 if (isMythicalCreature) {
-                    // Give gold reward for defeating mythical creature
-                    const goldReward = 50 + dungeonLevel * 10;
+                    // Give gold reward for defeating mythical creature - INCREASED 5X
+                    const goldReward = 250 + dungeonLevel * 50;  // Was 50 + dungeonLevel * 10
                     inventory.gold += goldReward;
                     
                     // Always give 3 Divine Elixirs for defeating mythical creatures
@@ -4590,11 +4654,15 @@
                 if (DEADLY_SINS.includes(viceName)) {
                     defeatedSins.add(viceName);
                     
+                    // Award gold for defeating deadly sin
+                    const goldReward = 150 + dungeonLevel * 75;  // 225 gold at level 1, 900 at level 7
+                    inventory.gold += goldReward;
+                    
                     if (defeatedSins.size >= 7) {
                         const virtueItem = VIRTUE_ITEMS[viceName];
                         showVirtueItemReceived(virtueItem, () => {
                             showViceTeaching(battle.enemies[0].vice, () => {
-                                showMessage('All Sins defeated! The Devil awaits...', 4000);
+                                showMessage(`All Sins defeated! Earned ${goldReward} gold! The Devil awaits...`, 4000);
                                 dungeonLevel++;
                                 // Level up heroes
                                 const statGains = levelUpHeroes();
@@ -4615,7 +4683,7 @@
                         showViceTeaching(battle.enemies[0].vice, () => {
                             // Level up heroes
                             const statGains = levelUpHeroes();
-                            showMessage(`Victory! Level ${dungeonLevel} - ${statGains}`, 4000);
+                            showMessage(`Victory! Earned ${goldReward} gold! Level ${dungeonLevel} - ${statGains}`, 4000);
                             setTimeout(() => {
                                 generateDungeon();
                                 gameState = 'explore';
@@ -4624,8 +4692,10 @@
                     });
                 } else {
                     // Other enemies (if any) don't progress the level
+                    const goldReward = 100 + dungeonLevel * 30;
+                    inventory.gold += goldReward;
                     showViceTeaching(battle.enemies[0].vice, () => {
-                        showMessage(`Victory! Continuing level ${dungeonLevel}...`, 3000);
+                        showMessage(`Victory! Earned ${goldReward} gold! Continuing level ${dungeonLevel}...`, 3000);
                         gameState = 'explore';
                     });
                 }
@@ -4748,10 +4818,8 @@
             createGardenOfEden();
         }
 
-        let gardenScene = null;
-        let gardenCamera = null;
+        // Garden-specific variables
         let jesusModel = null;
-        let gardenPlayerModel = null;
         let gardenWalkProgress = 0;
         
         // Advanced Animation System (2010+ techniques)
@@ -4931,7 +4999,7 @@
                 // Create garden scene with cinematic atmosphere
                 gardenScene = new THREE.Scene();
                 gardenScene.background = new THREE.Color(0xffd4a3); // Golden sky
-                gardenScene.fog = new THREE.FogExp2(0xffd4a3, 0.003); // Reduced fog for better visibility
+                gardenScene.fog = new THREE.FogExp2(0xffd4a3, 0.001); // Minimal fog for crystal clear visibility!
                 
                 // Ground - photorealistic lush green grass (reduced for compact Garden)
                 const groundGeometry = new THREE.PlaneGeometry(60, 60, 50, 50);
@@ -5094,20 +5162,51 @@
                 
                 // Create Jesus model at the end of the path
                 jesusModel = createJesusModel();
-                jesusModel.position.set(0, 0, -95);
-                jesusModel.rotation.y = Math.PI;
-                gardenScene.add(jesusModel);
+                if (jesusModel) {
+                    jesusModel.position.set(0, 0, -45);
+                    jesusModel.rotation.y = Math.PI;
+                    gardenScene.add(jesusModel);
+                    console.log('Jesus model created and added to garden');
+                } else {
+                    console.error('Failed to create Jesus model');
+                }
                 
-                // Create player model
-                gardenPlayerModel = createPlayerModel();
-                gardenPlayerModel.position.set(0, 0, 5);
-                gardenPlayerModel.rotation.y = Math.PI;
-                gardenScene.add(gardenPlayerModel);
+                // Create player model for garden exploration
+                try {
+                    gardenPlayerModel = createPlayerModel();
+                    if (!gardenPlayerModel) {
+                        console.error('createPlayerModel returned null/undefined');
+                        // Create fallback simple player model
+                        const fallbackGeometry = new THREE.BoxGeometry(0.6, 1.8, 0.6);
+                        const fallbackMaterial = new THREE.MeshStandardMaterial({ color: 0x2c3e50 });
+                        gardenPlayerModel = new THREE.Mesh(fallbackGeometry, fallbackMaterial);
+                        console.log('Using fallback player model');
+                    }
+                    gardenPlayerModel.position.set(0, 0, 5);
+                    gardenPlayerModel.rotation.y = Math.PI;
+                    gardenScene.add(gardenPlayerModel);
+                    console.log('Garden player model created at position:', gardenPlayerModel.position);
+                } catch (error) {
+                    console.error('Error creating garden player model:', error);
+                    // Create emergency fallback
+                    const fallbackGeometry = new THREE.BoxGeometry(0.6, 1.8, 0.6);
+                    const fallbackMaterial = new THREE.MeshStandardMaterial({ color: 0xff0000 });
+                    gardenPlayerModel = new THREE.Mesh(fallbackGeometry, fallbackMaterial);
+                    gardenPlayerModel.position.set(0, 0, 5);
+                    gardenScene.add(gardenPlayerModel);
+                    console.log('Using emergency fallback player model');
+                }
                 
-                // Camera setup
+                // Camera setup for third-person view
                 gardenCamera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-                gardenCamera.position.set(0, 2.5, 10);
+                gardenCamera.position.set(0, 3, 9);
                 gardenCamera.lookAt(0, 1, 5);
+                console.log('Garden camera created and positioned');
+                
+                console.log('Garden of Eden created successfully');
+                console.log('gameState:', gameState);
+                console.log('gardenPlayerModel exists:', !!gardenPlayerModel);
+                console.log('gardenCamera exists:', !!gardenCamera);
                 
                 // Show victory message
                 showVictoryMessage();
@@ -5116,6 +5215,46 @@
                 console.error("Error stack:", error.stack);
                 alert("Error creating Garden: " + error.message);
             }
+        }
+
+        // Helper function to add floating interaction indicator
+        function addInteractionIndicator(object, yOffset = 3) {
+            // Create a canvas for the sprite
+            const canvas = document.createElement('canvas');
+            canvas.width = 128;
+            canvas.height = 64;
+            const context = canvas.getContext('2d');
+            
+            // Draw glowing "CLICK ME" text
+            context.fillStyle = 'rgba(255, 215, 0, 0.9)';
+            context.fillRect(0, 0, 128, 64);
+            context.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+            context.lineWidth = 3;
+            context.strokeRect(0, 0, 128, 64);
+            
+            context.fillStyle = '#000000';
+            context.font = 'bold 18px Arial';
+            context.textAlign = 'center';
+            context.textBaseline = 'middle';
+            context.fillText('👆 CLICK', 64, 32);
+            
+            // Create sprite
+            const texture = new THREE.CanvasTexture(canvas);
+            const spriteMaterial = new THREE.SpriteMaterial({ 
+                map: texture,
+                transparent: true,
+                opacity: 0.9
+            });
+            const sprite = new THREE.Sprite(spriteMaterial);
+            sprite.scale.set(2, 1, 1);
+            sprite.position.y = yOffset;
+            
+            // Make sprite bob up and down
+            sprite.userData.bobOffset = Math.random() * Math.PI * 2;
+            sprite.userData.isIndicator = true;
+            
+            object.add(sprite);
+            return sprite;
         }
 
         function createBeatitudesPlaque() {
@@ -5127,6 +5266,9 @@
             stand.userData.type = 'beatitudes';
             stand.userData.clickable = true;
             gardenScene.add(stand);
+            
+            // Add floating interaction indicator
+            addInteractionIndicator(stand, 2.5);
             
             // Golden frame
             const frameGeometry = new THREE.BoxGeometry(3.2, 3.2, 0.2);
@@ -5152,12 +5294,18 @@
             leftTablet.userData.clickable = true;
             gardenScene.add(leftTablet);
             
+            // Add floating indicator to left tablet
+            addInteractionIndicator(leftTablet, 1.5);
+            
             const rightTablet = new THREE.Mesh(tabletGeometry, tabletMaterial);
             rightTablet.position.set(x + 0.7, y + 1, z);
             rightTablet.rotation.y = -Math.PI / 8;
             rightTablet.userData.type = 'commandments';
             rightTablet.userData.clickable = true;
             gardenScene.add(rightTablet);
+            
+            // Add floating indicator to right tablet
+            addInteractionIndicator(rightTablet, 1.5);
             
             // Stone pedestal
             const pedestalGeometry = new THREE.CylinderGeometry(1.5, 1.8, 0.5, 24);
@@ -5168,9 +5316,13 @@
         }
 
         function createStaffOfAaron(x, y, z) {
-            // Staff
+            // Staff with enhanced material
             const staffGeometry = new THREE.CylinderGeometry(0.08, 0.08, 3, 24);
-            const staffMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
+            const staffMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0x8B4513,
+                roughness: 0.6,
+                metalness: 0.2
+            });
             const staff = new THREE.Mesh(staffGeometry, staffMaterial);
             staff.position.set(x, y + 1.5, z);
             staff.rotation.z = Math.PI / 6;
@@ -5178,13 +5330,18 @@
             staff.userData.clickable = true;
             gardenScene.add(staff);
             
-            // Blossoming almond branches
+            // Add floating indicator
+            addInteractionIndicator(staff, 2.5);
+            
+            // Blossoming almond branches - ENHANCED with glow
             for (let i = 0; i < 5; i++) {
                 const blossomGeometry = new THREE.SphereGeometry(0.15, 24, 24);
                 const blossomMaterial = new THREE.MeshStandardMaterial({ 
                     color: 0xFFB6C1,
                     emissive: 0xFFB6C1,
-                    emissiveIntensity: 0.3
+                    emissiveIntensity: 0.6, // Increased from 0.3
+                    roughness: 0.4,
+                    metalness: 0.1
                 });
                 const blossom = new THREE.Mesh(blossomGeometry, blossomMaterial);
                 blossom.position.set(
@@ -5218,6 +5375,9 @@
             ark.userData.type = 'ark';
             ark.userData.clickable = true;
             gardenScene.add(ark);
+            
+            // Add floating indicator
+            addInteractionIndicator(ark, 2.5);
             
             // Mercy seat (lid)
             const lidGeometry = new THREE.BoxGeometry(2.2, 0.2, 1.3);
@@ -5291,6 +5451,9 @@
             group.userData.type = 'moses';
             group.userData.clickable = true;
             gardenScene.add(group);
+            
+            // Add floating indicator
+            addInteractionIndicator(group, 3.5);
         }
 
         function createElijahStatue(x, y, z) {
@@ -5362,6 +5525,7 @@
             group.userData.type = 'elijah';
             group.userData.clickable = true;
             gardenScene.add(group);
+            addInteractionIndicator(group, 3.5);
         }
 
         function createMotherMaryStatue(x, y, z) {
@@ -5411,6 +5575,7 @@
             group.userData.type = 'mary';
             group.userData.clickable = true;
             gardenScene.add(group);
+            addInteractionIndicator(group, 3.5);
         }
 
         function createAbrahamStatue(x, y, z) {
@@ -5456,6 +5621,7 @@
             group.userData.type = 'abraham';
             group.userData.clickable = true;
             gardenScene.add(group);
+            addInteractionIndicator(group, 3.5);
         }
 
         function createBiblePassageStand(x, y, z, title, text, reference) {
@@ -5555,22 +5721,53 @@
             swordBlade.rotation.z = Math.PI / 4;
             group.add(swordBlade);
             
-            // FLAMES on the sword
+            // FLAMES on the sword - ENHANCED with multiple flame layers
             const flameGeometry = new THREE.ConeGeometry(0.25, 0.8, 24);
             const flameMaterial = new THREE.MeshStandardMaterial({ 
                 color: 0xff4500,
                 emissive: 0xff4500,
-                emissiveIntensity: 2,
+                emissiveIntensity: 3, // Increased from 2
                 transparent: true,
                 opacity: 0.8
             });
             const flame = new THREE.Mesh(flameGeometry, flameMaterial);
             flame.position.set(0.5, 3.3, 0);
             flame.rotation.z = Math.PI / 4;
+            flame.userData.isFlame = true; // Mark for animation
             group.add(flame);
             
-            // Flame light
-            const flameLight = new THREE.PointLight(0xff4500, 1.5, 5);
+            // Add second flame layer for more dynamic effect
+            const flame2Geometry = new THREE.ConeGeometry(0.2, 0.6, 24);
+            const flame2Material = new THREE.MeshStandardMaterial({ 
+                color: 0xffa500,
+                emissive: 0xffa500,
+                emissiveIntensity: 2.5,
+                transparent: true,
+                opacity: 0.7
+            });
+            const flame2 = new THREE.Mesh(flame2Geometry, flame2Material);
+            flame2.position.set(0.5, 3.5, 0);
+            flame2.rotation.z = Math.PI / 4;
+            flame2.userData.isFlame = true;
+            group.add(flame2);
+            
+            // Add third flame tip (bright yellow)
+            const flame3Geometry = new THREE.ConeGeometry(0.15, 0.4, 24);
+            const flame3Material = new THREE.MeshStandardMaterial({ 
+                color: 0xffff00,
+                emissive: 0xffff00,
+                emissiveIntensity: 3,
+                transparent: true,
+                opacity: 0.9
+            });
+            const flame3 = new THREE.Mesh(flame3Geometry, flame3Material);
+            flame3.position.set(0.5, 3.7, 0);
+            flame3.rotation.z = Math.PI / 4;
+            flame3.userData.isFlame = true;
+            group.add(flame3);
+            
+            // Bright flame light
+            const flameLight = new THREE.PointLight(0xff4500, 3, 10); // Increased intensity and range
             flameLight.position.set(0.5, 3.3, 0);
             group.add(flameLight);
             
@@ -5578,6 +5775,9 @@
             group.userData.type = 'cherubim';
             group.userData.clickable = true;
             gardenScene.add(group);
+            
+            // Add floating indicator - VERY PROMINENT for Cherubim!
+            addInteractionIndicator(group, 4.5);
         }
 
         function createManna(x, y, z) {
@@ -5635,6 +5835,7 @@
             group.userData.type = 'manna';
             group.userData.clickable = true;
             gardenScene.add(group);
+            addInteractionIndicator(group, 2.5);
         }
 
         function createTreeOfLife(x, y, z) {
@@ -5690,6 +5891,7 @@
             group.userData.type = 'tree_of_life';
             group.userData.clickable = true;
             gardenScene.add(group);
+            addInteractionIndicator(group, 5.0); // Extra tall for the Tree!
         }
 
         function createAngelsRow(x, y, z) {
@@ -5782,6 +5984,9 @@
             river.userData.riverName = riverName;
             river.userData.clickable = true;
             gardenScene.add(river);
+            
+            // Add floating indicator above river
+            addInteractionIndicator(river, 1.5);
         }
 
         function createOpenBible(x, y, z) {
@@ -6193,19 +6398,51 @@
         }
 
         function startGardenWalk() {
+            console.log('startGardenWalk called');
+            console.log('  gameState:', gameState);
+            console.log('  gardenPlayerModel:', !!gardenPlayerModel);
+            console.log('  gardenCamera:', !!gardenCamera);
+            console.log('  gardenScene:', !!gardenScene);
+            
             gardenWalkProgress = 0;
             enableGardenInteraction();
-            // Garden walk will be animated in the update loop
+            
+            // Ensure gameState is set to 'garden' for movement
+            gameState = 'garden';
+            console.log('Garden walk started - you can now explore with WASD keys!');
+            
+            // Update controls display
+            const controlsEl = document.getElementById('controls');
+            if (controlsEl) {
+                controlsEl.innerHTML = '<strong>WASD:</strong> Move | <strong>Mouse:</strong> Look around | <strong>Click:</strong> Interact with objects | <strong>Explore the Garden of Eden!</strong>';
+                controlsEl.style.display = 'block';
+            }
+            
+            // Show on-screen message to player
+            showMessage('✨ Garden of Eden is now explorable! Use WASD to move, click objects to interact ✨', 5000);
         }
 
         function updateGardenWalk(dt) {
-            if (gameState !== 'garden' || !gardenScene || !gardenCamera) return;
+            if (gameState !== 'garden' || !gardenScene || !gardenCamera) {
+                // Debug logging
+                if (gameState === 'garden' && (!gardenScene || !gardenCamera)) {
+                    console.warn('Garden state but missing scene/camera:', {
+                        gameState,
+                        hasGardenScene: !!gardenScene,
+                        hasGardenCamera: !!gardenCamera
+                    });
+                }
+                return;
+            }
             
             // Use the stored garden player model
-            if (!gardenPlayerModel) return;
+            if (!gardenPlayerModel) {
+                console.warn('Garden player model is missing - cannot move');
+                return;
+            }
             
             // FREE ROAM MOVEMENT - WASD controls (use pre-allocated vectors)
-            const moveSpeed = 0.1;
+            const moveSpeed = 0.25;  // Increased from 0.15 for faster, more fun exploration!
             gardenCamera.getWorldDirection(_fwd);
             _fwd.y = 0;
             _fwd.normalize();
@@ -6251,14 +6488,11 @@
                 gardenPlayerModel.rotation.y = Math.atan2(_moveDir.x, _moveDir.z);
             }
             
-            // Keep Jesus model in place if it exists
-            if (jesusModel) {
-                jesusModel.position.set(0, 0, -5);
-                jesusModel.rotation.y = Math.PI;
-            }
+            // Jesus stays at the far end - DON'T reset position every frame
+            // (Jesus position is set once during creation)
             
             // Camera follows player in third-person
-            const cameraDistance = 4;
+            const cameraDistance = 5;
             const cameraHeight = 3;
             const targetCameraX = gardenPlayerModel.position.x - Math.sin(gardenCamera.rotation.y) * cameraDistance;
             const targetCameraZ = gardenPlayerModel.position.z - Math.cos(gardenCamera.rotation.y) * cameraDistance;
@@ -6268,7 +6502,7 @@
             gardenCamera.position.z = targetCameraZ;
             gardenCamera.lookAt(gardenPlayerModel.position.x, gardenPlayerModel.position.y + 1, gardenPlayerModel.position.z);
             
-            // Mobile camera rotation
+            // Mouse camera rotation for desktop
             if (cameraJoystick.active) {
                 gardenCamera.rotation.y -= cameraJoystick.deltaX * 0.05;
             }
@@ -6276,11 +6510,81 @@
             // Check for nearby interactables (for interact button - works for both desktop and mobile)
             if (gameState === 'garden') {
                 nearestInteractable = null;
-                let closestDistance = 5; // Max interaction distance
+                let closestDistance = 15; // Increased from 5 to 15 for easier interaction!
                 
+                // Animate flames on Cherubim's flaming sword
+                const time = Date.now() * 0.001;
+                gardenScene.traverse((node) => {
+                    if (node.userData && node.userData.isFlame) {
+                        // Flicker and dance effect
+                        const flicker = Math.sin(time * 8 + node.position.y * 10) * 0.3 + 0.7;
+                        const dance = Math.sin(time * 5 + node.position.x * 20);
+                        
+                        node.rotation.z = Math.PI / 4 + dance * 0.1;
+                        node.scale.set(
+                            1 + dance * 0.1,
+                            1 + flicker * 0.2,
+                            1 + dance * 0.1
+                        );
+                        
+                        // Animate emissive intensity
+                        if (node.material && node.material.emissive) {
+                            node.material.emissiveIntensity = node.userData.baseIntensity || 3;
+                            node.material.emissiveIntensity *= flicker;
+                        }
+                    }
+                });
+                
+                // Animate all clickable objects with glow effect
                 gardenScene.children.forEach(child => {
                     if (child.userData && child.userData.clickable) {
                         const distance = gardenPlayerModel.position.distanceTo(child.position);
+                        
+                        // Animate floating indicators (bob up and down)
+                        child.traverse((node) => {
+                            if (node.userData && node.userData.isIndicator) {
+                                const time = Date.now() * 0.001;
+                                node.position.y = node.parent.userData.indicatorBaseY || 3;
+                                node.position.y += Math.sin(time * 2 + node.userData.bobOffset) * 0.3;
+                                // Always face camera
+                                if (gardenCamera) {
+                                    node.quaternion.copy(gardenCamera.quaternion);
+                                }
+                            }
+                        });
+                        
+                        // Add pulsing glow effect to nearby interactables
+                        if (distance < 15) {
+                            child.traverse((node) => {
+                                if (node.isMesh && node.material && !node.userData.isIndicator) {
+                                    if (!node.userData.originalEmissive) {
+                                        // Store original emissive
+                                        node.userData.originalEmissive = node.material.emissive ? node.material.emissive.clone() : new THREE.Color(0x000000);
+                                        node.userData.originalEmissiveIntensity = node.material.emissiveIntensity || 0;
+                                    }
+                                    // Pulse effect based on time
+                                    const pulse = Math.sin(Date.now() * 0.003) * 0.5 + 0.5;
+                                    const glowIntensity = distance < 15 ? 0.3 + pulse * 0.2 : 0;
+                                    
+                                    if (node.material.emissive) {
+                                        node.material.emissive.setHex(0xffd700); // Golden glow
+                                        node.material.emissiveIntensity = glowIntensity;
+                                    }
+                                }
+                            });
+                        } else {
+                            // Reset glow for distant objects
+                            child.traverse((node) => {
+                                if (node.isMesh && node.material && node.userData.originalEmissive && !node.userData.isIndicator) {
+                                    if (node.material.emissive) {
+                                        node.material.emissive.copy(node.userData.originalEmissive);
+                                        node.material.emissiveIntensity = node.userData.originalEmissiveIntensity;
+                                    }
+                                }
+                            });
+                        }
+                        
+                        // Find closest interactable
                         if (distance < closestDistance) {
                             closestDistance = distance;
                             nearestInteractable = child.userData;
@@ -6290,11 +6594,25 @@
                 
                 // Show/hide interact button based on proximity
                 const interactBtn = document.getElementById('mobile-interact-btn');
-                if (nearestInteractable) {
-                    interactBtn.style.display = 'flex';
-                    interactBtn.textContent = 'INTERACT';
-                } else {
-                    interactBtn.style.display = 'none';
+                if (interactBtn) {
+                    if (nearestInteractable) {
+                        interactBtn.style.display = 'flex';
+                        // Add distance to button text for better feedback
+                        const distanceText = Math.round(closestDistance);
+                        interactBtn.textContent = `INTERACT (${distanceText}m)`;
+                        // Make button more prominent when very close
+                        if (closestDistance < 5) {
+                            interactBtn.style.backgroundColor = 'rgba(255, 215, 0, 0.95)';
+                            interactBtn.style.color = '#000';
+                            interactBtn.style.transform = 'scale(1.1)';
+                        } else {
+                            interactBtn.style.backgroundColor = 'rgba(52, 152, 219, 0.9)';
+                            interactBtn.style.color = '#fff';
+                            interactBtn.style.transform = 'scale(1.0)';
+                        }
+                    } else {
+                        interactBtn.style.display = 'none';
+                    }
                 }
             }
         }
@@ -6316,11 +6634,63 @@
                 // Check userData on object or its parent
                 while (obj) {
                     if (obj.userData && obj.userData.clickable) {
+                        // PARTICLE BURST EFFECT on interaction!
+                        createInteractionBurst(intersect.point);
                         showGardenDialog(obj.userData.type, obj.userData);
                         return;
                     }
                     obj = obj.parent;
                 }
+            }
+        }
+        
+        // Create particle burst effect at interaction point
+        function createInteractionBurst(position) {
+            const particleCount = 20;
+            for (let i = 0; i < particleCount; i++) {
+                const particleGeometry = new THREE.SphereGeometry(0.1, 8, 8);
+                const particleMaterial = new THREE.MeshStandardMaterial({
+                    color: 0xffd700,
+                    emissive: 0xffd700,
+                    emissiveIntensity: 2,
+                    transparent: true,
+                    opacity: 1
+                });
+                const particle = new THREE.Mesh(particleGeometry, particleMaterial);
+                particle.position.copy(position);
+                gardenScene.add(particle);
+                
+                // Random velocity
+                const velocity = new THREE.Vector3(
+                    (Math.random() - 0.5) * 0.2,
+                    Math.random() * 0.3,
+                    (Math.random() - 0.5) * 0.2
+                );
+                
+                // Animate particle
+                const startTime = Date.now();
+                const animateParticle = () => {
+                    const elapsed = Date.now() - startTime;
+                    if (elapsed > 1000) {
+                        gardenScene.remove(particle);
+                        particle.geometry.dispose();
+                        particle.material.dispose();
+                        return;
+                    }
+                    
+                    // Update position
+                    particle.position.x += velocity.x;
+                    particle.position.y += velocity.y;
+                    particle.position.z += velocity.z;
+                    velocity.y -= 0.01; // Gravity
+                    
+                    // Fade out
+                    particle.material.opacity = 1 - (elapsed / 1000);
+                    particle.scale.setScalar(1 - (elapsed / 1000));
+                    
+                    requestAnimationFrame(animateParticle);
+                };
+                animateParticle();
             }
         }
 
@@ -6766,9 +7136,15 @@
         }
 
         function onMouseMove(e) {
-            if (isPointerLocked && gameState === 'explore') {
-                mouseX = e.movementX || 0;
-                mouseY = e.movementY || 0;
+            if (isPointerLocked) {
+                if (gameState === 'explore') {
+                    mouseX = e.movementX || 0;
+                    mouseY = e.movementY || 0;
+                } else if (gameState === 'garden' && gardenCamera) {
+                    // Rotate garden camera with mouse
+                    const sensitivity = 0.002;
+                    gardenCamera.rotation.y -= (e.movementX || 0) * sensitivity;
+                }
             }
         }
 
@@ -6782,6 +7158,9 @@
                 // Left side = rotate left, right side = rotate right
                 const rotationAmount = x * Math.PI / 4; // Max 45 degrees per click
                 targetRotationY -= rotationAmount; // Subtract to rotate correctly
+            } else if (gameState === 'garden') {
+                // Handle garden object clicks
+                onGardenClick(e);
             }
         }
 
@@ -7078,9 +7457,9 @@
                             heroes.forEach(h => { h.atk += atkIncrease; });
                             showMessage(`📿 Rosary! +${atkIncrease} ATK to all heroes!`);
                         } else if (pickup.type === 'gold') {
-                            const goldAmount = 10 + Math.floor(Math.random() * 20);
+                            const goldAmount = 100 + Math.floor(Math.random() * 200);  // Was 10-30, now 100-300
                             inventory.gold += goldAmount;
-                            showMessage(`Found ${goldAmount} Gold!`);
+                            showMessage(`💰 Found ${goldAmount} Gold!`);
                         }
                         
                         updateHUD();
